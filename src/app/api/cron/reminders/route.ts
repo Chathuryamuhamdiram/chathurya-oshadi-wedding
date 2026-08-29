@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+export const dynamic = "force-dynamic";
 
 // Allow this endpoint to be called publicly (e.g. by Vercel Cron or cron-job.org)
 export async function GET(request: Request) {

@@ -1,0 +1,37 @@
+# Wedding Platform Development Rules
+
+- `docs/REQUIREMENTS.md` is the master functional specification.
+- Read the relevant requirement section before implementing or changing a feature.
+- Do not remove existing functionality unless explicitly instructed.
+- Design mobile-first.
+- Use clean, modern, accessible UI patterns.
+- Chathurya and Oshadi are SUPER_ADMIN users.
+- Family members must only see authorized information.
+- Budget, expenses, contributions, and private documents are private by default.
+- Enforce authorization server-side, not only in the UI.
+- Keep public guest functionality separate from private admin functionality.
+- Each invitation must support INDIVIDUAL or FAMILY type.
+- Family invitations must support:
+  - allowed guest count
+  - confirmed guest count
+  - liquor count
+- `confirmed_guest_count` must never exceed `allowed_guest_count`.
+- `liquor_count` must never exceed `confirmed_guest_count`.
+- Personalized invitations must use unique, non-sequential invitation tokens.
+- Version 1 WhatsApp sharing must use deep links only.
+- The WhatsApp action must open WhatsApp with:
+  - guest WhatsApp number
+  - personalized invitation message
+  - personalized invitation URL
+- Do not implement automatic WhatsApp sending unless specifically requested.
+- Every task must support owner, start date, due date, priority, status, reminders, comments, and optional dependencies.
+- Task reminders should support 7-day, 3-day, 1-day, due-date, and overdue notifications.
+- Financial records must retain an audit trail.
+- Avoid destructive updates to financial data; prefer traceable adjustments.
+- Use environment variables for all secrets.
+- Never expose database secrets, auth secrets, or private storage URLs in client code.
+- Validate all public form inputs server-side.
+- Use pagination or virtualized lists for large admin datasets.
+- Optimize images and lazy-load non-critical media.
+- Keep business logic outside presentation components where practical.
+- Update `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, or `docs/DEVELOPMENT_PLAN.md` whenever implementation decisions materially change them.

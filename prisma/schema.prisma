@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id               String       @id @default(uuid())
+  fullName         String
+  email            String       @unique
+  phone            String?
+  passwordHash     String?
+  role             String       @default("VIEWER") // SUPER_ADMIN, ADMIN, FAMILY_MEMBER, VIEWER
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  assignedTasks    Task[]       @relation("AssignedTasks")
+  createdTasks     Task[]       @relation("CreatedTasks")
+  taskComments     TaskComment[]
+  notifications    Notification[]
+  preferences      UserPreference?
+  userPermissions  UserPermission[]
+}
+
+model Guest {
+  id                       String    @id @default(uuid())
+  invitationCode           String    @unique
+  displayName              String
+  primaryContactName       String?
+  whatsappNumber           String?
+  email                    String?
+  invitationType           String    @default("INDIVIDUAL") // INDIVIDUAL, FAMILY
+  allowedGuestCount        Int       @default(1)
+  confirmedGuestCount      Int       @default(0)
+  liquorCount              Int       @default(0)
+  side                     String    @default("BRIDE") // BRIDE, GROOM, BOTH
+  rsvpStatus               String    @default("PENDING") // PENDING, ATTENDING, NOT_ATTENDING, NOT_SURE
+  invitationStatus         String    @default("NOT_SENT") // NOT_SENT, SHARED, RSVP_PENDING, CONFIRMED, DECLINED
+  invitationSentAt         DateTime?
+  invitationLastSharedAt   DateTime?
+  notes                    String?
+  tableId                  String?
+  table                    SeatingTable? @relation(fields: [tableId], references: [id])
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  logistics                GuestLogistics?
+}
+
+model SeatingTable {
+  id          String   @id @default(uuid())
+  name        String
+  capacity    Int      @default(8)
+  guests      Guest[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BudgetCategory {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  sortOrder   Int          @default(0)
+  isActive    Boolean      @default(true)
+  items       BudgetItem[]
+}
+
+model Vendor {
+  id              String       @id @default(uuid())
+  vendorName      String
+  contactName     String?
+  phone           String?
+  whatsappNumber  String?
+  email           String?
+  serviceCategory String?
+  quotationAmount Float        @default(0)
+  finalAmount     Float        @default(0)
+  advancePaid     Float        @default(0)
+  nextPaymentDue  DateTime?
+  notes           String?
+  items       BudgetItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model BudgetItem {
+  id                String         @id @default(uuid())
+  categoryId        String
+  category          BudgetCategory @relation(fields: [categoryId], references: [id])
+  vendorId          String?
+  vendor            Vendor?        @relation(fields: [vendorId], references: [id])
+  title             String
+  description       String?
+  estimatedCost     Float          @default(0)
+  actualCost        Float          @default(0)
+  paidAmount        Float          @default(0)
+  paymentDueDate    DateTime?
+  paymentStatus     String         @default("NOT_STARTED") // NOT_STARTED, ADVANCE_PAID, PARTIALLY_PAID, FULLY_PAID, OVERDUE
+  responsibleUserId String?
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  expenses          Expense[]
+}
+
+model Expense {
+  id            String     @id @default(uuid())
+  budgetItemId  String
+  budgetItem    BudgetItem @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+  expenseName   String
+  expenseDate   DateTime   @default(now())
+  amount        Float
+  paidByUserId  String?
+  paymentMethod String?    // CASH, BANK_TRANSFER, CARD
+  notes         String?
+  createdAt     DateTime   @default(now())
+}
+
+model Contribution {
+  id               String   @id @default(uuid())
+  contributorName  String
+  amount           Float
+  contributionDate DateTime @default(now())
+  paymentMethod    String?
+  purpose          String?
+  notes            String?
+  createdAt        DateTime @default(now())
+}
+
+model Task {
+  id               String         @id @default(uuid())
+  title            String
+  description      String?
+  category         String?
+  assignedUserId   String?
+  assignedUser     User?          @relation(name: "AssignedTasks", fields: [assignedUserId], references: [id])
+  createdById      String?
+  createdBy        User?          @relation(name: "CreatedTasks", fields: [createdById], references: [id])
+  startDate        DateTime?
+  dueDate          DateTime?
+  priority         String         @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status           String         @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, CANCELLED
+  reminderSettings String?        // JSON string like {"remindAt": ["7_DAYS_BEFORE", "1_DAY_BEFORE", "DUE_TODAY"]}
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  // Relations
+  reminders        TaskReminder[]
+  comments         TaskComment[]
+  attachments      TaskAttachment[]
+  
+  // Self-referencing dependencies
+  blockedBy        TaskDependency[] @relation("BlocksTask")
+  blocks           TaskDependency[] @relation("BlockedByTask")
+}
+
+model TaskDependency {
+  id             String @id @default(uuid())
+  blockingTaskId String // The task that must be finished first
+  blockedTaskId  String // The task that cannot start yet
+  
+  blockingTask   Task   @relation("BlockedByTask", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+  blockedTask    Task   @relation("BlocksTask", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([blockingTaskId, blockedTaskId])
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model TaskAttachment {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileUrl   String
+  fileType  String?
+  uploadedBy String
+  createdAt DateTime @default(now())
+}
+
+model TaskReminder {
+  id           String    @id @default(uuid())
+  taskId       String
+  task         Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reminderType String    // e.g. 7_DAYS_BEFORE, 3_DAYS_BEFORE, 1_DAY_BEFORE, DUE_TODAY, OVERDUE
+  reminderAt   DateTime
+  status       String    @default("PENDING") // PENDING, SENT, CANCELLED
+  sentAt       DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model Venue {
+  id            String         @id @default(uuid())
+  name          String
+  address       String?
+  googleMapsUrl String?
+  phone         String?
+  notes         String?
+  events        WeddingEvent[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model WeddingEvent {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  eventDate   DateTime?
+  startTime   String?
+  endTime     String?
+  venueId     String?
+  venue       Venue?    @relation(fields: [venueId], references: [id])
+  visibility  String    @default("PUBLIC") // PUBLIC, PRIVATE, INVITE_ONLY
+  sortOrder   Int       @default(0)
+  items       EventItem[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model EventItem {
+  id        String       @id @default(uuid())
+  eventId   String
+  event     WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name      String
+  quantity  Int          @default(1)
+  status    String       @default("PENDING") // PENDING, BOUGHT
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model GuestLogistics {
+  id                String    @id @default(uuid())
+  guestId           String    @unique
+  guest             Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  arrivalDateTime   DateTime?
+  departureDateTime DateTime?
+  accommodationName String?
+  transportNotes    String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // TASK_REMINDER, SYSTEM, VENDOR_DUE, RSVP_RECEIVED
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  linkUrl   String?  // Optional link to click through (e.g. /admin/tasks/123)
+  createdAt DateTime @default(now())
+}
+
+model UserPreference {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailNotifications Boolean  @default(false) // Default off until configured
+  inAppNotifications Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+model GuestbookEntry {
+  id        String   @id @default(uuid())
+  name      String
+  message   String
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique // e.g. "guest.view"
+  description String?
+  roles       RolePermission[]
+  users       UserPermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         String     // "SUPER_ADMIN", "ADMIN", "FAMILY_MEMBER", "VIEWER"
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  allowed      Boolean    @default(true)
+  
+  @@unique([role, permissionId])
+}
+
+model UserPermission {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  allowed      Boolean    @default(true)
+  
+  @@unique([userId, permissionId])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String
+  entity      String
+  entityId    String?
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime @default(now())
+}
+
+model GalleryImage {
+  id        String   @id @default(uuid())
+  url       String
+  altText   String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteAsset {
+  id        String   @id @default(uuid())
+  key       String   @unique // e.g. "HERO_IMAGE", "STORY_1"
+  url       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

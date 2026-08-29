@@ -13,6 +13,7 @@ export function EventItemList({
   initialItems 
 }: { 
   eventId: string;
+  eventTitle: string;
   initialItems: { id: string; name: string; quantity: number; status: string }[];
 }) {
   const [newItemName, setNewItemName] = useState("");

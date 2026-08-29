@@ -17,7 +17,7 @@ const venueSchema = z.object({
 
 export async function saveVenueAction(formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_EDIT);
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     const rawData = {
       id: formData.get("id") || undefined,
       name: formData.get("name"),
@@ -53,7 +53,7 @@ export async function saveVenueAction(formData: FormData) {
 
 export async function deleteVenueAction(id: string) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_EDIT);
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     await prisma.venue.delete({ where: { id } });
     revalidatePath("/admin/events");
     return { success: true };
@@ -76,7 +76,7 @@ const eventSchema = z.object({
 
 export async function saveEventAction(formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_EDIT);
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     const rawData = {
       id: formData.get("id") || undefined,
       title: formData.get("title"),
@@ -136,7 +136,7 @@ export async function saveEventAction(formData: FormData) {
 
 export async function saveEventItemAction(eventId: string, name: string, quantity: number) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_EDIT);
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     if (!name || name.trim() === "") throw new Error("Item name is required");
     await prisma.eventItem.create({
       data: {
@@ -155,7 +155,7 @@ export async function saveEventItemAction(eventId: string, name: string, quantit
 
 export async function toggleEventItemStatusAction(id: string, currentStatus: string) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_EDIT);
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     const newStatus = currentStatus === "BOUGHT" ? "PENDING" : "BOUGHT";
     await prisma.eventItem.update({
       where: { id },
@@ -170,7 +170,7 @@ export async function toggleEventItemStatusAction(id: string, currentStatus: str
 
 export async function deleteEventItemAction(id: string) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_EDIT);
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     await prisma.eventItem.delete({ where: { id } });
     revalidatePath("/admin/events");
     return { success: true };

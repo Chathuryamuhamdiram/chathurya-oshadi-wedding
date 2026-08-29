@@ -732,12 +732,6 @@ function ActionItem({
 
 // ─── Map Panel ────────────────────────────────────────────────────────────────
 
-interface Venue {
-  name: string;
-  address?: string | null;
-  googleMapsUrl?: string | null;
-}
-
 function MapPanel({
   venue,
   getMapUrl,

@@ -31,7 +31,7 @@ const userSchema = z.object({
 
 export async function toggleUserStatusAction(id: string) {
   try {
-    await requirePermission(PERMISSIONS.USER_EDIT);
+    await requirePermission(PERMISSIONS.USER_MANAGE);
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) throw new Error("User not found");
     
@@ -48,7 +48,7 @@ export async function toggleUserStatusAction(id: string) {
 
 export async function saveUserAction(formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.USER_EDIT);
+    await requirePermission(PERMISSIONS.USER_MANAGE);
     const data = {
       id: formData.get("id") || undefined,
       fullName: formData.get("fullName"),

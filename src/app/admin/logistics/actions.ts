@@ -7,7 +7,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 
 export async function saveLogistics(formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.TRANSPORT_EDIT);
+    await requirePermission(PERMISSIONS.TRANSPORT_MANAGE);
     const id = formData.get("id") as string | null;
     const guestId = formData.get("guestId") as string;
     const arrivalDateStr = formData.get("arrivalDate") as string;
@@ -45,7 +45,7 @@ export async function saveLogistics(formData: FormData) {
 
 export async function deleteLogistics(id: string) {
   try {
-    await requirePermission(PERMISSIONS.TRANSPORT_EDIT);
+    await requirePermission(PERMISSIONS.TRANSPORT_MANAGE);
     await prisma.guestLogistics.delete({ where: { id } });
     revalidatePath("/admin/logistics");
     return { success: true };

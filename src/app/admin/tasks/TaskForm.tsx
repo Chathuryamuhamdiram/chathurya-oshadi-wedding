@@ -114,7 +114,7 @@ export function TaskForm({ users, existingTask }: { users: any[], existingTask?:
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Reminders</label>
-              <Select value={reminderType} onValueChange={setReminderType}>
+              <Select value={reminderType} onValueChange={(val) => setReminderType(val || "")}>
                 <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
                   <SelectValue />
                 </SelectTrigger>
@@ -130,7 +130,7 @@ export function TaskForm({ users, existingTask }: { users: any[], existingTask?:
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Assign To (Optional)</label>
-              <Select name="assignedUserId" value={assignedUserId} onValueChange={setAssignedUserId}>
+              <Select name="assignedUserId" value={assignedUserId} onValueChange={(val) => setAssignedUserId(val || "")}>
                 <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
                   <SelectValue placeholder="Select family member">
                     {assignedUserId === "none" ? "Unassigned" : (users.find(u => u.id === assignedUserId)?.fullName || "Unknown User")}
@@ -156,7 +156,7 @@ export function TaskForm({ users, existingTask }: { users: any[], existingTask?:
           {existingTask && (
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Status</label>
-              <Select name="status" value={status} onValueChange={setStatus}>
+              <Select name="status" value={status} onValueChange={(val) => setStatus(val || "")}>
                 <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
                   <SelectValue />
                 </SelectTrigger>

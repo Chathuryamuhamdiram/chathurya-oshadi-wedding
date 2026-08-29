@@ -46,7 +46,7 @@ export default async function AdminGalleryPage() {
       {/* Upload Section */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Upload New Photo</h2>
-        <form action={uploadGalleryImage} className="flex items-center gap-4">
+        <form action={async (formData) => { "use server"; await uploadGalleryImage(formData); }} className="flex items-center gap-4">
           <input 
             type="file" 
             name="file" 

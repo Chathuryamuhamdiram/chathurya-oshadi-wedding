@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { TravelDecorations } from "./TravelDecorations";
-import { PassportCover } from "./PassportCover";
-import { PassportSpread } from "./PassportSpread";
+import { PassportBook } from "./PassportBook";
 
 export type IntroState = "ready" | "starting" | "opening" | "revealed" | "transitioning" | "complete";
 
@@ -72,24 +71,23 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
       {/* Central Passport Container */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
         <div 
-          className="relative w-[76vw] max-w-[420px] h-[100vw] max-h-[580px] md:w-[480px] md:h-[640px] transition-transform duration-1000"
+          className="relative w-[70vw] max-w-[320px] h-[100vw] max-h-[460px] md:w-[420px] md:h-[600px] transition-transform duration-1000"
           style={{
             perspective: "1400px",
             transformStyle: "preserve-3d",
             transform: state === "starting" ? "scale(1.02) translateY(-5px)" 
-                     : state === "opening" || state === "revealed" ? "translateX(25%) rotateY(0deg) scale(0.9)"
+                     : state === "opening" || state === "revealed" ? "translateX(50%) rotateY(0deg) scale(0.95)"
                      : state === "transitioning" ? "scale(1.2)" 
                      : "scale(1)",
           }}
         >
-          <PassportSpread state={state} />
-          <PassportCover state={state} onOpen={handleOpenPassport} />
+          <PassportBook state={state} onOpen={handleOpenPassport} />
         </div>
       </div>
 
       {/* Interactive CTA: BEGIN OUR JOURNEY */}
       <div 
-        className="absolute bottom-10 left-0 right-0 flex justify-center z-40"
+        className="absolute bottom-6 md:bottom-10 left-0 right-0 flex justify-center z-40"
         style={{
           opacity: state === "ready" ? 1 : 0,
           pointerEvents: state === "ready" ? "auto" : "none",
@@ -105,7 +103,7 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
           style={{ transform: isHovered ? "scale(1.02)" : "scale(1)" }}
         >
           {/* Top decorative ornament */}
-          <div className="w-48 h-12 md:w-56 md:h-14 mb-2 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300" style={{ opacity: isHovered ? "1" : "0.7" }}>
+          <div className="w-32 h-8 md:w-56 md:h-14 mb-1 md:mb-2 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300" style={{ opacity: isHovered ? "1" : "0.7" }}>
             <img 
               src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" 
               alt="Decorative Botanical Ornament" 

@@ -54,7 +54,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       </div>
 
       {/* Sri Lankan Heritage / Stupa (Lower Left, pushed slightly left) */}
-      <div className="absolute bottom-[5%] left-[-15%] md:bottom-[8%] md:left-[-5%] w-[60vw] md:w-[380px] h-auto opacity-[0.15] mix-blend-screen">
+      <div className="absolute bottom-[8%] left-[-5%] md:bottom-[8%] md:left-[-5%] w-[45vw] md:w-[380px] h-auto opacity-[0.15] mix-blend-screen">
         <img 
           src={introAssets.heritage} 
           alt="Sri Lankan Heritage Stupa" 
@@ -64,7 +64,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       </div>
 
       {/* Tropical Palm (Lower Left, pushed slightly right to separate from Stupa) */}
-      <div className="absolute bottom-[8%] left-[15%] md:bottom-[10%] md:left-[18%] w-[45vw] md:w-[280px] h-auto opacity-[0.2] mix-blend-screen">
+      <div className="absolute bottom-[10%] left-[20%] md:bottom-[10%] md:left-[18%] w-[35vw] md:w-[280px] h-auto opacity-[0.2] mix-blend-screen">
         <img 
           src={introAssets.palm} 
           alt="Tropical Palm Tree" 
@@ -113,22 +113,22 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
 
       {/* --- FOREGROUND PETALS (Depth of field effect) --- */}
       
-      {/* Scattered Petals (Top/Left) */}
-      <div className="absolute top-[5%] left-[10%] md:top-[8%] md:left-[15%] w-32 h-32 md:w-48 md:h-48 opacity-[0.6] mix-blend-screen blur-[2px] md:blur-[3px] rotate-12">
+      {/* Floating Petals (Top Left) */}
+      <div className="absolute top-[5%] left-[5%] md:top-[10%] md:left-[10%] w-32 h-32 md:w-64 md:h-64 opacity-[0.85] mix-blend-screen rotate-[15deg]">
         <img 
           src={introAssets.petals2} 
-          alt="Scattered Ivory Petals" 
+          alt="Floating Ivory Petals" 
           className="object-contain w-full h-full"
           aria-hidden="true"
         />
       </div>
 
       {/* Large Petal Cluster (Bottom Right Foreground) */}
-      <div className="absolute -bottom-[5%] -right-[5%] md:-bottom-[10%] md:-right-[5%] w-64 h-64 md:w-96 md:h-96 opacity-[0.7] mix-blend-screen blur-[6px] md:blur-[10px] rotate-[-15deg]">
+      <div className="absolute -bottom-[5%] -right-[15%] md:-bottom-[5%] md:-right-[5%] w-36 h-36 md:w-96 md:h-96 opacity-[0.95] mix-blend-screen blur-[1px] md:blur-[2px] rotate-[-15deg] pointer-events-none z-20">
         <img 
           src={introAssets.petals1} 
           alt="Foreground Ivory Petals" 
-          className="object-contain w-full h-full"
+          className="object-contain w-full h-full drop-shadow-xl"
           aria-hidden="true"
         />
       </div>

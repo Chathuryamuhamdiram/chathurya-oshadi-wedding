@@ -16,6 +16,21 @@ export function MusicPlayer() {
     audioRef.current.loop = true;
     audioRef.current.volume = 0.4;
 
+    // Attempt to autoplay immediately on load
+    const attemptAutoplay = async () => {
+      if (!audioRef.current) return;
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+        setHasInteracted(true);
+      } catch (err) {
+        // Browser blocked autoplay (expected behavior).
+        // We will wait for the first user interaction.
+        console.log("Autoplay blocked, waiting for user interaction...");
+      }
+    };
+    attemptAutoplay();
+
     const handleFirstInteraction = () => {
       if (!hasInteracted && audioRef.current) {
         audioRef.current.play().then(() => {
@@ -29,6 +44,7 @@ export function MusicPlayer() {
 
     window.addEventListener("click", handleFirstInteraction, { once: true });
     window.addEventListener("scroll", handleFirstInteraction, { once: true });
+
 
     return () => {
       window.removeEventListener("click", handleFirstInteraction);

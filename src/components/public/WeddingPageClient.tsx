@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { WeddingIntro } from "./intro/WeddingIntro";
+import { WeddingPassportIntro } from "./intro/WeddingPassportIntro";
 import { FloatingNav } from "./FloatingNav";
 
 export function WeddingPageClient({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,7 @@ export function WeddingPageClient({ children }: { children: React.ReactNode }) {
   return (
     <>
       {!isIntroComplete && (
-        <WeddingIntro onComplete={() => setIsIntroComplete(true)} />
+        <WeddingPassportIntro onComplete={() => setIsIntroComplete(true)} />
       )}
       {children}
       {isIntroComplete && <FloatingNav />}

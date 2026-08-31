@@ -23,7 +23,7 @@ export function Guestbook({ entries }: { entries: any[] }) {
     const memory = formData.get("memory") as string;
     if (memory?.trim()) {
       const msg = formData.get("message") as string;
-      formData.set("message", msg + "\n\n— Memory: " + memory.trim());
+      formData.set("message", msg + "\n— Memory: " + memory.trim());
     }
     const res = await addGuestbookEntry(formData);
     setIsSubmitting(false);
@@ -182,10 +182,10 @@ export function Guestbook({ entries }: { entries: any[] }) {
 
 
 
-                    <p className="text-[#10233B]/85 font-serif italic leading-relaxed text-[14px] md:text-[15px] mb-6">
+                    <p className="text-[#10233B]/85 font-serif italic leading-relaxed text-[14px] md:text-[15px] mb-6 whitespace-pre-wrap">
                       {entry.message}
                     </p>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-end gap-3 mt-auto pt-2">
                       <div className="w-5 h-[1px] bg-[#C8A45A]" />
                       <p className="text-[#10233B] font-sans text-[9px] uppercase tracking-[0.28em] font-bold">
                         {entry.name}

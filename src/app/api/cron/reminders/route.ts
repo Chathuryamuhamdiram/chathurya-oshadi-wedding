@@ -84,10 +84,10 @@ export async function GET(request: Request) {
       processedCount++;
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      processedCount, 
-      message: `Successfully processed ${processedCount} reminders.` 
+    return NextResponse.json({
+      success: true,
+      processedCount,
+      message: `Successfully processed ${processedCount} reminders.`
     });
 
   } catch (error) {

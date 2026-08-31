@@ -24,7 +24,8 @@ import {
   Sparkles,
   MapPin,
   Globe,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MessageSquare
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -59,6 +60,7 @@ const allNavGroups = [
       { href: "/admin/calendar", label: "Calendar & Docs", icon: FileText },
       { href: "/admin/wedding-day", label: "Wedding Day", icon: Sparkles },
       { href: "/admin/gallery", label: "Public Gallery", icon: ImageIcon },
+      { href: "/admin/guestbook", label: "Guestbook", icon: MessageSquare },
       { href: "/admin/assets", label: "Site Assets", icon: ImageIcon },
     ]
   }
@@ -137,6 +139,7 @@ function AdminSidebar({
     "/admin/team": "user.view",
     "/admin/calendar": "calendar.view",
     "/admin/wedding-day": "wedding_day.view",
+    "/admin/guestbook": "guestbook.view",
   };
 
   // Filter nav groups based on permissions

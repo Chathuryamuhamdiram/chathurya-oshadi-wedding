@@ -64,6 +64,9 @@ export const PERMISSIONS = {
   SETTINGS_MANAGE: 'settings.manage',
 
   AUDIT_VIEW: 'audit.view',
+
+  GUESTBOOK_VIEW: 'guestbook.view',
+  GUESTBOOK_MANAGE: 'guestbook.manage',
 } as const;
 
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS];

@@ -112,33 +112,46 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
           <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-black/60 via-black/20 to-transparent pointer-events-none" />
 
           {/* Cover Content */}
-          <div className="relative z-10 w-full h-full flex flex-col items-center pt-[12%] pb-[8%]">
-            <p className="font-serif text-[#D7B56D] text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-2 opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-              You Are Invited
-            </p>
-            <svg className="w-6 h-1.5 md:w-8 md:h-2 mb-4 md:mb-8" viewBox="0 0 50 10">
-              <path d="M 0,5 L 20,5 L 25,2 L 30,5 L 50,5" fill="none" stroke="#D7B56D" strokeWidth="0.5" opacity="0.6"/>
-              <circle cx="25" cy="5" r="1.5" fill="#D7B56D" />
-            </svg>
-            <h1 className="font-serif text-[24px] md:text-[36px] leading-tight text-[#D7B56D] text-center drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-[0.05em] mb-6 md:mb-10">
-              WEDDING<br/>PASSPORT
-            </h1>
-            <div className="relative w-28 h-28 md:w-48 md:h-48 flex items-center justify-center mb-6 md:mb-10 mix-blend-screen">
-              <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (8).png" alt="Travel Globe" className="object-contain w-full h-full opacity-90" aria-hidden="true" />
+          <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-[12%]">
+            
+            {/* Top Text */}
+            <div className="flex flex-col items-center">
+              <p className="font-serif text-[#D7B56D] text-[9px] md:text-[11px] uppercase tracking-[0.3em] mb-2 opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                You Are Invited
+              </p>
+              <svg className="w-6 h-1.5 md:w-8 md:h-2" viewBox="0 0 50 10">
+                <path d="M 0,5 L 20,5 L 25,2 L 30,5 L 50,5" fill="none" stroke="#D7B56D" strokeWidth="0.5" opacity="0.6"/>
+                <circle cx="25" cy="5" r="1.5" fill="#D7B56D" />
+              </svg>
             </div>
-            <h2 className="font-serif text-[28px] md:text-[44px] text-[#D7B56D] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-[0.1em] mb-2 md:mb-4">
-              C <span className="text-[18px] md:text-[28px]">&</span> O
-            </h2>
-            <svg className="w-5 h-1.5 md:w-6 md:h-2 mb-2 md:mb-4" viewBox="0 0 50 10">
-              <path d="M 10,5 L 20,5 L 25,2 L 30,5 L 40,5" fill="none" stroke="#D7B56D" strokeWidth="0.5" opacity="0.6"/>
-              <circle cx="25" cy="5" r="1" fill="#D7B56D" />
-            </svg>
-            <h3 className="font-serif text-[12px] md:text-[16px] text-[#D7B56D] opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] tracking-wide mb-1 md:mb-2">
-              Chathurya & Oshadi
-            </h3>
-            <p className="font-sans text-[8px] md:text-[10px] text-[#D7B56D] opacity-70 uppercase tracking-[0.2em]">
-              08 October 2026
-            </p>
+
+            {/* Title & Globe */}
+            <div className="flex flex-col items-center">
+              <h1 className="font-serif text-[24px] md:text-[36px] leading-tight text-[#D7B56D] text-center drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-[0.05em] mb-4">
+                WEDDING<br/>PASSPORT
+              </h1>
+              <div className="relative w-28 h-28 md:w-44 md:h-44 flex items-center justify-center mix-blend-screen">
+                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (8).png" alt="Travel Globe" className="object-contain w-full h-full opacity-90" aria-hidden="true" />
+              </div>
+            </div>
+
+            {/* Bottom Details */}
+            <div className="flex flex-col items-center">
+              <h2 className="font-serif text-[28px] md:text-[40px] text-[#D7B56D] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-[0.1em] mb-1">
+                C <span className="text-[18px] md:text-[28px]">&</span> O
+              </h2>
+              <svg className="w-5 h-1.5 md:w-6 md:h-2 mb-2" viewBox="0 0 50 10">
+                <path d="M 10,5 L 20,5 L 25,2 L 30,5 L 40,5" fill="none" stroke="#D7B56D" strokeWidth="0.5" opacity="0.6"/>
+                <circle cx="25" cy="5" r="1" fill="#D7B56D" />
+              </svg>
+              <h3 className="font-serif text-[12px] md:text-[16px] text-[#D7B56D] opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] tracking-wide mb-1">
+                Chathurya & Oshadi
+              </h3>
+              <p className="font-sans text-[8px] md:text-[10px] text-[#D7B56D] opacity-70 uppercase tracking-[0.2em]">
+                08 October 2026
+              </p>
+            </div>
+
           </div>
         </div>
 

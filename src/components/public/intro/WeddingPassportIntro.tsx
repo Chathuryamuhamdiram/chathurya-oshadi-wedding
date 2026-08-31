@@ -71,7 +71,7 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
       {/* Central Passport Container */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
         <div 
-          className="relative w-[70vw] max-w-[320px] h-[100vw] max-h-[460px] md:w-[460px] md:h-[640px] transition-transform duration-1000"
+          className="relative h-[65vh] max-h-[460px] md:h-[80vh] md:max-h-[640px] aspect-[1/1.4] transition-transform duration-1000"
           style={{
             perspective: "1400px",
             transformStyle: "preserve-3d",

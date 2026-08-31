@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { RSVPModal } from "@/components/public/RSVPModal";
 import { Menu, X } from "lucide-react";
 
-import { EnvelopeWrapper } from "@/components/public/EnvelopeWrapper";
 import { MusicPlayer } from "@/components/public/MusicPlayer";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -20,7 +19,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   }, []);
 
   return (
-    <EnvelopeWrapper>
       <div className="min-h-screen bg-background flex flex-col selection:bg-secondary/30 selection:text-primary">
         <header
           className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -145,6 +143,5 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <RSVPModal isOpen={isRsvpOpen} onClose={() => setIsRsvpOpen(false)} />
         <MusicPlayer />
       </div>
-    </EnvelopeWrapper>
   );
 }

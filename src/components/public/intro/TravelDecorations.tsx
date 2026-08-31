@@ -34,8 +34,17 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
 
       {/* --- LEFT SIDE DECORATIONS --- */}
       
-      {/* Forever Begins Stamp (Upper Left) */}
-      <div className="absolute top-[18%] left-[5%] md:top-[22%] md:left-[18%] w-40 h-40 md:w-56 md:h-56 opacity-[0.25] rotate-[-8deg] mix-blend-screen">
+      {/* Forever Begins Stamp (Upper Left, lands during animation) */}
+      <div 
+        className="absolute top-[18%] left-[5%] md:top-[22%] md:left-[18%] w-40 h-40 md:w-56 md:h-56 mix-blend-screen transition-all duration-700 ease-out z-20"
+        style={{
+          transform: state === "revealed" || state === "transitioning" || state === "complete" 
+            ? "scale(1) rotate(-8deg)" 
+            : "scale(1.5) rotate(-15deg)",
+          opacity: state === "revealed" || state === "transitioning" || state === "complete" ? 0.25 : 0,
+          transitionDelay: state === "revealed" ? "1500ms" : "0ms" // Wait for passport to open
+        }}
+      >
         <img 
           src={introAssets.foreverStamp} 
           alt="Forever Begins Stamp" 

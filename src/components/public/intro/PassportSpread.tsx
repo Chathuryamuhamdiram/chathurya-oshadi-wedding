@@ -92,35 +92,6 @@ export function PassportSpread({ state }: PassportSpreadProps) {
             </p>
           </div>
         </div>
-
-        {/* --- FOREVER BEGINS STAMP --- */}
-        <div
-          className="absolute bottom-6 right-4 md:bottom-10 md:right-8 flex flex-col items-center justify-center w-28 h-28 md:w-32 md:h-32 border-[3px] border-[#C9A45D]/70 rounded-full z-30 mix-blend-multiply"
-          style={{
-            transform: isDetailsVisible ? "scale(1) rotate(-6deg)" : "scale(1.3) rotate(-15deg)",
-            opacity: isDetailsVisible ? 1 : 0,
-            transition: "transform 400ms cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 300ms ease",
-            transitionDelay: isDetailsVisible ? "1000ms" : "0ms"
-          }}
-        >
-          <div className="absolute inset-[3px] border-[0.5px] border-[#C9A45D]/50 rounded-full" />
-          <p className="font-serif text-[10px] md:text-[11px] text-[#C9A45D] uppercase tracking-widest font-bold mb-1 opacity-90">
-            Forever
-          </p>
-          <p className="font-serif text-[10px] md:text-[11px] text-[#C9A45D] uppercase tracking-widest font-bold mb-1 opacity-90">
-            Begins
-          </p>
-          <div className="w-10 h-[0.5px] bg-[#C9A45D]/60 my-1" />
-          <p className="font-sans text-[8px] md:text-[9px] text-[#C9A45D] uppercase tracking-[0.2em] font-semibold opacity-90">
-            08 Oct 2026
-          </p>
-          <p className="font-sans text-[7px] md:text-[8px] text-[#C9A45D] uppercase tracking-[0.1em] mt-1 opacity-80">
-            Sri Lanka
-          </p>
-          
-          {/* Stamp imperfections */}
-          <div className="absolute inset-0 bg-[#F8F2E8] opacity-[0.35] rounded-full filter blur-[1px] mix-blend-screen pointer-events-none" style={{ clipPath: "polygon(0 0, 100% 15%, 85% 100%, 15% 85%)" }} />
-        </div>
       </div>
 
       {/* Romantic Quote */}

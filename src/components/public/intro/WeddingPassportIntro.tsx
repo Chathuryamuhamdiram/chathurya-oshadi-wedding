@@ -68,10 +68,11 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
     >
       <TravelDecorations state={state} />
       
-      {/* Central Passport Container */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+      {/* Main Content Layout */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30 py-4">
+        {/* Central Passport Container */}
         <div 
-          className="relative h-[65vh] max-h-[460px] md:h-[80vh] md:max-h-[640px] aspect-[1/1.4] transition-transform duration-1000"
+          className="relative h-[55vh] max-h-[460px] md:h-[65vh] md:max-h-[640px] aspect-[1/1.4] transition-transform duration-1000"
           style={{
             perspective: "1400px",
             transformStyle: "preserve-3d",
@@ -83,48 +84,48 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
         >
           <PassportBook state={state} onOpen={handleOpenPassport} />
         </div>
-      </div>
 
-      {/* Interactive CTA: BEGIN OUR JOURNEY */}
-      <div 
-        className="absolute bottom-6 md:bottom-10 left-0 right-0 flex justify-center z-40"
-        style={{
-          opacity: state === "ready" ? 1 : 0,
-          pointerEvents: state === "ready" ? "auto" : "none",
-          transition: "opacity 300ms ease"
-        }}
-      >
-        <button
-          onClick={handleOpenPassport}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          aria-label="Begin our wedding journey"
-          className="group flex flex-col items-center justify-center cursor-pointer transition-transform duration-300"
-          style={{ transform: isHovered ? "scale(1.02)" : "scale(1)" }}
+        {/* Interactive CTA: BEGIN OUR JOURNEY */}
+        <div 
+          className="mt-6 md:mt-10 flex justify-center z-40 pointer-events-auto"
+          style={{
+            opacity: state === "ready" ? 1 : 0,
+            pointerEvents: state === "ready" ? "auto" : "none",
+            transition: "opacity 300ms ease"
+          }}
         >
-          {/* Top decorative ornament */}
-          <div className="w-32 h-8 md:w-56 md:h-14 mb-1 md:mb-2 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300" style={{ opacity: isHovered ? "1" : "0.7" }}>
-            <img 
-              src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" 
-              alt="Decorative Botanical Ornament" 
-              className="object-contain w-full h-full"
-              aria-hidden="true"
-            />
-          </div>
+          <button
+            onClick={handleOpenPassport}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            aria-label="Begin our wedding journey"
+            className="group flex flex-col items-center justify-center cursor-pointer transition-transform duration-300"
+            style={{ transform: isHovered ? "scale(1.02)" : "scale(1)" }}
+          >
+            {/* Top decorative ornament */}
+            <div className="w-32 h-8 md:w-56 md:h-14 mb-1 md:mb-2 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300" style={{ opacity: isHovered ? "1" : "0.7" }}>
+              <img 
+                src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" 
+                alt="Decorative Botanical Ornament" 
+                className="object-contain w-full h-full"
+                aria-hidden="true"
+              />
+            </div>
 
-          <div className="flex items-center gap-4">
-            <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-            <span className={`font-serif text-[#D7B56D] text-[11px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300 ${isHovered ? "drop-shadow-[0_0_8px_rgba(215,181,109,0.4)]" : ""}`}>
-              Begin Our Journey
-            </span>
-            <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-          </div>
+            <div className="flex items-center gap-4">
+              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
+              <span className={`font-serif text-[#D7B56D] text-[11px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300 ${isHovered ? "drop-shadow-[0_0_8px_rgba(215,181,109,0.4)]" : ""}`}>
+                Begin Our Journey
+              </span>
+              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
+            </div>
 
-          {/* Bottom downward arrow */}
-          <svg className={`w-4 h-4 mt-2 transition-transform duration-300 ${isHovered ? "translate-y-1" : ""}`} viewBox="0 0 24 24" fill="none" stroke="#D7B56D" strokeWidth="1">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
+            {/* Bottom downward arrow */}
+            <svg className={`w-4 h-4 mt-2 transition-transform duration-300 ${isHovered ? "translate-y-1" : ""}`} viewBox="0 0 24 24" fill="none" stroke="#D7B56D" strokeWidth="1">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

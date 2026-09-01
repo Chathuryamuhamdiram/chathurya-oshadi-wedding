@@ -70,20 +70,30 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
       
       {/* Main Content Layout */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30 py-4">
-        {/* Central Passport Container */}
+        
+        {/* Responsive Scale Wrapper for Open State */}
         <div 
-          className="relative h-[55vh] max-h-[460px] md:h-[65vh] md:max-h-[640px] aspect-[1/1.4] transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
-          style={{
-            perspective: "1400px",
-            transformStyle: "preserve-3d",
-            transform: state === "starting" ? "scale(1.02) translateY(-5px)" 
-                     : state === "opening" || state === "revealed" ? "translateX(50%) rotateY(0deg) scale(0.95)"
-                     : state === "transitioning" ? "scale(1.2) translateY(-5vh)" 
-                     : "scale(1)",
-            opacity: state === "transitioning" || state === "complete" ? 0 : 1
-          }}
+          className={`transition-transform duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex justify-center items-center ${
+            (state === "opening" || state === "revealed") 
+              ? "scale-[0.55] sm:scale-75 md:scale-95 lg:scale-100" 
+              : "scale-100"
+          }`}
         >
-          <PassportBook state={state} onOpen={handleOpenPassport} />
+          {/* Central Passport Container */}
+          <div 
+            className="relative h-[55vh] max-h-[460px] md:h-[65vh] md:max-h-[640px] aspect-[1/1.4] transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
+            style={{
+              perspective: "1400px",
+              transformStyle: "preserve-3d",
+              transform: state === "starting" ? "scale(1.02) translateY(-5px)" 
+                       : state === "opening" || state === "revealed" ? "translateX(50%) rotateY(0deg)"
+                       : state === "transitioning" ? "scale(1.2) translateY(-5vh)" 
+                       : "scale(1)",
+              opacity: state === "transitioning" || state === "complete" ? 0 : 1
+            }}
+          >
+            <PassportBook state={state} onOpen={handleOpenPassport} />
+          </div>
         </div>
 
         {/* Interactive CTA: BEGIN OUR JOURNEY */}

@@ -40,29 +40,29 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
           >
             {/* Poruwa Ceremony */}
             <div className="mb-8">
-              <h3 className="font-serif text-[15px] md:text-[18px] text-[#10233B] mb-2 tracking-wide">
+              <h3 className="font-serif text-[18px] md:text-[18px] text-[#10233B] mb-2 tracking-wide">
                 Poruwa Ceremony
               </h3>
-              <p className="font-sans text-[9px] md:text-[11px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-1">
+              <p className="font-sans text-[11px] md:text-[11px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-1">
                 08:50 AM
               </p>
-              <p className="font-sans text-[8px] md:text-[9px] text-[#8A8379] uppercase tracking-widest leading-tight">
+              <p className="font-sans text-[9px] md:text-[9px] text-[#8A8379] uppercase tracking-widest leading-tight">
                 Hotel River Park<br/>
-                <span className="opacity-70 text-[7px] md:text-[8px]">Hikkaduwa, Sri Lanka</span>
+                <span className="opacity-70 text-[8px] md:text-[8px]">Hikkaduwa, Sri Lanka</span>
               </p>
             </div>
             
             {/* Reception */}
             <div>
-              <h3 className="font-serif text-[15px] md:text-[18px] text-[#10233B] mb-2 tracking-wide">
+              <h3 className="font-serif text-[18px] md:text-[18px] text-[#10233B] mb-2 tracking-wide">
                 Reception
               </h3>
-              <p className="font-sans text-[9px] md:text-[11px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-1">
+              <p className="font-sans text-[11px] md:text-[11px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-1">
                 10:30 AM
               </p>
-              <p className="font-sans text-[8px] md:text-[9px] text-[#8A8379] uppercase tracking-widest leading-tight">
+              <p className="font-sans text-[9px] md:text-[9px] text-[#8A8379] uppercase tracking-widest leading-tight">
                 Hotel Grand Palace<br/>
-                <span className="opacity-70 text-[7px] md:text-[8px]">Hikkaduwa, Sri Lanka</span>
+                <span className="opacity-70 text-[8px] md:text-[8px]">Hikkaduwa, Sri Lanka</span>
               </p>
             </div>
           </div>
@@ -190,16 +190,16 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
             className="transition-opacity duration-1000 relative z-10 w-full h-full flex flex-col items-center justify-center"
             style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "400ms" }}
           >
-            <p className="font-sans text-[9px] md:text-[11px] text-[#8A8379] uppercase tracking-[0.3em] mb-6">
+            <p className="font-sans text-[11px] md:text-[11px] text-[#8A8379] uppercase tracking-[0.3em] mb-6">
               The Wedding Of
             </p>
-            <h2 className="font-serif text-[24px] md:text-[34px] text-[#10233B] mb-2">
+            <h2 className="font-serif text-[30px] md:text-[34px] text-[#10233B] mb-2 leading-none">
               Chathurya
             </h2>
-            <span className="font-serif text-xl md:text-2xl text-[#D7B56D] italic block my-2">
+            <span className="font-serif text-2xl md:text-2xl text-[#D7B56D] italic block my-2">
               &
             </span>
-            <h2 className="font-serif text-[24px] md:text-[34px] text-[#10233B] mb-8">
+            <h2 className="font-serif text-[30px] md:text-[34px] text-[#10233B] mb-8 leading-none">
               Oshadi
             </h2>
             
@@ -210,10 +210,10 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
               <div className="w-10 h-[0.5px] bg-[#D7B56D]" />
             </div>
             
-            <p className="font-sans text-[10px] md:text-[12px] text-[#10233B] uppercase tracking-[0.2em] font-medium mb-2">
+            <p className="font-sans text-[12px] md:text-[12px] text-[#10233B] uppercase tracking-[0.2em] font-medium mb-2">
               08 October 2026
             </p>
-            <p className="font-sans text-[8px] md:text-[9px] text-[#8A8379] uppercase tracking-[0.2em]">
+            <p className="font-sans text-[9px] md:text-[9px] text-[#8A8379] uppercase tracking-[0.2em]">
               Hikkaduwa, Sri Lanka
             </p>
           </div>

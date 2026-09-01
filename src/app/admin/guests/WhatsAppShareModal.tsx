@@ -131,7 +131,7 @@ Chathurya & Oshadi`;
               </div>
 
               {/* Body */}
-              <div className="p-6 overflow-y-auto custom-scrollbar space-y-6">
+              <div className="flex-1 min-h-0 p-6 overflow-y-auto custom-scrollbar space-y-6">
                 
                 {/* Guest Details */}
                 <div className="grid grid-cols-2 gap-4">

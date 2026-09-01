@@ -80,7 +80,7 @@ export function GuestForm({ existingGuest }: { existingGuest?: any }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Type</label>
               <Select name="invitationType" defaultValue={existingGuest?.invitationType || "INDIVIDUAL"}>
@@ -106,7 +106,7 @@ export function GuestForm({ existingGuest }: { existingGuest?: any }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Side</label>
               <Select name="side" value={side} onValueChange={setSide}>

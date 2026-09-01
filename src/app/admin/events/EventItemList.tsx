@@ -135,7 +135,7 @@ export function EventItemList({
                 onChange={e => setNewItemName(e.target.value)}
                 placeholder="Add new requirement..."
                 disabled={isSubmitting}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 sm:px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
               />
               <input
                 type="number"
@@ -143,7 +143,7 @@ export function EventItemList({
                 value={newItemQuantity}
                 onChange={e => setNewItemQuantity(parseInt(e.target.value) || 1)}
                 disabled={isSubmitting}
-                className="w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-center text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2.5 text-sm text-center text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
               />
               <button
                 type="submit"

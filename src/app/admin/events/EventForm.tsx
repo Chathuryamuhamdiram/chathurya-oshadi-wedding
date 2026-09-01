@@ -68,7 +68,7 @@ export function EventForm({ venues, existingEvent }: { venues: any[], existingEv
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Date</label>
               <Input
@@ -89,7 +89,7 @@ export function EventForm({ venues, existingEvent }: { venues: any[], existingEv
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Start Time</label>
               <Input
@@ -110,7 +110,7 @@ export function EventForm({ venues, existingEvent }: { venues: any[], existingEv
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Venue</label>
               <Select name="venueId" value={venueId} onValueChange={setVenueId}>

@@ -41,7 +41,7 @@ export function BudgetItemForm({ categories }: { categories: any[] }) {
             <Input name="title" required placeholder="e.g., Wedding Dress" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Category</label>
               <Select name="categoryId" required>

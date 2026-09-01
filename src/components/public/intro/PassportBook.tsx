@@ -76,6 +76,23 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
               From our first hello<br/>to forever.
             </p>
           </div>
+
+          {/* Landing Stamp Animation */}
+          <div 
+            className="absolute top-12 md:top-20 right-4 md:right-10 w-24 md:w-32 pointer-events-none mix-blend-multiply transition-all duration-[400ms] ease-out"
+            style={{ 
+              opacity: isDetailsVisible ? 0.7 : 0, 
+              transform: isDetailsVisible ? "scale(1) rotate(-15deg)" : "scale(3) rotate(-15deg)",
+              transitionDelay: "2200ms" 
+            }}
+          >
+            <img 
+              src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (9).png" 
+              alt="Forever Begins Stamp" 
+              className="object-contain w-full h-full sepia-[.3] hue-rotate-[-30deg]"
+              aria-hidden="true"
+            />
+          </div>
         </div>
       </div>
 
@@ -83,10 +100,10 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
           THE HINGED COVER (Front Cover + Left Page)
           --------------------------------- */}
       <div
-        className="absolute inset-0 origin-left z-10 transition-transform duration-1200 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        className="absolute inset-0 origin-left z-10 transition-transform duration-[1500ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
         style={{
           transformStyle: "preserve-3d",
-          transform: isClosed ? "rotateY(0deg)" : "rotateY(-180deg)",
+          transform: isClosed ? "rotateY(0deg)" : "rotateY(-165deg)",
         }}
       >
         

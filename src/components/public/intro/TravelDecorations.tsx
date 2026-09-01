@@ -20,7 +20,10 @@ const introAssets = {
 
 export function TravelDecorations({ state }: TravelDecorationsProps) {
   return (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+    <div 
+      className="absolute inset-0 pointer-events-none z-10 overflow-hidden transition-opacity duration-[1500ms] ease-in-out"
+      style={{ opacity: state === "transitioning" || state === "complete" ? 0 : 1 }}
+    >
       {/* Base Radial Navy Gradient mimicking the image lighting */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#182B48_0%,_#0C1627_100%)] opacity-95" />
       
@@ -105,7 +108,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       >
         <img 
           src={introAssets.airplane} 
-          alt="Golden Airplane" 
+          alt="Small Gold Airplane" 
           className="object-contain w-full h-full drop-shadow-md"
           aria-hidden="true"
         />

@@ -44,7 +44,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
           transform: state === "revealed" || state === "transitioning" || state === "complete" 
             ? "scale(1) rotate(-8deg)" 
             : "scale(1.5) rotate(-15deg)",
-          opacity: state === "revealed" || state === "transitioning" || state === "complete" ? 0.25 : 0,
+          opacity: state === "revealed" || state === "transitioning" || state === "complete" ? 0.12 : 0,
           transitionDelay: state === "revealed" ? "1500ms" : "0ms" // Wait for passport to open
         }}
       >
@@ -57,7 +57,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       </div>
 
       {/* Sri Lankan Heritage / Stupa (Lower Left, pushed slightly left) */}
-      <div className="absolute bottom-[8%] left-[-5%] md:bottom-[8%] md:left-[-5%] w-[45vw] md:w-[380px] h-auto opacity-[0.15] mix-blend-screen">
+      <div className="absolute bottom-[8%] left-[-5%] md:bottom-[8%] md:left-[-5%] w-[45vw] md:w-[380px] h-auto opacity-[0.08] mix-blend-screen">
         <img 
           src={introAssets.heritage} 
           alt="Sri Lankan Heritage Stupa" 
@@ -67,7 +67,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       </div>
 
       {/* Tropical Palm (Lower Left, pushed slightly right to separate from Stupa) */}
-      <div className="absolute bottom-[10%] left-[20%] md:bottom-[10%] md:left-[18%] w-[35vw] md:w-[280px] h-auto opacity-[0.2] mix-blend-screen">
+      <div className="absolute bottom-[10%] left-[20%] md:bottom-[10%] md:left-[18%] w-[35vw] md:w-[280px] h-auto opacity-[0.08] mix-blend-screen">
         <img 
           src={introAssets.palm} 
           alt="Tropical Palm Tree" 
@@ -79,7 +79,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       {/* --- RIGHT SIDE DECORATIONS --- */}
       
       {/* Sri Lanka Outline Map (Upper Right) */}
-      <div className="absolute top-[8%] right-[5%] md:top-[12%] md:right-[15%] w-32 h-48 md:w-48 md:h-64 opacity-[0.18] mix-blend-screen">
+      <div className="absolute top-[8%] right-[5%] md:top-[12%] md:right-[15%] w-32 h-48 md:w-48 md:h-64 opacity-[0.08] mix-blend-screen">
         <img 
           src={introAssets.sriLankaMap} 
           alt="Sri Lanka Outline Map" 
@@ -89,7 +89,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       </div>
 
       {/* Dotted Flight Path (Crossing right side) */}
-      <div className="absolute top-[20%] right-[-10%] md:top-[30%] md:right-0 w-[120vw] md:w-[80vw] h-[60vh] opacity-[0.25] mix-blend-screen pointer-events-none">
+      <div className="absolute top-[20%] right-[-10%] md:top-[30%] md:right-0 w-[120vw] md:w-[80vw] h-[60vh] opacity-[0.1] mix-blend-screen pointer-events-none">
         <img 
           src={introAssets.flightPath} 
           alt="Dotted Flight Path" 
@@ -117,7 +117,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       {/* --- FOREGROUND PETALS (Depth of field effect) --- */}
       
       {/* Floating Petals (Top Left) */}
-      <div className="absolute top-[5%] left-[5%] md:top-[10%] md:left-[10%] w-32 h-32 md:w-64 md:h-64 opacity-[0.85] mix-blend-screen rotate-[15deg]">
+      <div className="absolute top-[5%] left-[5%] md:top-[10%] md:left-[10%] w-32 h-32 md:w-64 md:h-64 opacity-[0.4] mix-blend-screen rotate-[15deg]">
         <img 
           src={introAssets.petals2} 
           alt="Floating Ivory Petals" 
@@ -127,7 +127,7 @@ export function TravelDecorations({ state }: TravelDecorationsProps) {
       </div>
 
       {/* Large Petal Cluster (Bottom Right Foreground) */}
-      <div className="absolute -bottom-[5%] -right-[15%] md:-bottom-[5%] md:-right-[5%] w-36 h-36 md:w-96 md:h-96 opacity-[0.95] mix-blend-screen blur-[1px] md:blur-[2px] rotate-[-15deg] pointer-events-none z-20">
+      <div className="absolute -bottom-[5%] -right-[15%] md:-bottom-[5%] md:-right-[5%] w-36 h-36 md:w-96 md:h-96 opacity-[0.6] mix-blend-screen blur-[1px] md:blur-[2px] rotate-[-15deg] pointer-events-none z-20">
         <img 
           src={introAssets.petals1} 
           alt="Foreground Ivory Petals" 

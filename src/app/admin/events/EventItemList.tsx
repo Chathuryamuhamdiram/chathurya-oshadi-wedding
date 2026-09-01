@@ -82,7 +82,7 @@ export function EventItemList({
         <DialogTrigger className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors text-sm font-medium">
           <ListTodo className="w-4 h-4" /> Requirements Checklist
         </DialogTrigger>
-        <DialogContent className="bg-[#11141d] border-white/10 text-white max-w-md w-full">
+        <DialogContent className="bg-[#11141d] border-white/10 text-white sm:max-w-md w-full">
           <DialogHeader>
             <DialogTitle className="text-xl font-serif">{eventTitle} Checklist</DialogTitle>
             <DialogDescription className="text-white/50">Manage items needed for this event.</DialogDescription>

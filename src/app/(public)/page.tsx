@@ -6,7 +6,7 @@ import { Guestbook } from "@/components/public/Guestbook";
 import { WeddingPageClient } from "@/components/public/WeddingPageClient";
 import { prisma } from "@/lib/db";
 
-export const revalidate = 60; // Cache for 60 seconds
+export const dynamic = 'force-dynamic';
 
 export default async function PublicHomePage() {
   const [guestbookEntries, galleryImages, siteAssets] = await Promise.all([

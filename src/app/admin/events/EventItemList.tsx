@@ -82,19 +82,19 @@ export function EventItemList({
         <DialogTrigger className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors text-sm font-medium">
           <ListTodo className="w-4 h-4" /> Requirements Checklist
         </DialogTrigger>
-        <DialogContent className="bg-[#11141d] border-white/10 text-white sm:max-w-md w-full">
-          <DialogHeader>
+        <DialogContent className="bg-[#11141d] border-white/10 text-white sm:max-w-md max-h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle className="text-xl font-serif">{eventTitle} Checklist</DialogTitle>
             <DialogDescription className="text-white/50">Manage items needed for this event.</DialogDescription>
           </DialogHeader>
 
-          <div className="mt-4">
-            <div className="space-y-2 mb-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+          <div className="mt-2 flex-1 min-h-0 flex flex-col">
+            <div className="space-y-2 mb-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
               {initialItems.map(item => {
                 const isBought = item.status === "BOUGHT";
                 return (
                   <div key={item.id} className="flex items-center justify-between group bg-white/[0.02] border border-white/5 p-3 rounded-xl">
-                    <label className="flex items-center gap-3 cursor-pointer flex-1">
+                    <label className="flex items-center gap-3 cursor-pointer min-w-0 flex-1">
                       <button
                         type="button"
                         onClick={() => handleToggle(item.id, item.status)}
@@ -106,7 +106,7 @@ export function EventItemList({
                       >
                         <Check className="w-3.5 h-3.5" />
                       </button>
-                      <span className={`text-sm font-sans transition-colors break-words ${isBought ? "text-white/40 line-through" : "text-white/90 group-hover:text-white"}`}>
+                      <span className={`text-sm font-sans transition-colors truncate ${isBought ? "text-white/40 line-through" : "text-white/90 group-hover:text-white"}`}>
                         {item.name} <span className="text-white/40 ml-2 text-xs">x{item.quantity}</span>
                       </span>
                     </label>
@@ -114,7 +114,7 @@ export function EventItemList({
                     <button
                       type="button"
                       onClick={() => handleDelete(item.id)}
-                      className="opacity-0 group-hover:opacity-100 p-2 ml-2 shrink-0 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                      className="opacity-100 sm:opacity-0 group-hover:opacity-100 p-2 ml-2 shrink-0 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -128,30 +128,32 @@ export function EventItemList({
               )}
             </div>
 
-            <form onSubmit={handleAddItem} className="flex gap-2">
+            <form onSubmit={handleAddItem} className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-white/10 shrink-0">
               <input
                 type="text"
                 value={newItemName}
                 onChange={e => setNewItemName(e.target.value)}
                 placeholder="Add new requirement..."
                 disabled={isSubmitting}
-                className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 sm:px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                className="flex-1 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
               />
-              <input
-                type="number"
-                min="1"
-                value={newItemQuantity}
-                onChange={e => setNewItemQuantity(parseInt(e.target.value) || 1)}
-                disabled={isSubmitting}
-                className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 sm:px-3 py-2.5 text-sm text-center text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={!newItemName.trim() || isSubmitting}
-                className="px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50 transition-colors shadow-lg shadow-emerald-500/20"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
+              <div className="flex gap-2 w-full sm:w-auto shrink-0">
+                <input
+                  type="number"
+                  min="1"
+                  value={newItemQuantity}
+                  onChange={e => setNewItemQuantity(parseInt(e.target.value) || 1)}
+                  disabled={isSubmitting}
+                  className="flex-1 sm:w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-center text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={!newItemName.trim() || isSubmitting}
+                  className="px-4 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50 transition-colors shadow-lg shadow-emerald-500/20 sm:w-auto w-1/3 flex justify-center items-center"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              </div>
             </form>
           </div>
         </DialogContent>

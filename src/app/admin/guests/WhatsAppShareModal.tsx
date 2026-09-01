@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Copy, Check, Share2, X, ExternalLink, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,9 +23,11 @@ export function WhatsAppShareModal({ guest }: WhatsAppShareModalProps) {
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [baseUrl, setBaseUrl] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setBaseUrl(window.location.origin);
+    setMounted(true);
   }, []);
 
   const familyText = guest.invitationType === "FAMILY" ? "you and your family" : "you";
@@ -93,11 +96,12 @@ Chathurya & Oshadi`;
         <span>Share</span>
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
-            <motion.div
-              initial={{ opacity: 0 }}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-0">
+              <motion.div
+                initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
@@ -218,7 +222,9 @@ Chathurya & Oshadi`;
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+      )}
     </>
   );
 }

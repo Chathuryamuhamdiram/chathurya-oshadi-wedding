@@ -33,44 +33,58 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
         {/* Crease shadow on the left side of the right page */}
         <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-black/25 via-black/5 to-transparent pointer-events-none" />
 
-        <div className="w-full max-w-[80%] flex flex-col relative z-10 transition-opacity duration-1000" style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "400ms" }}>
+        <div className="w-full max-w-[85%] flex flex-col items-center text-center relative z-10 transition-opacity duration-[800ms]" style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "400ms" }}>
           
-          {/* Poruwa Ceremony */}
-          <div className="mb-10 text-left">
-            <h3 className="font-serif text-[16px] md:text-[20px] text-[#10233B] tracking-wide mb-1">
-              PORUWA CEREMONY
-            </h3>
-            <p className="font-sans text-[11px] md:text-[13px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-2">
-              08:50 AM
+          <h3 className="font-serif text-[16px] md:text-[20px] text-[#10233B] tracking-[0.15em] mb-4">
+            A NEW CHAPTER BEGINS
+          </h3>
+          
+          <div className="w-12 h-[1px] bg-[#D7B56D] opacity-60 mb-6 transition-all duration-[800ms] ease-out" style={{ opacity: isDetailsVisible ? 0.6 : 0, transform: isDetailsVisible ? "scaleX(1)" : "scaleX(0)", transitionDelay: "800ms" }} />
+
+          <div className="transition-all duration-[1000ms] ease-out" style={{ opacity: isDetailsVisible ? 1 : 0, transform: isDetailsVisible ? "translateY(0)" : "translateY(10px)", transitionDelay: "1200ms" }}>
+            <p className="font-serif italic text-[13px] md:text-[15px] leading-[1.8] text-[#10233B]/80 mb-5">
+              Two hearts,<br/>
+              one journey,<br/>
+              and a lifetime waiting ahead.
             </p>
-            <p className="font-sans text-[10px] md:text-[11px] text-[#8A8379] uppercase tracking-widest leading-relaxed">
-              Hotel River Park<br/>
-              Hikkaduwa, Sri Lanka
+            <p className="font-serif italic text-[13px] md:text-[15px] leading-[1.8] text-[#10233B]/80 mb-8">
+              Thank you for being part of<br/>
+              the beginning of our forever.
             </p>
           </div>
-          
-          {/* Reception */}
-          <div className="text-left">
-            <h3 className="font-serif text-[16px] md:text-[20px] text-[#10233B] tracking-wide mb-1">
-              RECEPTION
-            </h3>
-            <p className="font-sans text-[11px] md:text-[13px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-2">
-              10:30 AM
-            </p>
-            <p className="font-sans text-[10px] md:text-[11px] text-[#8A8379] uppercase tracking-widest leading-relaxed">
-              Hotel Grand Palace<br/>
-              Hikkaduwa, Sri Lanka
-            </p>
+
+          {/* Elegant travel path */}
+          <div className="transition-all duration-[1000ms] ease-out flex items-center w-[220px] mb-12" style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "1800ms" }}>
+            <div className="w-2 h-2 rounded-full border-[1.5px] border-[#D7B56D]" />
+            <div className="flex-1 h-[2px] border-t-2 border-dashed border-[#D7B56D] mx-3 relative overflow-hidden">
+              <div 
+                className="absolute inset-0 bg-[#F8F2E8] origin-right transition-transform duration-[1500ms] ease-in-out"
+                style={{ 
+                  transform: isDetailsVisible ? "scaleX(0)" : "scaleX(1)",
+                  transitionDelay: "1800ms"
+                }}
+              />
+            </div>
+            <div 
+              className="text-[#D7B56D] transition-transform duration-[1500ms] ease-in-out"
+              style={{ 
+                transform: isDetailsVisible ? "translateX(0) rotate(45deg)" : "translateX(-180px) rotate(45deg)",
+                transitionDelay: "1800ms" 
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L2.5 9l8.1 4.5L7 17H4l-1 1h5l1 1v5l1-1v-3l3.5-3.6 4.5 8.1c.2.4.6.8 1.1.7l2.2-1.2c.4-.2.7-.6.6-1.1z"/></svg>
+            </div>
+            <div className="w-2 h-2 rounded-full bg-[#D7B56D] ml-3" />
           </div>
         </div>
 
         {/* Landing Stamp Animation */}
         <div 
-          className="absolute top-8 md:top-12 right-6 md:right-10 w-28 md:w-36 pointer-events-none mix-blend-multiply transition-all duration-[400ms] ease-out z-20"
+          className="absolute bottom-8 md:bottom-12 right-6 md:right-10 w-28 md:w-36 pointer-events-none mix-blend-multiply transition-all duration-[400ms] ease-out z-20"
           style={{ 
-            opacity: isDetailsVisible ? 0.75 : 0, 
-            transform: isDetailsVisible ? "scale(1) rotate(-6deg)" : "scale(1.2) rotate(10deg)",
-            transitionDelay: state === "revealed" ? "800ms" : "0ms" 
+            opacity: isDetailsVisible ? 0.8 : 0, 
+            transform: isDetailsVisible ? "scale(1) rotate(-6deg)" : "scale(1.2) rotate(20deg)",
+            transitionDelay: state === "revealed" ? "3200ms" : "0ms" 
           }}
         >
           <img 

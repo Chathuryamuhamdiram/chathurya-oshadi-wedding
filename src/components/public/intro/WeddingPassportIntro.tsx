@@ -46,18 +46,18 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
     // Stage 8: Transition - Background fades revealing Hero
     setTimeout(() => {
       setState("fade_bg");
-    }, 4000); // 2000ms pause after reveal
+    }, 5500); // 3500ms pause after reveal to allow animations to finish
 
     // Stage 8b: Transition - Passport slightly enlarges and fades away
     setTimeout(() => {
       setState("fade_passport");
-    }, 4800);
+    }, 6500);
 
     // Stage 9: Complete and unmount
     setTimeout(() => {
       setState("complete");
       onComplete();
-    }, 5500);
+    }, 7500);
   };
 
   const isBgFaded = state === "fade_bg" || state === "fade_passport" || state === "complete";

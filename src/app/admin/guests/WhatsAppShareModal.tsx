@@ -26,7 +26,8 @@ export function WhatsAppShareModal({ guest }: WhatsAppShareModalProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setBaseUrl(window.location.origin);
+    const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    setBaseUrl(envUrl || window.location.origin);
     setMounted(true);
   }, []);
 

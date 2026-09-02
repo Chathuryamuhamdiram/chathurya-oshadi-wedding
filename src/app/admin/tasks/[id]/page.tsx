@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { addComment, addDependency, removeDependency } from "./actions";
+import { DeleteTaskButton } from "../DeleteTaskButton";
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -32,9 +33,12 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
         <Link href="/admin/tasks" className="text-white/50 hover:text-white mb-4 inline-block text-sm">
           ← Back to Tasks
         </Link>
-        <span className="bg-white/10 px-3 py-1 rounded-full text-xs text-white/70 border border-white/20">
-          Status: {task.status}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="bg-white/10 px-3 py-1 rounded-full text-xs text-white/70 border border-white/20">
+            Status: {task.status}
+          </span>
+          <DeleteTaskButton task={{ id: task.id, title: task.title }} redirectAfter={true} />
+        </div>
       </div>
 
       <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-8 relative">

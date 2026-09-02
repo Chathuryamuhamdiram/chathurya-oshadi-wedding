@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { CategoryForm } from "./CategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
 import { ExpenseForm } from "./ExpenseForm";
+import { DeleteBudgetItemButton } from "./DeleteBudgetItemButton";
 import { DollarSign, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default async function AdminBudgetPage(props: { searchParams: { new?: string } }) {
@@ -140,9 +141,10 @@ export default async function AdminBudgetPage(props: { searchParams: { new?: str
                               )}
                             </td>
                             <td className="px-6 py-4 text-right">
-                              {item.paymentStatus !== "FULLY_PAID" && (
-                                <ExpenseForm budgetItemId={item.id} itemName={item.title} />
-                              )}
+                              <div className="flex items-center justify-end gap-2">
+                                <ExpenseForm budgetItemId={item.id} itemName={item.title} expenses={item.expenses} />
+                                <DeleteBudgetItemButton id={item.id} title={item.title} />
+                              </div>
                             </td>
                           </tr>
                         );

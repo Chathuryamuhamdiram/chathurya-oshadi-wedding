@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { verifyJWT } from "@/lib/auth";
 import { TaskForm } from "./TaskForm";
+import { DeleteTaskButton } from "./DeleteTaskButton";
 import { CheckSquare, AlertCircle, Clock, Calendar as CalendarIcon, ArrowUp, ArrowDown } from "lucide-react";
 
 type PageProps = {
@@ -216,6 +217,7 @@ export default async function AdminTasksPage(props: PageProps) {
                             Details
                           </Link>
                           <TaskForm users={users} existingTask={task} />
+                          <DeleteTaskButton task={{ id: task.id, title: task.title }} />
                         </div>
                       </td>
                     </tr>

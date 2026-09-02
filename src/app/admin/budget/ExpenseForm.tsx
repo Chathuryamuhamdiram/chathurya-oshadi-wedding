@@ -5,8 +5,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { saveExpense } from "./actions";
 import { DollarSign } from "lucide-react";
+import { DeleteExpenseButton } from "./DeleteExpenseButton";
 
-export function ExpenseForm({ budgetItemId, itemName }: { budgetItemId: string, itemName: string }) {
+export function ExpenseForm({ 
+  budgetItemId, 
+  itemName, 
+  expenses = [] 
+}: { 
+  budgetItemId: string; 
+  itemName: string;
+  expenses?: { id: string; expenseName: string; amount: number; expenseDate: Date }[];
+}) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -34,7 +43,26 @@ export function ExpenseForm({ budgetItemId, itemName }: { budgetItemId: string, 
           <DialogTitle className="font-serif text-xl tracking-wide">Log Payment</DialogTitle>
           <p className="text-sm text-white/40 font-sans">Payment for: <span className="text-white/80">{itemName}</span></p>
         </DialogHeader>
-        <form action={onSubmit} className="space-y-4 mt-2">
+
+        {expenses.length > 0 && (
+          <div className="space-y-2 mt-4 bg-white/5 border border-white/10 p-4 rounded-xl max-h-48 overflow-y-auto">
+            <h4 className="text-xs uppercase tracking-widest text-white/40 mb-2">Payment History</h4>
+            {expenses.map(e => (
+              <div key={e.id} className="flex justify-between items-center text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                <div>
+                  <div className="text-white/80">{e.expenseName}</div>
+                  <div className="text-white/40 text-xs">{new Date(e.expenseDate).toLocaleDateString()}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="font-mono text-emerald-400 font-medium">${e.amount.toLocaleString()}</div>
+                  <DeleteExpenseButton id={e.id} expenseName={e.expenseName} amount={e.amount} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form action={onSubmit} className="space-y-4 mt-2 border-t border-white/10 pt-4">
           {error && <div className="text-sm text-red-400">{error}</div>}
           
           <div className="space-y-1.5">

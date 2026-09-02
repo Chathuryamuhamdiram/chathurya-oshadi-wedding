@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 
 export async function toggleGuestbookVisibility(id: string, currentStatus: boolean) {
   try {
@@ -24,12 +25,27 @@ export async function toggleGuestbookVisibility(id: string, currentStatus: boole
 
 export async function deleteGuestbookEntry(id: string) {
   try {
-    await requirePermission(PERMISSIONS.GUESTBOOK_MANAGE);
-    
+    const { session, error } = await checkDeletePermission(PERMISSIONS.GUESTBOOK_DELETE);
+    if (error) return { success: false, error };
+
+    const entry = await prisma.guestbookEntry.findUnique({
+      where: { id },
+    });
+
+    if (!entry) return { success: false, error: "Entry not found" };
+
     await prisma.guestbookEntry.delete({
       where: { id }
     });
     
+    await createDeleteAuditLog(
+      session!.userId,
+      "GuestbookEntry",
+      id,
+      { authorName: entry.name, contentPreview: entry.message.substring(0, 50) },
+      "DELETE"
+    );
+
     revalidatePath("/admin/guestbook");
     revalidatePath("/(public)");
     return { success: true };

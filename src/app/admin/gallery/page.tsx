@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { uploadGalleryImage, deleteGalleryImage, toggleGalleryImageStatus, updateGalleryImageOrder } from "./actions";
 import { revalidatePath } from "next/cache";
 import Image from "next/image";
+import { DeleteGalleryButton } from "./DeleteGalleryButton";
 
 export default async function AdminGalleryPage() {
   const images = await prisma.galleryImage.findMany({
@@ -111,14 +112,7 @@ export default async function AdminGalleryPage() {
                         {img.isActive ? "Hide" : "Show"}
                       </button>
                     </form>
-                    <form action={async () => {
-                      "use server";
-                      await deleteGalleryImage(img.id);
-                    }}>
-                      <button className="text-xs font-semibold px-2 py-1 rounded bg-red-100 text-red-600 hover:bg-red-200">
-                        Delete
-                      </button>
-                    </form>
+                    <DeleteGalleryButton id={img.id} altText={img.altText || "Gallery Image"} />
                   </div>
                 </div>
               </div>

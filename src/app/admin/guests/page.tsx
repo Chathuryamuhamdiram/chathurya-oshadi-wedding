@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { GuestForm } from "./GuestForm";
 import { WhatsAppShareModal } from "./WhatsAppShareModal";
+import { DeleteGuestButton } from "./DeleteGuestButton";
 
 function getRsvpColor(status: string) {
   switch (status) {
@@ -143,6 +144,8 @@ export default async function AdminGuestsPage() {
                         <div>
                           <GuestForm existingGuest={guest} />
                         </div>
+                        
+                        <DeleteGuestButton guest={{ id: guest.id, displayName: guest.displayName }} />
                       </div>
                     </td>
                   </tr>

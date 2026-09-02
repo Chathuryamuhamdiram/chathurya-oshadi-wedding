@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 import { randomUUID } from "crypto";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
+import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 
 const UPLOAD_DIR = join(process.cwd(), "public", "uploads", "gallery");
 
@@ -20,6 +23,7 @@ async function ensureUploadDir() {
 
 export async function uploadGalleryImage(formData: FormData) {
   try {
+    await requirePermission(PERMISSIONS.GALLERY_MANAGE);
     const file = formData.get("file") as File;
     if (!file) {
       return { success: false, error: "No file uploaded" };
@@ -66,11 +70,16 @@ export async function uploadGalleryImage(formData: FormData) {
 
 export async function deleteGalleryImage(id: string) {
   try {
+    const { session, error } = await checkDeletePermission(null); // null means SUPER_ADMIN only
+    if (error) return { success: false, error };
+
     const image = await prisma.galleryImage.findUnique({ where: { id } });
     if (!image) return { success: false, error: "Image not found" };
 
     // Delete from DB
     await prisma.galleryImage.delete({ where: { id } });
+
+    await createDeleteAuditLog(session!.userId, "GalleryImage", id, { url: image.url }, "DELETE");
 
     // Delete file
     const filePath = join(process.cwd(), "public", image.url);
@@ -93,6 +102,7 @@ export async function deleteGalleryImage(id: string) {
 
 export async function updateGalleryImageOrder(items: { id: string; sortOrder: number }[]) {
   try {
+    await requirePermission(PERMISSIONS.GALLERY_MANAGE);
     // We update in a transaction
     await prisma.$transaction(
       items.map((item) => 
@@ -115,6 +125,7 @@ export async function updateGalleryImageOrder(items: { id: string; sortOrder: nu
 
 export async function toggleGalleryImageStatus(id: string, isActive: boolean) {
   try {
+    await requirePermission(PERMISSIONS.GALLERY_MANAGE);
     await prisma.galleryImage.update({
       where: { id },
       data: { isActive }

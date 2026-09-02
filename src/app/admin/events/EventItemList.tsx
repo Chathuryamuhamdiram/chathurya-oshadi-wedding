@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Check, Trash2, Download, ListTodo } from "lucide-react";
 import { saveEventItemAction, toggleEventItemStatusAction, deleteEventItemAction } from "./actions";
+import { DeleteEventButton } from "./DeleteEventButton";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -39,14 +40,6 @@ export function EventItemList({
     const res = await toggleEventItemStatusAction(id, currentStatus);
     if (!res.success) {
       alert(res.error || "Failed to update item");
-    }
-  }
-
-  async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this item?")) return;
-    const res = await deleteEventItemAction(id);
-    if (!res.success) {
-      alert(res.error || "Failed to delete item");
     }
   }
 
@@ -111,13 +104,9 @@ export function EventItemList({
                       </span>
                     </label>
                     
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(item.id)}
-                      className="opacity-100 sm:opacity-0 group-hover:opacity-100 p-2 ml-2 shrink-0 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="opacity-100 sm:opacity-0 group-hover:opacity-100 p-2 ml-2 shrink-0">
+                      <DeleteEventButton type="item" id={item.id} title={item.name} />
+                    </div>
                   </div>
                 );
               })}

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { VendorForm } from "./VendorForm";
+import { DeleteVendorButton } from "./DeleteVendorButton";
 import { Store, AlertCircle, Building2, Wallet } from "lucide-react";
 import Link from "next/link";
 
@@ -8,7 +9,7 @@ export default async function AdminVendorsPage() {
     orderBy: { vendorName: 'asc' }
   });
 
-  const totalVendors = vendors.length;
+  const totalVendors = vendors.filter(v => !v.isArchived).length;
   
   const now = new Date();
   const next14Days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
@@ -21,7 +22,7 @@ export default async function AdminVendorsPage() {
 
   let totalOutstanding = 0;
   vendors.forEach(v => {
-    if (v.finalAmount > v.advancePaid) {
+    if (!v.isArchived && v.finalAmount > v.advancePaid) {
       totalOutstanding += (v.finalAmount - v.advancePaid);
     }
   });
@@ -101,9 +102,16 @@ export default async function AdminVendorsPage() {
                 {vendors.map(vendor => {
                   const balance = vendor.finalAmount - vendor.advancePaid;
                   return (
-                    <tr key={vendor.id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
+                    <tr key={vendor.id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group ${vendor.isArchived ? 'opacity-50' : ''}`}>
                       <td className="px-6 py-4">
-                        <div className="font-medium text-white/90">{vendor.vendorName}</div>
+                        <div className="font-medium text-white/90 flex items-center gap-2">
+                          {vendor.vendorName}
+                          {vendor.isArchived && (
+                            <span className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/20 bg-white/5 text-white/50">
+                              Archived
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -133,11 +141,12 @@ export default async function AdminVendorsPage() {
                           <span className="text-white/20">-</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-2">
+                      <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
                         <Link href="/admin/budget" className="text-emerald-400/70 hover:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded transition-colors text-xs border border-emerald-500/20 inline-block">
                           Pay
                         </Link>
                         <VendorForm existingVendor={vendor} />
+                        <DeleteVendorButton id={vendor.id} vendorName={vendor.vendorName} isArchived={vendor.isArchived} />
                       </td>
                     </tr>
                   );

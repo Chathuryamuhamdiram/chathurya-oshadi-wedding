@@ -4,8 +4,9 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { requirePermission } from "@/lib/auth";
+import { requirePermission, getAdminSession } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 
 const userSchema = z.object({
   id: z.string().optional(),
@@ -32,13 +33,24 @@ const userSchema = z.object({
 export async function toggleUserStatusAction(id: string) {
   try {
     await requirePermission(PERMISSIONS.USER_MANAGE);
+    const session = await getAdminSession();
+    
+    if (session?.userId === id) {
+      return { success: false, error: "You cannot deactivate your own account." };
+    }
+
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) throw new Error("User not found");
     
+    const newStatus = !user.isActive;
+    
     await prisma.user.update({
       where: { id },
-      data: { isActive: !user.isActive }
+      data: { isActive: newStatus }
     });
+
+    await createDeleteAuditLog(session!.userId, "User", id, { email: user.email }, newStatus ? "REACTIVATE" : "DEACTIVATE");
+
     revalidatePath("/admin/team");
     return { success: true };
   } catch (error: any) {

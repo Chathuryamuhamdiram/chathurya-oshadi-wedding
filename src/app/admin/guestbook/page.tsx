@@ -61,7 +61,7 @@ export default async function GuestbookPage() {
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex justify-end">
-                        <GuestbookActionButtons id={msg.id} isPublic={msg.isPublic} />
+                        <GuestbookActionButtons id={msg.id} isPublic={msg.isPublic} authorName={msg.name} />
                       </div>
                     </td>
                   </tr>

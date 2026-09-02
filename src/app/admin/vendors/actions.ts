@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 
 export async function saveVendor(formData: FormData) {
   try {
@@ -51,8 +52,48 @@ export async function saveVendor(formData: FormData) {
 
 export async function deleteVendor(id: string) {
   try {
-    await requirePermission(PERMISSIONS.VENDOR_EDIT);
-    await prisma.vendor.delete({ where: { id } });
+    const { session, error } = await checkDeletePermission(PERMISSIONS.VENDOR_DELETE);
+    if (error) return { success: false, error };
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { id },
+      include: { items: true }
+    });
+
+    if (!vendor) return { success: false, error: "Vendor not found" };
+
+    if (vendor.items.length > 0) {
+      // Archive if linked financial history
+      await prisma.vendor.update({
+        where: { id },
+        data: { isArchived: true }
+      });
+      await createDeleteAuditLog(session!.userId, "Vendor", id, { vendorName: vendor.vendorName }, "ARCHIVE");
+      revalidatePath("/admin/vendors");
+      return { success: true, action: "ARCHIVED" };
+    } else {
+      // Hard delete if no financial history
+      await prisma.vendor.delete({ where: { id } });
+      await createDeleteAuditLog(session!.userId, "Vendor", id, { vendorName: vendor.vendorName }, "DELETE");
+      revalidatePath("/admin/vendors");
+      return { success: true, action: "DELETED" };
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function restoreVendor(id: string) {
+  try {
+    const { session, error } = await checkDeletePermission(PERMISSIONS.VENDOR_DELETE); // Using DELETE permission for restoring
+    if (error) return { success: false, error };
+
+    await prisma.vendor.update({
+      where: { id },
+      data: { isArchived: false }
+    });
+    
+    await createDeleteAuditLog(session!.userId, "Vendor", id, {}, "RESTORE");
     revalidatePath("/admin/vendors");
     return { success: true };
   } catch (error: any) {

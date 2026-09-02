@@ -4,9 +4,12 @@ import { useState } from "react";
 import { Eye, EyeOff, Trash2, Loader2 } from "lucide-react";
 import { toggleGuestbookVisibility, deleteGuestbookEntry } from "./actions";
 
-export function GuestbookActionButtons({ id, isPublic }: { id: string, isPublic: boolean }) {
+import { DeleteConfirmationDialog } from "@/components/admin/DeleteConfirmationDialog";
+
+export function GuestbookActionButtons({ id, isPublic, authorName }: { id: string, isPublic: boolean, authorName: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleToggle = async () => {
     setIsToggling(true);
@@ -15,10 +18,10 @@ export function GuestbookActionButtons({ id, isPublic }: { id: string, isPublic:
   };
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this message?")) return;
     setIsDeleting(true);
     await deleteGuestbookEntry(id);
     setIsDeleting(false);
+    setDeleteOpen(false);
   };
 
   return (
@@ -37,13 +40,23 @@ export function GuestbookActionButtons({ id, isPublic }: { id: string, isPublic:
       </button>
 
       <button 
-        onClick={handleDelete}
+        onClick={() => setDeleteOpen(true)}
         disabled={isDeleting}
         className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
         title="Delete Message"
       >
         {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
       </button>
+
+      <DeleteConfirmationDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete Guestbook Entry?"
+        recordName={authorName}
+        description="Are you sure you want to permanently delete this guestbook message?"
+        onConfirm={handleDelete}
+        loading={isDeleting}
+      />
     </div>
   );
 }

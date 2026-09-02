@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { EventForm } from "./EventForm";
 import { VenueForm } from "./VenueForm";
 import { EventItemList } from "./EventItemList";
+import { DeleteEventButton } from "./DeleteEventButton";
 
 export default async function EventsDashboardPage() {
   const venues = await prisma.venue.findMany({
@@ -82,8 +83,9 @@ export default async function EventsDashboardPage() {
                       <EventItemList eventId={event.id} eventTitle={event.title} initialItems={event.items} />
                     </div>
                     
-                    <div className="shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity mt-4 md:mt-0">
+                    <div className="shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity mt-4 md:mt-0 flex items-center gap-2">
                       <EventForm venues={venues} existingEvent={event} />
+                      <DeleteEventButton type="event" id={event.id} title={event.title} />
                     </div>
                   </div>
                 </div>
@@ -99,7 +101,10 @@ export default async function EventsDashboardPage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {venues.map((venue) => (
-            <div key={venue.id} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5">
+            <div key={venue.id} className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-5 relative group">
+              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <DeleteEventButton type="venue" id={venue.id} title={venue.name} />
+              </div>
               <h3 className="text-lg font-serif text-white/90 mb-1">{venue.name}</h3>
               {venue.address && <p className="text-sm font-sans text-white/50 mb-3">{venue.address}</p>}
               

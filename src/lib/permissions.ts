@@ -29,15 +29,18 @@ export const PERMISSIONS = {
   TASK_VIEW: 'task.view', // view all tasks
   TASK_CREATE: 'task.create',
   TASK_EDIT: 'task.edit',
+  TASK_DELETE: 'task.delete',
   TASK_ASSIGN: 'task.assign',
   TASK_COMPLETE: 'task.complete', // complete any task
 
   VENDOR_VIEW: 'vendor.view',
   VENDOR_CREATE: 'vendor.create',
   VENDOR_EDIT: 'vendor.edit',
+  VENDOR_DELETE: 'vendor.delete',
 
   CALENDAR_VIEW: 'calendar.view',
   CALENDAR_MANAGE: 'calendar.manage',
+  CALENDAR_DELETE: 'calendar.delete',
 
   WEDDING_DAY_VIEW: 'wedding_day.view',
   WEDDING_DAY_MANAGE: 'wedding_day.manage',
@@ -67,6 +70,10 @@ export const PERMISSIONS = {
 
   GUESTBOOK_VIEW: 'guestbook.view',
   GUESTBOOK_MANAGE: 'guestbook.manage',
+  GUESTBOOK_DELETE: 'guestbook.delete',
+
+  GALLERY_MANAGE: 'gallery.manage',
+  GALLERY_DELETE: 'gallery.delete',
 } as const;
 
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS];

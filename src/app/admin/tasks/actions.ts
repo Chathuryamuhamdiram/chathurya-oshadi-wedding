@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { getAdminSession, requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
+import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 
 export async function saveTask(formData: FormData) {
   try {
@@ -102,12 +103,28 @@ export async function updateTaskStatus(id: string, completed: boolean) {
 
 export async function deleteTask(id: string) {
   try {
-    await requirePermission(PERMISSIONS.TASK_EDIT); // Treat delete as edit since no TASK_DELETE was specifically asked for, or we can use it
+    const { session, error } = await checkDeletePermission(PERMISSIONS.TASK_DELETE);
+    if (error) return { success: false, error };
+
+    const task = await prisma.task.findUnique({
+      where: { id },
+    });
+
+    if (!task) return { success: false, error: "Task not found" };
 
     await prisma.task.delete({ where: { id } });
+
+    await createDeleteAuditLog(
+      session!.userId,
+      "Task",
+      id,
+      { title: task.title },
+      "DELETE"
+    );
+
     revalidatePath("/admin/tasks");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || "Failed to delete task" };
   }
 }

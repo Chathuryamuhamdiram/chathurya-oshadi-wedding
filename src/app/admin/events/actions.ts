@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 
 const venueSchema = z.object({
   id: z.string().optional(),
@@ -53,8 +54,16 @@ export async function saveVenueAction(formData: FormData) {
 
 export async function deleteVenueAction(id: string) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
+    const { session, error } = await checkDeletePermission(PERMISSIONS.CALENDAR_DELETE);
+    if (error) return { success: false, error };
+
+    const venue = await prisma.venue.findUnique({ where: { id } });
+    if (!venue) return { success: false, error: "Venue not found" };
+
     await prisma.venue.delete({ where: { id } });
+
+    await createDeleteAuditLog(session!.userId, "Venue", id, { name: venue.name }, "DELETE");
+
     revalidatePath("/admin/events");
     return { success: true };
   } catch (error: any) {
@@ -170,11 +179,38 @@ export async function toggleEventItemStatusAction(id: string, currentStatus: str
 
 export async function deleteEventItemAction(id: string) {
   try {
-    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
+    const { session, error } = await checkDeletePermission(PERMISSIONS.CALENDAR_DELETE);
+    if (error) return { success: false, error };
+
+    const item = await prisma.eventItem.findUnique({ where: { id } });
+    if (!item) return { success: false, error: "Item not found" };
+
     await prisma.eventItem.delete({ where: { id } });
+
+    await createDeleteAuditLog(session!.userId, "EventItem", id, { name: item.name }, "DELETE");
+
     revalidatePath("/admin/events");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Failed to delete item" };
+  }
+}
+
+export async function deleteEventAction(id: string) {
+  try {
+    const { session, error } = await checkDeletePermission(PERMISSIONS.CALENDAR_DELETE);
+    if (error) return { success: false, error };
+
+    const event = await prisma.weddingEvent.findUnique({ where: { id } });
+    if (!event) return { success: false, error: "Event not found" };
+
+    await prisma.weddingEvent.delete({ where: { id } });
+
+    await createDeleteAuditLog(session!.userId, "WeddingEvent", id, { title: event.title }, "DELETE");
+
+    revalidatePath("/admin/events");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: "Failed to delete event. Please check for dependencies." };
   }
 }

@@ -100,16 +100,35 @@ export async function saveGuestAction(formData: FormData) {
   }
 }
 
+import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
+
 export async function deleteGuestAction(id: string) {
   try {
-    await requirePermission(PERMISSIONS.GUEST_DELETE);
+    const { session, error } = await checkDeletePermission(PERMISSIONS.GUEST_DELETE);
+    if (error) return { success: false, error };
+
+    const guest = await prisma.guest.findUnique({
+      where: { id },
+    });
+
+    if (!guest) return { success: false, error: "Guest not found" };
 
     await prisma.guest.delete({
       where: { id },
     });
+
+    await createDeleteAuditLog(
+      session!.userId,
+      "Guest",
+      id,
+      { displayName: guest.displayName, invitationCode: guest.invitationCode },
+      "DELETE"
+    );
+
     revalidatePath("/admin/guests");
     return { success: true };
   } catch (error) {
-    return { success: false, error: "Failed to delete guest" };
+    console.error("Delete guest error:", error);
+    return { success: false, error: "Failed to delete guest. Please check for dependencies." };
   }
 }

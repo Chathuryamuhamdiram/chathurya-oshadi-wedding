@@ -3,10 +3,10 @@ import { prisma } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
   try {
-    const key = params.key;
+    const { key } = await params;
     const asset = await prisma.siteAsset.findUnique({
       where: { key },
       select: { url: true }

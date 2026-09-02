@@ -3,10 +3,10 @@ import { prisma } from "@/lib/db";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const image = await prisma.galleryImage.findUnique({
       where: { id },
       select: { url: true }

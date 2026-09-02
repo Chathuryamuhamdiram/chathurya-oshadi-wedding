@@ -25,6 +25,7 @@ export async function uploadGalleryImage(formData: FormData) {
   try {
     await requirePermission(PERMISSIONS.GALLERY_MANAGE);
     const file = formData.get("file") as File;
+    console.log("File from formData:", file);
     if (!file) {
       return { success: false, error: "No file uploaded" };
     }

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { TravelDecorations } from "./TravelDecorations";
 import { PassportBook } from "./PassportBook";
 
-export type IntroState = "ready" | "starting" | "opening" | "revealed" | "transitioning" | "complete";
+export type IntroState = "ready" | "starting" | "opening" | "revealed" | "fade_bg" | "fade_passport" | "complete";
 
 interface WeddingPassportIntroProps {
   onComplete: () => void;
@@ -14,7 +14,6 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
   const [state, setState] = useState<IntroState>("ready");
   const [isHovered, setIsHovered] = useState(false);
 
-  // Scroll locking for the entire duration of the intro
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -25,45 +24,51 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
   const handleOpenPassport = () => {
     if (state !== "ready") return;
 
-    // 1. Play background music (if configured elsewhere, it uses standard audio element or we can trigger it)
-    // Assuming there's a global audio element, or we just play it if we find it
     const audio = document.getElementById("bg-music") as HTMLAudioElement | null;
     if (audio) {
       audio.volume = 0.25;
       audio.play().catch((e) => console.log("Audio autoplay prevented", e));
     }
 
-    // 2. Hide CTA, animate airplane, lift passport
+    // Stage 1: CTA fades, Airplane moves, Background animating depth, Passport lifting
     setState("starting");
 
-    // 3. Open the cover
+    // Stage 5: Passport opens (after lifting)
     setTimeout(() => {
       setState("opening");
     }, 800);
 
-    // 4. Reveal inside pages (content fades in)
+    // Stage 6/7: Inside pages revealed, Stamp animates
     setTimeout(() => {
       setState("revealed");
-    }, 2000); // Wait for the 1200ms cover flip
+    }, 2000); // 1200ms opening
 
-    // 5. Transition out (scale up and fade out)
+    // Stage 8: Transition - Background fades revealing Hero
     setTimeout(() => {
-      setState("transitioning");
-    }, 5500); // Give user 3.5 seconds to read the inside
+      setState("fade_bg");
+    }, 4000); // 2000ms pause after reveal
 
-    // 6. Complete and unmount
+    // Stage 8b: Transition - Passport slightly enlarges and fades away
+    setTimeout(() => {
+      setState("fade_passport");
+    }, 4800);
+
+    // Stage 9: Complete and unmount
     setTimeout(() => {
       setState("complete");
-      onComplete(); // Triggers the parent state to show the FloatingNav and Hero
-    }, 7000); // Wait for the 1000ms transition out
+      onComplete();
+    }, 5500);
   };
+
+  const isBgFaded = state === "fade_bg" || state === "fade_passport" || state === "complete";
+  const isPassportFaded = state === "fade_passport" || state === "complete";
 
   return (
     <div 
-      className="fixed inset-0 z-[9999] bg-[#0C192E] overflow-hidden transition-opacity duration-1000 ease-in-out"
+      className="fixed inset-0 z-[9999] overflow-hidden transition-colors duration-1000 ease-in-out"
       style={{
-        opacity: state === "transitioning" || state === "complete" ? 0 : 1,
-        pointerEvents: state === "transitioning" || state === "complete" ? "none" : "auto",
+        backgroundColor: isBgFaded ? "transparent" : "#0C192E",
+        pointerEvents: isBgFaded ? "none" : "auto",
       }}
     >
       <TravelDecorations state={state} />
@@ -71,25 +76,30 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
       {/* Main Content Layout */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30 py-4">
         
-        {/* Responsive Scale Wrapper for Open State */}
+        {/* Responsive Scale Wrapper & Opacity Wrapper for Safari 3D support */}
         <div 
-          className={`transition-transform duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex justify-center items-center ${
-            (state === "opening" || state === "revealed") 
+          className={`transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex justify-center items-center ${
+            (state === "opening" || state === "revealed" || state === "fade_bg") 
               ? "scale-[0.55] sm:scale-75 md:scale-95 lg:scale-100" 
+              : state === "fade_passport"
+              ? "scale-[0.6] sm:scale-[0.8] md:scale-105 lg:scale-110"
               : "scale-100"
           }`}
+          style={{
+            opacity: isPassportFaded ? 0 : 1,
+            transitionProperty: "transform, opacity",
+            transitionDuration: state === "fade_passport" ? "700ms" : "1200ms"
+          }}
         >
-          {/* Central Passport Container */}
+          {/* Central Passport Container (Preserve 3D) */}
           <div 
-            className="relative h-[55vh] max-h-[460px] md:h-[65vh] md:max-h-[640px] aspect-[1/1.4] transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
+            className="relative h-[55vh] max-h-[460px] md:h-[65vh] md:max-h-[640px] aspect-[1/1.4] transition-transform duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
             style={{
               perspective: "1400px",
               transformStyle: "preserve-3d",
-              transform: state === "starting" ? "scale(1.02) translateY(-5px)" 
-                       : state === "opening" || state === "revealed" ? "translateX(50%) rotateY(0deg)"
-                       : state === "transitioning" ? "scale(1.2) translateY(-5vh)" 
+              transform: state === "starting" ? "scale(1.03) translateY(-10px)" 
+                       : (state === "opening" || state === "revealed" || state === "fade_bg" || state === "fade_passport") ? "translateX(50%) rotateY(0deg)"
                        : "scale(1)",
-              opacity: state === "transitioning" || state === "complete" ? 0 : 1
             }}
           >
             <PassportBook state={state} onOpen={handleOpenPassport} />
@@ -110,31 +120,30 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             aria-label="Begin our wedding journey"
-            className="group flex flex-col items-center justify-center cursor-pointer transition-transform duration-300"
+            className="group flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 outline-none bg-transparent border-none p-4"
             style={{ transform: isHovered ? "scale(1.02)" : "scale(1)" }}
           >
-            {/* Top decorative ornament */}
-            <div className="w-32 h-8 md:w-56 md:h-14 mb-1 md:mb-2 mix-blend-screen overflow-hidden flex items-center justify-center transition-opacity duration-300" style={{ opacity: isHovered ? "1" : "0.7" }}>
-              <img 
-                src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" 
-                alt="Decorative Botanical Ornament" 
-                className="object-contain w-full h-full"
-                aria-hidden="true"
-              />
-            </div>
-
-            <div className="flex items-center gap-4">
+            {/* Top ornament */}
+            <div className="flex items-center gap-3 mb-3">
               <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-              <span className={`font-serif text-[#D7B56D] text-[11px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300 ${isHovered ? "drop-shadow-[0_0_8px_rgba(215,181,109,0.4)]" : ""}`}>
-                Begin Our Journey
-              </span>
+              <div className={`w-12 h-3 md:w-16 md:h-4 mix-blend-screen transition-all duration-300 ${isHovered ? "opacity-100 brightness-110" : "opacity-70"}`}>
+                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" alt="" className="object-contain w-full h-full" aria-hidden="true" />
+              </div>
               <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
             </div>
-
-            {/* Bottom downward arrow */}
-            <svg className={`w-4 h-4 mt-2 transition-transform duration-300 ${isHovered ? "translate-y-1" : ""}`} viewBox="0 0 24 24" fill="none" stroke="#D7B56D" strokeWidth="1">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+            
+            <span className={`font-serif text-[#D7B56D] text-[11px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300 ${isHovered ? "brightness-125 drop-shadow-[0_0_8px_rgba(215,181,109,0.4)]" : ""}`}>
+              Begin Our Journey
+            </span>
+            
+            {/* Bottom ornament */}
+            <div className="flex items-center gap-3 mt-3">
+              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
+              <div className={`w-12 h-3 md:w-16 md:h-4 mix-blend-screen transition-all duration-300 rotate-180 ${isHovered ? "opacity-100 brightness-110" : "opacity-70"}`}>
+                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" alt="" className="object-contain w-full h-full" aria-hidden="true" />
+              </div>
+              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
+            </div>
           </button>
         </div>
       </div>

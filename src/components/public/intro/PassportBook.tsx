@@ -9,12 +9,12 @@ interface PassportBookProps {
 
 export function PassportBook({ state, onOpen }: PassportBookProps) {
   const isClosed = state === "ready" || state === "starting";
-  const isDetailsVisible = state === "revealed" || state === "transitioning" || state === "complete";
+  const isDetailsVisible = state === "revealed" || state === "fade_bg" || state === "fade_passport" || state === "complete";
 
   // Common Paper Texture
   const PaperTexture = () => (
     <div 
-      className="absolute inset-0 opacity-[0.3] mix-blend-multiply pointer-events-none" 
+      className="absolute inset-0 opacity-[0.35] mix-blend-multiply pointer-events-none" 
       style={{ 
         backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" 
       }} 
@@ -22,77 +22,63 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
   );
 
   return (
-    <div className="relative w-full h-full shadow-2xl rounded-r-[8px]" style={{ perspective: "1500px", transformStyle: "preserve-3d" }}>
+    <div className="relative w-full h-full shadow-[15px_15px_40px_rgba(0,0,0,0.6)] rounded-r-[8px] bg-[#F8F2E8]" style={{ perspective: "1400px", transformStyle: "preserve-3d" }}>
       
       {/* ---------------------------------
           RIGHT PAGE (Backdrop of the book)
           --------------------------------- */}
-      <div className="absolute inset-0 bg-[#F8F2E8] rounded-r-[8px] overflow-hidden z-0">
+      <div className="absolute inset-0 bg-[#F8F2E8] rounded-r-[8px] overflow-hidden z-0 flex flex-col justify-center items-center p-6 md:p-10">
         <PaperTexture />
         
         {/* Crease shadow on the left side of the right page */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-10 bg-gradient-to-r from-black/25 via-black/5 to-transparent pointer-events-none" />
 
-        <div className="w-full h-full flex flex-col p-6 md:p-10 justify-center relative">
-          <div 
-            className="transition-opacity duration-1000"
-            style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "600ms" }}
-          >
-            {/* Poruwa Ceremony */}
-            <div className="mb-8">
-              <h3 className="font-serif text-[18px] md:text-[18px] text-[#10233B] mb-2 tracking-wide">
-                Poruwa Ceremony
-              </h3>
-              <p className="font-sans text-[11px] md:text-[11px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-1">
-                08:50 AM
-              </p>
-              <p className="font-sans text-[9px] md:text-[9px] text-[#8A8379] uppercase tracking-widest leading-tight">
-                Hotel River Park<br/>
-                <span className="opacity-70 text-[8px] md:text-[8px]">Hikkaduwa, Sri Lanka</span>
-              </p>
-            </div>
-            
-            {/* Reception */}
-            <div>
-              <h3 className="font-serif text-[18px] md:text-[18px] text-[#10233B] mb-2 tracking-wide">
-                Reception
-              </h3>
-              <p className="font-sans text-[11px] md:text-[11px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-1">
-                10:30 AM
-              </p>
-              <p className="font-sans text-[9px] md:text-[9px] text-[#8A8379] uppercase tracking-widest leading-tight">
-                Hotel Grand Palace<br/>
-                <span className="opacity-70 text-[8px] md:text-[8px]">Hikkaduwa, Sri Lanka</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Romantic Quote */}
-          <div 
-            className="absolute inset-x-0 bottom-6 md:bottom-8 flex justify-center pointer-events-none transition-opacity duration-1000"
-            style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "1500ms" }}
-          >
-            <p className="font-serif italic text-[11px] md:text-[13px] text-[#10233B]/70 tracking-wide text-center">
-              From our first hello<br/>to forever.
+        <div className="w-full max-w-[80%] flex flex-col relative z-10 transition-opacity duration-1000" style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "400ms" }}>
+          
+          {/* Poruwa Ceremony */}
+          <div className="mb-10 text-left">
+            <h3 className="font-serif text-[16px] md:text-[20px] text-[#10233B] tracking-wide mb-1">
+              PORUWA CEREMONY
+            </h3>
+            <p className="font-sans text-[11px] md:text-[13px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-2">
+              08:50 AM
+            </p>
+            <p className="font-sans text-[10px] md:text-[11px] text-[#8A8379] uppercase tracking-widest leading-relaxed">
+              Hotel River Park<br/>
+              Hikkaduwa, Sri Lanka
             </p>
           </div>
-
-          {/* Landing Stamp Animation */}
-          <div 
-            className="absolute top-12 md:top-20 right-4 md:right-10 w-24 md:w-32 pointer-events-none mix-blend-multiply transition-all duration-[400ms] ease-out"
-            style={{ 
-              opacity: isDetailsVisible ? 0.7 : 0, 
-              transform: isDetailsVisible ? "scale(1) rotate(-15deg)" : "scale(3) rotate(-15deg)",
-              transitionDelay: "2200ms" 
-            }}
-          >
-            <img 
-              src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (9).png" 
-              alt="Forever Begins Stamp" 
-              className="object-contain w-full h-full sepia-[.3] hue-rotate-[-30deg]"
-              aria-hidden="true"
-            />
+          
+          {/* Reception */}
+          <div className="text-left">
+            <h3 className="font-serif text-[16px] md:text-[20px] text-[#10233B] tracking-wide mb-1">
+              RECEPTION
+            </h3>
+            <p className="font-sans text-[11px] md:text-[13px] text-[#D7B56D] uppercase tracking-widest font-semibold mb-2">
+              10:30 AM
+            </p>
+            <p className="font-sans text-[10px] md:text-[11px] text-[#8A8379] uppercase tracking-widest leading-relaxed">
+              Hotel Grand Palace<br/>
+              Hikkaduwa, Sri Lanka
+            </p>
           </div>
+        </div>
+
+        {/* Landing Stamp Animation */}
+        <div 
+          className="absolute top-8 md:top-12 right-6 md:right-10 w-28 md:w-36 pointer-events-none mix-blend-multiply transition-all duration-[400ms] ease-out z-20"
+          style={{ 
+            opacity: isDetailsVisible ? 0.75 : 0, 
+            transform: isDetailsVisible ? "scale(1) rotate(-6deg)" : "scale(1.2) rotate(10deg)",
+            transitionDelay: state === "revealed" ? "800ms" : "0ms" 
+          }}
+        >
+          <img 
+            src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (9).png" 
+            alt="Forever Begins Stamp" 
+            className="object-contain w-full h-full sepia-[.3] hue-rotate-[-30deg]"
+            aria-hidden="true"
+          />
         </div>
       </div>
 
@@ -100,7 +86,7 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
           THE HINGED COVER (Front Cover + Left Page)
           --------------------------------- */}
       <div
-        className="absolute inset-0 origin-left z-10 transition-transform duration-[1500ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        className="absolute inset-0 origin-left z-10 transition-transform duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
         style={{
           transformStyle: "preserve-3d",
           transform: isClosed ? "rotateY(0deg)" : "rotateY(-165deg)",
@@ -109,62 +95,66 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
         
         {/* --- FRONT COVER (Navy) --- */}
         <div 
-          className="absolute inset-0 bg-[#0D1828] rounded-r-[8px] flex flex-col items-center overflow-hidden cursor-pointer"
+          className="absolute inset-0 bg-[#0A111C] rounded-r-[8px] flex flex-col items-center overflow-hidden cursor-pointer"
           onClick={isClosed ? onOpen : undefined}
           style={{ 
             backfaceVisibility: "hidden", 
-            WebkitBackfaceVisibility: "hidden", // Safari support
-            transform: "rotateY(0deg)", // Explicit for backface rendering
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(0deg)",
           }}
         >
           {/* Leather Texture */}
           <div 
-            className="absolute inset-0 mix-blend-overlay opacity-30 pointer-events-none" 
+            className="absolute inset-0 mix-blend-overlay opacity-40 pointer-events-none" 
             style={{ 
-              backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%221.5%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" 
+              backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%221.8%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" 
             }} 
           />
           
-          {/* Spine Edge */}
-          <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-black/60 via-black/20 to-transparent pointer-events-none" />
+          {/* Edge Lighting and Deep Shadow Overlay */}
+          <div className="absolute inset-0 rounded-r-[8px] border-[1.5px] border-white/5 pointer-events-none mix-blend-screen" />
+          <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white/10 to-transparent pointer-events-none mix-blend-screen" />
+          
+          {/* Spine Edge shadow */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-black/80 via-black/30 to-transparent pointer-events-none" />
 
           {/* Cover Content */}
-          <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-[12%]">
+          <div className="relative z-10 w-full h-full flex flex-col items-center justify-between py-[12%] px-6 text-center">
             
             {/* Top Text */}
             <div className="flex flex-col items-center">
-              <p className="font-serif text-[#D7B56D] text-[8px] md:text-[10px] uppercase tracking-[0.3em] mb-2 opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+              <p className="font-serif text-[#D7B56D] text-[9px] md:text-[11px] uppercase tracking-[0.35em] mb-2 drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
                 You Are Invited
               </p>
-              <svg className="w-6 h-1 md:w-8 md:h-1.5" viewBox="0 0 50 10">
-                <path d="M 0,5 L 20,5 L 25,2 L 30,5 L 50,5" fill="none" stroke="#D7B56D" strokeWidth="0.5" opacity="0.6"/>
+              <svg className="w-8 h-1.5 md:w-10 md:h-2" viewBox="0 0 50 10">
+                <path d="M 0,5 L 20,5 L 25,2 L 30,5 L 50,5" fill="none" stroke="#D7B56D" strokeWidth="0.8" opacity="0.8"/>
                 <circle cx="25" cy="5" r="1.5" fill="#D7B56D" />
               </svg>
             </div>
 
             {/* Title & Globe */}
             <div className="flex flex-col items-center w-full">
-              <h1 className="font-serif text-[20px] md:text-[28px] leading-tight text-[#D7B56D] text-center drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-[0.05em] mb-4">
+              <h1 className="font-serif text-[22px] md:text-[30px] leading-[1.1] text-[#D7B56D] drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-[0.08em] mb-6">
                 WEDDING<br/>PASSPORT
               </h1>
-              <div className="relative w-[35%] max-w-[140px] aspect-square flex items-center justify-center mix-blend-screen">
-                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (8).png" alt="Travel Globe" className="object-contain w-full h-full opacity-90" aria-hidden="true" />
+              <div className="relative w-[40%] max-w-[150px] aspect-square flex items-center justify-center mix-blend-screen">
+                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (8).png" alt="Travel Globe" className="object-contain w-full h-full opacity-90 drop-shadow-[0_0_15px_rgba(215,181,109,0.2)]" aria-hidden="true" />
               </div>
             </div>
 
             {/* Bottom Details */}
             <div className="flex flex-col items-center">
-              <h2 className="font-serif text-[24px] md:text-[32px] text-[#D7B56D] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] tracking-[0.1em] mb-1">
-                C <span className="text-[16px] md:text-[20px]">&</span> O
+              <h2 className="font-serif text-[26px] md:text-[36px] text-[#D7B56D] drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-[0.15em] mb-2">
+                C <span className="text-[18px] md:text-[24px] opacity-80">&</span> O
               </h2>
-              <svg className="w-5 h-1 md:w-6 md:h-1.5 mb-2" viewBox="0 0 50 10">
-                <path d="M 10,5 L 20,5 L 25,2 L 30,5 L 40,5" fill="none" stroke="#D7B56D" strokeWidth="0.5" opacity="0.6"/>
-                <circle cx="25" cy="5" r="1" fill="#D7B56D" />
+              <svg className="w-6 h-1.5 md:w-8 md:h-2 mb-3" viewBox="0 0 50 10">
+                <path d="M 10,5 L 20,5 L 25,2 L 30,5 L 40,5" fill="none" stroke="#D7B56D" strokeWidth="0.8" opacity="0.8"/>
+                <circle cx="25" cy="5" r="1.5" fill="#D7B56D" />
               </svg>
-              <h3 className="font-serif text-[11px] md:text-[14px] text-[#D7B56D] opacity-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] tracking-wide mb-1">
+              <h3 className="font-serif text-[12px] md:text-[15px] text-[#D7B56D] drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)] tracking-wide mb-1">
                 Chathurya & Oshadi
               </h3>
-              <p className="font-sans text-[7px] md:text-[9px] text-[#D7B56D] opacity-70 uppercase tracking-[0.2em]">
+              <p className="font-sans text-[8px] md:text-[10px] text-[#D7B56D] opacity-80 uppercase tracking-[0.25em]">
                 08 October 2026
               </p>
             </div>
@@ -177,44 +167,38 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
           className="absolute inset-0 bg-[#F8F2E8] rounded-l-[8px] flex flex-col items-center justify-center p-6 md:p-10 text-center border-r border-dashed border-[#8A8379]/30 overflow-hidden"
           style={{ 
             backfaceVisibility: "hidden", 
-            WebkitBackfaceVisibility: "hidden", // Safari support
-            transform: "rotateY(180deg)", // Flips it to the back of the cover!
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
           }}
         >
           <PaperTexture />
           
           {/* Crease shadow on the right side of the left page */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-black/10 to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-black/15 to-transparent pointer-events-none" />
 
           <div 
             className="transition-opacity duration-1000 relative z-10 w-full h-full flex flex-col items-center justify-center"
             style={{ opacity: isDetailsVisible ? 1 : 0, transitionDelay: "400ms" }}
           >
-            <p className="font-sans text-[11px] md:text-[11px] text-[#8A8379] uppercase tracking-[0.3em] mb-6">
-              The Wedding Of
+            <p className="font-sans text-[10px] md:text-[12px] text-[#8A8379] uppercase tracking-[0.35em] mb-8 font-medium">
+              THE WEDDING OF
             </p>
-            <h2 className="font-serif text-[30px] md:text-[34px] text-[#10233B] mb-2 leading-none">
+            
+            <h2 className="font-serif text-[28px] md:text-[36px] text-[#10233B] mb-2 leading-none">
               Chathurya
             </h2>
-            <span className="font-serif text-2xl md:text-2xl text-[#D7B56D] italic block my-2">
+            <span className="font-serif text-xl md:text-3xl text-[#D7B56D] italic block my-3">
               &
             </span>
-            <h2 className="font-serif text-[30px] md:text-[34px] text-[#10233B] mb-8 leading-none">
+            <h2 className="font-serif text-[28px] md:text-[36px] text-[#10233B] mb-10 leading-none">
               Oshadi
             </h2>
             
-            {/* Decorative Divider */}
-            <div className="flex items-center justify-center gap-2 mb-8 opacity-60">
-              <div className="w-10 h-[0.5px] bg-[#D7B56D]" />
-              <div className="w-1.5 h-1.5 bg-[#D7B56D] rotate-45" />
-              <div className="w-10 h-[0.5px] bg-[#D7B56D]" />
-            </div>
-            
-            <p className="font-sans text-[12px] md:text-[12px] text-[#10233B] uppercase tracking-[0.2em] font-medium mb-2">
-              08 October 2026
+            <p className="font-sans text-[11px] md:text-[13px] text-[#10233B] uppercase tracking-[0.25em] font-semibold mb-3">
+              08 OCTOBER 2026
             </p>
-            <p className="font-sans text-[9px] md:text-[9px] text-[#8A8379] uppercase tracking-[0.2em]">
-              Hikkaduwa, Sri Lanka
+            <p className="font-sans text-[9px] md:text-[11px] text-[#8A8379] uppercase tracking-[0.2em]">
+              HIKKADUWA<br/>SRI LANKA
             </p>
           </div>
         </div>

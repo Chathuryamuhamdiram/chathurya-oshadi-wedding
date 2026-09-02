@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PassportCover } from "@/components/invitation/PassportCover";
 import PassportInvitation from "@/components/invitation/PassportInvitation";
@@ -27,6 +27,13 @@ interface InvitationClientProps {
 
 export function InvitationClient({ guest, poruwVenue, mainVenue, sealUrl }: InvitationClientProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Store the invitation code so the public site's RSVP button can smart-redirect back here
+  useEffect(() => {
+    if (guest?.invitationCode) {
+      sessionStorage.setItem("weddingInvitationCode", guest.invitationCode);
+    }
+  }, [guest?.invitationCode]);
 
   const handleDownloadCalendar = () => {
     const title = "Wedding of Oshadi & Chathurya";

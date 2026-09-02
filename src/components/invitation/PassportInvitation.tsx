@@ -344,9 +344,9 @@ export default function PassportInvitation({
                 <div className="mt-5 flex justify-center">
                   <Link
                     href="/"
-                    className="inline-flex items-center gap-2 rounded-full border border-[#c4a25e]/50 px-6 py-2 text-[10px] uppercase font-sans font-bold tracking-[0.22em] text-[#10233b] hover:bg-[#10233b] hover:text-[#d7b56d] hover:border-[#10233b] transition-all duration-300"
+                    className="inline-flex items-center gap-2.5 rounded-full bg-[#10233b] border border-[#10233b] px-8 py-3 text-[11px] uppercase font-sans font-bold tracking-[0.22em] text-[#d7b56d] hover:bg-[#172e4c] shadow-md hover:shadow-lg transition-all duration-300"
                   >
-                    <Heart size={11} className="text-[#c4a25e]" />
+                    <Heart size={13} className="text-[#d7b56d] fill-[#d7b56d]/30" />
                     Visit Wedding Website
                   </Link>
                 </div>
@@ -633,7 +633,7 @@ function DetailBlock({
         {label}
       </p>
 
-      <div className="mt-2 text-lg font-medium leading-7 tracking-[0.04em] text-[#1d2b3d]">
+      <div className="mt-2 text-lg font-medium leading-7 tracking-[0.04em] text-[#1d2b3d] uppercase">
         {children}
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RSVPModal } from "@/components/public/RSVPModal";
 import { Menu, X } from "lucide-react";
 
@@ -11,12 +12,24 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const [scrolled, setScrolled] = useState(false);
   const [isRsvpOpen, setIsRsvpOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  const handleRsvpClick = () => {
+    setIsMobileMenuOpen(false);
+    // Check if the user already visited their personalized invitation
+    const savedCode = sessionStorage.getItem("weddingInvitationCode");
+    if (savedCode) {
+      router.push(`/invite/${savedCode}`);
+    } else {
+      setIsRsvpOpen(true);
+    }
+  };
 
   return (
       <div className="min-h-screen bg-background flex flex-col selection:bg-secondary/30 selection:text-primary">
@@ -56,7 +69,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 <a href="#gallery" className={`text-xs uppercase tracking-widest transition-colors font-sans ${scrolled ? "text-primary/70 hover:text-primary" : "text-white/90 hover:text-white"}`}>Gallery</a>
               </nav>
               <button 
-                onClick={() => setIsRsvpOpen(true)}
+                onClick={handleRsvpClick}
                 className={`text-xs uppercase tracking-widest px-4 py-2 md:px-5 md:py-2.5 rounded-full transition-all font-sans cursor-pointer shadow-md whitespace-nowrap
                   ${scrolled 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
@@ -104,10 +117,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 Gallery
               </Link>
               <button 
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsRsvpOpen(true);
-                }}
+                onClick={handleRsvpClick}
                 className="mt-4 text-sm uppercase tracking-widest px-8 py-3 rounded-full transition-all font-sans cursor-pointer shadow-md bg-primary text-primary-foreground"
               >
                 RSVP Now

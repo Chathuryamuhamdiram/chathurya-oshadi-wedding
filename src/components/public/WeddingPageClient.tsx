@@ -27,7 +27,7 @@ export function WeddingPageClient({ children }: { children: React.ReactNode }) {
         <WeddingPassportIntro onComplete={() => setIsIntroComplete(true)} />
       )}
       {/* Main Content */}
-      <div className={isIntroComplete ? "block" : "fixed inset-0 overflow-hidden"}>
+      <div className="w-full">
         {children}
       </div>
       {isIntroComplete && <FloatingNav />}

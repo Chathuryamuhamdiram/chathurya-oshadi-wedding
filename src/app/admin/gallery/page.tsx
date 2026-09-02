@@ -5,9 +5,15 @@ import Image from "next/image";
 import { DeleteGalleryButton } from "./DeleteGalleryButton";
 
 export default async function AdminGalleryPage() {
-  const images = await prisma.galleryImage.findMany({
+  const galleryImagesRaw = await prisma.galleryImage.findMany({
     orderBy: { sortOrder: "asc" },
+    select: { id: true, altText: true, sortOrder: true, isActive: true, createdAt: true, updatedAt: true }
   });
+
+  const images = galleryImagesRaw.map(img => ({
+    ...img,
+    url: `/api/image/gallery/${img.id}`
+  }));
 
   // Basic inline server actions for the form
   async function moveUp(id: string, currentSort: number) {

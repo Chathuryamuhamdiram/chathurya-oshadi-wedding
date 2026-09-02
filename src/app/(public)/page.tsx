@@ -9,20 +9,28 @@ import { prisma } from "@/lib/db";
 export const dynamic = 'force-dynamic';
 
 export default async function PublicHomePage() {
-  const [guestbookEntries, galleryImages, siteAssets] = await Promise.all([
+  const [guestbookEntries, galleryImagesRaw, siteAssetsRaw] = await Promise.all([
     prisma.guestbookEntry.findMany({
       where: { isPublic: true },
       orderBy: { createdAt: 'desc' }
     }),
     prisma.galleryImage.findMany({
       where: { isActive: true },
+      select: { id: true, altText: true, sortOrder: true, isActive: true, createdAt: true, updatedAt: true },
       orderBy: { sortOrder: 'asc' }
     }),
-    prisma.siteAsset.findMany()
+    prisma.siteAsset.findMany({
+      select: { id: true, key: true, createdAt: true, updatedAt: true }
+    })
   ]);
 
-  const assetMap = siteAssets.reduce((acc, asset) => {
-    acc[asset.key] = asset.url;
+  const galleryImages = galleryImagesRaw.map(img => ({
+    ...img,
+    url: `/api/image/gallery/${img.id}`
+  }));
+
+  const assetMap = siteAssetsRaw.reduce((acc, asset) => {
+    acc[asset.key] = `/api/image/asset/${asset.key}`;
     return acc;
   }, {} as Record<string, string>);
 

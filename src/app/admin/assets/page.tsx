@@ -2,11 +2,13 @@ import { prisma } from "@/lib/db";
 import { AssetUploader } from "./AssetUploader";
 
 export default async function SiteAssetsPage() {
-  const assets = await prisma.siteAsset.findMany();
+  const assets = await prisma.siteAsset.findMany({
+    select: { id: true, key: true, createdAt: true, updatedAt: true }
+  });
   
-  // Create a quick lookup map
+  // Create a quick lookup map using API route
   const assetMap = assets.reduce((acc, asset) => {
-    acc[asset.key] = asset.url;
+    acc[asset.key] = `/api/image/asset/${asset.key}`;
     return acc;
   }, {} as Record<string, string>);
 

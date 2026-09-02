@@ -37,7 +37,8 @@ export default async function InvitePage(props: { params: Promise<{ token: strin
       orderBy: { sortOrder: "asc" },
     }),
     prisma.siteAsset.findUnique({
-      where: { key: "WEDDING_CARD" }
+      where: { key: "WEDDING_CARD" },
+      select: { key: true }
     })
   ]);
 
@@ -82,7 +83,7 @@ export default async function InvitePage(props: { params: Promise<{ token: strin
       }}
       poruwVenue={poruwVenue}
       mainVenue={mainVenue}
-      sealUrl={weddingCardAsset?.url}
+      sealUrl={weddingCardAsset ? `/api/image/asset/${weddingCardAsset.key}` : undefined}
     />
   );
 }

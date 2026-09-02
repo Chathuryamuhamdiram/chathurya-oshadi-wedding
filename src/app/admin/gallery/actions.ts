@@ -77,7 +77,8 @@ export async function deleteGalleryImage(id: string) {
     // Delete from DB
     await prisma.galleryImage.delete({ where: { id } });
 
-    await createDeleteAuditLog(session!.userId, "GalleryImage", id, { url: image.url }, "DELETE");
+    const auditUrl = image.url.startsWith("data:") ? "<base64_data>" : image.url;
+    await createDeleteAuditLog(session!.userId, "GalleryImage", id, { url: auditUrl }, "DELETE");
 
     // Delete file if it's not a Base64 data URI
     if (!image.url.startsWith("data:")) {

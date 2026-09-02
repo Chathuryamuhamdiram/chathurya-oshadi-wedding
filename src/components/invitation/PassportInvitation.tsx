@@ -341,7 +341,7 @@ export default function PassportInvitation({
                 </div>
 
                 {/* Visit wedding website */}
-                <div className="mt-6 flex justify-center">
+                <div className="mt-6 flex flex-col items-center justify-center">
                   <motion.div
                     animate={{ 
                       scale: [1, 1.04, 1],
@@ -362,6 +362,9 @@ export default function PassportInvitation({
                       Visit Wedding Website
                     </Link>
                   </motion.div>
+                  <p className="mt-3 text-[9px] uppercase tracking-[0.2em] text-[#9a8060] font-sans font-semibold">
+                    ( Click Here )
+                  </p>
                 </div>
               </div>
             </div>

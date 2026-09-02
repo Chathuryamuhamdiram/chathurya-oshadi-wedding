@@ -24,14 +24,10 @@ export async function uploadSiteAsset(key: string, formData: FormData) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Generate unique filename
-    const extension = file.name.split(".").pop() || "jpg";
-    const filename = `${randomUUID()}.${extension}`;
-    const filepath = join(UPLOAD_DIR, filename);
-    const url = `/uploads/assets/${filename}`;
-
-    // Write file to disk
-    await writeFile(filepath, buffer);
+    // Convert to Base64 Data URI instead of writing to Vercel read-only filesystem
+    const mimeType = file.type || "image/jpeg";
+    const base64Data = buffer.toString("base64");
+    const url = `data:${mimeType};base64,${base64Data}`;
 
     // Find existing asset to delete old file if it exists
     const existingAsset = await prisma.siteAsset.findUnique({

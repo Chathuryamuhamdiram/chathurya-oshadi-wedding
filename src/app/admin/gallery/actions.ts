@@ -35,14 +35,11 @@ export async function uploadGalleryImage(formData: FormData) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a unique filename
-    const uniqueId = randomUUID();
-    const extension = file.name.split('.').pop() || 'jpg';
-    const fileName = `${uniqueId}.${extension}`;
-    const filePath = join(UPLOAD_DIR, fileName);
-
-    // Write file to public/uploads/gallery
-    await writeFile(filePath, buffer);
+    // Instead of writing to the local file system (which is read-only on Vercel),
+    // we convert the image to a Base64 Data URI and store it directly in the DB.
+    const mimeType = file.type || "image/jpeg";
+    const base64Data = buffer.toString("base64");
+    const dataUri = `data:${mimeType};base64,${base64Data}`;
 
     // Determine sort order
     const lastImage = await prisma.galleryImage.findFirst({
@@ -53,7 +50,7 @@ export async function uploadGalleryImage(formData: FormData) {
     // Save to database
     const dbRecord = await prisma.galleryImage.create({
       data: {
-        url: `/uploads/gallery/${fileName}`,
+        url: dataUri,
         altText: file.name,
         sortOrder: nextSortOrder,
       }
@@ -82,13 +79,15 @@ export async function deleteGalleryImage(id: string) {
 
     await createDeleteAuditLog(session!.userId, "GalleryImage", id, { url: image.url }, "DELETE");
 
-    // Delete file
-    const filePath = join(process.cwd(), "public", image.url);
-    try {
-      await unlink(filePath);
-    } catch (e) {
-      console.error("Failed to delete file from disk:", e);
-      // We continue even if file deletion fails, as DB record is gone
+    // Delete file if it's not a Base64 data URI
+    if (!image.url.startsWith("data:")) {
+      const filePath = join(process.cwd(), "public", image.url);
+      try {
+        await unlink(filePath);
+      } catch (e) {
+        console.error("Failed to delete file from disk:", e);
+        // We continue even if file deletion fails, as DB record is gone
+      }
     }
 
     revalidatePath("/admin/gallery");

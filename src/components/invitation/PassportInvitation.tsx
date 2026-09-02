@@ -341,14 +341,27 @@ export default function PassportInvitation({
                 </div>
 
                 {/* Visit wedding website */}
-                <div className="mt-5 flex justify-center">
-                  <Link
-                    href="/"
-                    className="inline-flex items-center gap-2.5 rounded-full bg-[#10233b] border border-[#10233b] px-8 py-3 text-[11px] uppercase font-sans font-bold tracking-[0.22em] text-[#d7b56d] hover:bg-[#172e4c] shadow-md hover:shadow-lg transition-all duration-300"
+                <div className="mt-6 flex justify-center">
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.04, 1],
+                      boxShadow: [
+                        "0px 0px 0px rgba(215, 181, 109, 0)", 
+                        "0px 0px 20px rgba(215, 181, 109, 0.35)", 
+                        "0px 0px 0px rgba(215, 181, 109, 0)"
+                      ]
+                    }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                    className="rounded-full"
                   >
-                    <Heart size={13} className="text-[#d7b56d] fill-[#d7b56d]/30" />
-                    Visit Wedding Website
-                  </Link>
+                    <Link
+                      href="/"
+                      className="inline-flex items-center gap-2.5 rounded-full bg-[#10233b] border border-[#d7b56d]/40 px-8 py-3.5 text-[11px] uppercase font-sans font-bold tracking-[0.22em] text-[#d7b56d] hover:bg-[#172e4c] transition-colors"
+                    >
+                      <Heart size={13} className="text-[#d7b56d] fill-[#d7b56d]/50" />
+                      Visit Wedding Website
+                    </Link>
+                  </motion.div>
                 </div>
               </div>
             </div>

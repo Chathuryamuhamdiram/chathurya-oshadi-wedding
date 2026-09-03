@@ -304,16 +304,15 @@ export default function PassportInvitation({
                   />
                 </div>
 
+                <PassField
+                  label="PASSENGER"
+                  value={guest.displayName}
+                  script
+                  singleLine
+                />
+
                 <div className="grid gap-7 md:grid-cols-2">
-
                   <div>
-                    <PassField
-                      label="PASSENGER"
-                      value={guest.displayName}
-                      script
-                      singleLine
-                    />
-
                     <PassField
                       label="DATE"
                       value="08 OCTOBER 2026"

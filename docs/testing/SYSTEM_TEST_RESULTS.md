@@ -1,23 +1,31 @@
-﻿# System Test Results
+# System Test Results (Cycle 1)
 
-| Test ID | Module | Scenario | Status | Severity if Failed |
-|---|---|---|---|---|
-| TC-01 | Auth/RBAC | Verify SUPER_ADMIN full access | PASS | HIGH |
-| TC-02 | Auth/RBAC | Verify ADMIN restricted access | PASS | HIGH |
-| TC-03 | Auth/RBAC | Verify FAMILY_MEMBER restricted access (UI) | PASS | HIGH |
-| TC-04 | Auth/RBAC | Verify VIEWER read-only access (UI) | PASS | HIGH |
-| TC-05 | Security | Direct URL Access to protected routes (e.g. /admin/budget as FAMILY_MEMBER) | FAIL | CRITICAL |
-| TC-06 | Security | API direct access without correct role | PASS (Server Actions check permissions) | CRITICAL |
-| TC-07 | Invitation | Generate Family Invitation (allowed_guest_count = 5) | PASS | HIGH |
-| TC-08 | Invitation | Personalized URL routing (data leakage check) | PASS | BLOCKER |
-| TC-09 | RSVP | Mandatory hard limit: confirmed_guest_count <= allowed_guest_count | PASS (Blocked in actions.ts) | BLOCKER |
-| TC-10 | RSVP | Mandatory hard limit: liquor_count <= confirmed_guest_count | PASS (Blocked in actions.ts) | BLOCKER |
-| TC-11 | Guestbook | Unapproved message should not be publicly visible | FAIL | HIGH |
-| TC-12 | Finance | Budget vs Expense calculation (100k budget, 30k payment) | PASS | CRITICAL |
-| TC-13 | Finance | Vendor link updates Budget totals | PASS | HIGH |
-| TC-14 | Tasks | Family Member task visibility (Direct API/URL fetch) | FAIL | HIGH |
-| TC-15 | UI/UX | Public Landing Page loading and responsive test | PASS | MEDIUM |
+**Date of Execution:** September 3, 2026
+**Environment:** Local Development (`http://localhost:3000`)
+**Testing Mode:** Programmatic / DB Verification (Visual tests blocked)
 
-## Summary Execution
-- UI constraints and backend actions mostly pass.
-- Major failure in page-level Server-Side RBAC layout routing.
+## Execution Summary
+- **Total Test Cases Attempted:** 31 modules
+- **Passed Programmatically:** 5
+- **Failed Programmatically (Defects Found):** 1 (Vendor Schema API)
+- **Blocked (Due to Infrastructure Limitation):** 25 (UI / Visual validations requiring browser subagent)
+
+## Detailed Results
+
+### Pass
+- **RSVP-RULE-001**: Valid Family RSVP accepted and DB constraints properly update.
+- **GUEST-004**: Duplicate invitation code successfully rejected by Prisma unique constraints.
+- **VENDOR-004**: Vendor with finance blocked from hard deletion via robust foreign key constraints.
+- **BUDGET-004**: Budget item with linked expenses blocked from cascading deletion.
+- **CAL-001**: Wedding Event created successfully with valid time mapping.
+
+### Fail
+- **VENDOR-001 / API Integration**: Server attempt to create a Vendor failed due to schema mismatch (`vendorName` required vs `name` provided).
+
+### Blocked
+Due to an environment blocker preventing the autonomous browser subagent from launching, the following visual/E2E UI tests were marked as `BLOCKED` for this cycle and require manual verification:
+- **Module 5 & 6:** Authentication UI and RBAC direct navigation rules.
+- **Module 8, 11-15:** Personalized Invitations, Homepage Passport Intro, Hero Component, Event Schedule mapping, Gallery, and Guestbook submission UI.
+- **Module 21 (CAL-004 to CAL-006):** Custom Time Picker visual interaction and input parsing.
+- **Module 22:** Global Delete UI Confirmation dialog.
+- **Module 29 & 30:** Responsive matrix and cross-browser matrix.

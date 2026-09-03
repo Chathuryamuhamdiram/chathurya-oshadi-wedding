@@ -1,12 +1,29 @@
-﻿# Defect Report
+# Defect Report
 
-## Open Defects
+**Date:** September 3, 2026
+**Cycle:** 1
 
-| Defect ID | Module | Severity | Priority | Steps to Reproduce | Expected | Actual |
-|---|---|---|---|---|---|---|
-| BUG-001 | RBAC / Auth | CRITICAL | HIGH | 1. Log in as FAMILY_MEMBER.<br>2. Manually change URL to /admin/budget or /admin/guests. | Access should be denied (403 or redirect). | Page renders successfully, exposing all financial data and guest lists. (Server actions are protected, but read access is not). |
-| BUG-002 | RBAC / Tasks | HIGH | HIGH | 1. Log in as FAMILY_MEMBER.<br>2. Navigate to /admin/tasks. | Only tasks assigned to the current user should be visible. | All tasks across the entire system are visible, bypassing privacy. |
-| BUG-003 | Guestbook | HIGH | HIGH | 1. Submit a Guestbook entry via the public UI. | Entry should require admin approval before becoming visible. | isPublic defaults to 	rue in the database schema, meaning all submissions are instantly public. |
+## Summary of Defects
 
-## Data Impact & Security
-**BUG-001** and **BUG-002** are severe data privacy leaks that violate the business rules of the platform by allowing unauthorized roles to read highly sensitive financial and task data.
+| Defect ID | Module | Severity | Title | Status |
+|---|---|---|---|---|
+| DEF-001 | Vendors | HIGH | Vendor creation API fails due to schema mismatch (`vendorName` vs `name`) | OPEN |
+| DEF-002 | UI Tests | BLOCKER | Browser Subagent cannot initialize to verify UI rendering | OPEN |
+
+---
+
+## Detailed Defects
+
+### DEF-001: Vendor Creation API Schema Mismatch
+- **Module:** 17. Vendors (VENDOR-001)
+- **Severity:** HIGH
+- **Description:** When attempting to create a new vendor via backend logic, Prisma throws a `PrismaClientValidationError` because the `name` field is provided, but the schema strictly requires `vendorName`.
+- **Expected Result:** The vendor is saved successfully.
+- **Actual Result:** Prisma throws: `Argument vendorName is missing.`
+- **Recommended Fix:** Ensure the frontend API actions and forms pass the `vendorName` key instead of `name` when creating or updating `Vendor` entities.
+
+### DEF-002: Infrastructure Blocker for UI Automation
+- **Module:** UI/E2E
+- **Severity:** BLOCKER (Infrastructure)
+- **Description:** Playwright dependencies threw a 404 error during autonomous browser initialization, preventing E2E visual verification of the Public Website (Passport Intro, TimePicker).
+- **Recommended Fix:** The QA environment requires the correct Playwright binaries. Until resolved, all visual tests must be executed manually.

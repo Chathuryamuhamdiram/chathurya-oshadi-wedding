@@ -682,7 +682,7 @@ function PassField({
           script
             ? "font-serif text-3xl italic"
             : "text-base font-medium tracking-[0.05em]"
-        } ${singleLine ? "whitespace-nowrap truncate" : ""}`}
+        } ${singleLine ? "whitespace-normal break-words md:whitespace-nowrap md:truncate" : ""}`}
         title={singleLine ? value : undefined}
       >
         {value}

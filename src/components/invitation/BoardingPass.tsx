@@ -60,7 +60,7 @@ export function BoardingPass({ guestName }: BoardingPassProps) {
              <div>
                <p className="text-[9px] uppercase tracking-widest text-[#8C7A5E] font-bold mb-1">Passenger</p>
                <p 
-                 className="font-serif italic text-2xl md:text-3xl text-[#1E293B] whitespace-nowrap truncate"
+                 className="font-serif italic text-2xl md:text-3xl text-[#1E293B] whitespace-normal break-words md:whitespace-nowrap md:truncate"
                  title={guestName}
                >
                  {guestName}

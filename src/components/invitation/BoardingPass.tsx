@@ -57,6 +57,7 @@ export function BoardingPass({ guestName }: BoardingPassProps) {
                </svg>
              </div>
 
+             <div>
                <p className="text-[9px] uppercase tracking-widest text-[#8C7A5E] font-bold mb-1">Passenger</p>
                <p 
                  className={`font-serif italic text-[#1E293B] whitespace-nowrap truncate ${

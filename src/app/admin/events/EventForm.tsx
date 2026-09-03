@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TimePicker } from "@/components/ui/TimePicker";
 import { saveEventAction } from "./actions";
 
 export function EventForm({ venues, existingEvent }: { venues: any[], existingEvent?: any }) {
@@ -92,20 +93,16 @@ export function EventForm({ venues, existingEvent }: { venues: any[], existingEv
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Start Time</label>
-              <Input
-                type="time"
+              <TimePicker
                 name="startTime"
                 defaultValue={existingEvent?.startTime || ""}
-                className="bg-white/5 border-white/10 text-white focus:border-purple-500/50 focus:ring-0 rounded-xl h-11"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">End Time</label>
-              <Input
-                type="time"
+              <TimePicker
                 name="endTime"
                 defaultValue={existingEvent?.endTime || ""}
-                className="bg-white/5 border-white/10 text-white focus:border-purple-500/50 focus:ring-0 rounded-xl h-11"
               />
             </div>
           </div>

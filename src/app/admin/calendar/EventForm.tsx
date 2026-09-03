@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveWeddingEvent } from "./actions";
 import { Plus, Calendar as CalendarIcon } from "lucide-react";
+import { TimePicker } from "@/components/ui/TimePicker";
 
 export function EventForm({ existingEvent }: { existingEvent?: any }) {
   const [open, setOpen] = useState(false);
@@ -62,11 +63,11 @@ export function EventForm({ existingEvent }: { existingEvent?: any }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Start Time</label>
-              <Input name="startTime" type="time" defaultValue={existingEvent?.startTime || ""} className="bg-white/5 border-white/10 focus:border-purple-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
+              <TimePicker name="startTime" defaultValue={existingEvent?.startTime || ""} />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">End Time</label>
-              <Input name="endTime" type="time" defaultValue={existingEvent?.endTime || ""} className="bg-white/5 border-white/10 focus:border-purple-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
+              <TimePicker name="endTime" defaultValue={existingEvent?.endTime || ""} />
             </div>
           </div>
           

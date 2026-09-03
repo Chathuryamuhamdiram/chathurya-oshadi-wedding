@@ -22,6 +22,8 @@ interface InvitationClientProps {
   };
   poruwVenue: Venue | null;
   mainVenue: Venue | null;
+  poruwaTime?: string | null;
+  mainTime?: string | null;
   sealUrl?: string;
 }
 
@@ -84,6 +86,8 @@ export function InvitationClient({ guest, poruwVenue, mainVenue, sealUrl }: Invi
               guest={guest}
               poruwVenue={poruwVenue}
               mainVenue={mainVenue}
+              poruwaTime={poruwaTime}
+              mainTime={mainTime}
               onDownloadCalendar={handleDownloadCalendar}
               onNavigateToMaps={handleNavigateToMaps}
             />

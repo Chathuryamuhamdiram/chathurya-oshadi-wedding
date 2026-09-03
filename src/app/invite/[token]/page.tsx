@@ -83,6 +83,8 @@ export default async function InvitePage(props: { params: Promise<{ token: strin
       }}
       poruwVenue={poruwVenue}
       mainVenue={mainVenue}
+      poruwaTime={poruwaEvent?.startTime}
+      mainTime={mainEvent?.startTime}
       sealUrl={weddingCardAsset ? `/api/image/asset/${weddingCardAsset.key}` : undefined}
     />
   );

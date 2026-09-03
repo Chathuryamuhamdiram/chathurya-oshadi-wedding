@@ -32,6 +32,8 @@ type PassportInvitationProps = {
   };
   poruwVenue: Venue | null;
   mainVenue: Venue | null;
+  poruwaTime?: string | null;
+  mainTime?: string | null;
   coupleImage?: string;
   onNavigateToMaps: (url: string) => void;
   onDownloadCalendar: () => void;
@@ -41,6 +43,8 @@ export default function PassportInvitation({
   guest,
   poruwVenue,
   mainVenue,
+  poruwaTime,
+  mainTime,
   coupleImage = "/images/couple.jpg", // We'll just use a placeholder image path
   onNavigateToMaps,
   onDownloadCalendar,
@@ -217,13 +221,13 @@ export default function PassportInvitation({
                 <DetailBlock label="PORUWA CEREMONY">
                   {poruwVenue?.name || "HOTEL RIVER PARK"}
                   <br />
-                  08:50 AM
+                  {poruwaTime || "08:50 AM"}
                 </DetailBlock>
 
                 <DetailBlock label="MAIN FUNCTION">
                   {mainVenue?.name || "HOTEL GRAND PALACE"}
                   <br />
-                  HIKKADUWA
+                  {mainTime || "HIKKADUWA"}
                 </DetailBlock>
 
                 <div className="mt-14 text-center font-serif text-3xl italic leading-10 text-[#bd9655]">

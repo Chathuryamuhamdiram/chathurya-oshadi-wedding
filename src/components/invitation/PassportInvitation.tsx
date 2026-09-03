@@ -311,6 +311,7 @@ export default function PassportInvitation({
                       label="PASSENGER"
                       value={guest.displayName}
                       script
+                      singleLine
                     />
 
                     <PassField
@@ -664,13 +665,15 @@ function PassField({
   label,
   value,
   script = false,
+  singleLine = false,
 }: {
   label: string;
   value: string;
   script?: boolean;
+  singleLine?: boolean;
 }) {
   return (
-    <div className="mb-6">
+    <div className="mb-6 min-w-0">
       <p className="text-xs font-semibold tracking-[0.12em] text-[#35455a]">
         {label}
       </p>
@@ -678,9 +681,16 @@ function PassField({
       <p
         className={`mt-2 text-[#18283c] ${
           script
-            ? "font-serif text-3xl italic"
+            ? `font-serif italic ${
+                singleLine && value.length > 25
+                  ? "text-lg md:text-xl"
+                  : singleLine && value.length > 15
+                  ? "text-xl md:text-2xl"
+                  : "text-3xl"
+              }`
             : "text-base font-medium tracking-[0.05em]"
-        }`}
+        } ${singleLine ? "whitespace-nowrap truncate" : ""}`}
+        title={singleLine ? value : undefined}
       >
         {value}
       </p>

@@ -681,13 +681,7 @@ function PassField({
       <p
         className={`mt-2 text-[#18283c] ${
           script
-            ? `font-serif italic ${
-                singleLine && value.length > 25
-                  ? "text-lg md:text-xl"
-                  : singleLine && value.length > 15
-                  ? "text-xl md:text-2xl"
-                  : "text-3xl"
-              }`
+            ? "font-serif text-3xl italic"
             : "text-base font-medium tracking-[0.05em]"
         } ${singleLine ? "whitespace-nowrap truncate" : ""}`}
         title={singleLine ? value : undefined}

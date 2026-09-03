@@ -118,3 +118,37 @@ export async function saveUserAction(formData: FormData) {
     };
   }
 }
+
+export async function deleteUserAction(id: string) {
+  try {
+    await requirePermission(PERMISSIONS.USER_MANAGE);
+    const session = await getAdminSession();
+    
+    if (session?.userId === id) {
+      return { success: false, error: "You cannot delete your own account." };
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return { success: false, error: "User not found." };
+    }
+
+    // Optional: Protect the last SUPER_ADMIN
+    if (user.role === "SUPER_ADMIN") {
+      const superAdmins = await prisma.user.count({ where: { role: "SUPER_ADMIN" } });
+      if (superAdmins <= 1) {
+        return { success: false, error: "Cannot delete the last SUPER_ADMIN." };
+      }
+    }
+
+    await prisma.user.delete({ where: { id } });
+
+    await createDeleteAuditLog(session!.userId, "User", id, { email: user.email }, "DELETE");
+
+    revalidatePath("/admin/team");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Delete user error:", error);
+    return { success: false, error: error.message || "Failed to delete user." };
+  }
+}

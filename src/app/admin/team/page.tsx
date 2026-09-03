@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/db";
+import { getAdminSession } from "@/lib/auth";
 import { UserForm } from "./UserForm";
+import { DeleteUserButton } from "./DeleteUserButton";
 
 export default async function TeamDashboardPage() {
+  const session = await getAdminSession();
+  const isSuperAdmin = session?.role === "SUPER_ADMIN";
+
   const users = await prisma.user.findMany({
     include: { assignedTasks: true },
     orderBy: { fullName: 'asc' }
@@ -31,7 +36,10 @@ export default async function TeamDashboardPage() {
                   <p className="text-white/40 text-xs font-sans mt-0.5 uppercase tracking-widest">{user.role.replace("_", " ")}</p>
                 </div>
               </div>
-              <UserForm existingUser={user} />
+              <div className="flex items-center gap-1">
+                <UserForm existingUser={user} />
+                {isSuperAdmin && <DeleteUserButton user={{ id: user.id, fullName: user.fullName }} />}
+              </div>
             </div>
             <div className="border-t border-white/[0.06] pt-4">
               <p className="text-white/60 text-sm font-sans">

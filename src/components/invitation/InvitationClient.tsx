@@ -27,7 +27,7 @@ interface InvitationClientProps {
   sealUrl?: string;
 }
 
-export function InvitationClient({ guest, poruwVenue, mainVenue, sealUrl }: InvitationClientProps) {
+export function InvitationClient({ guest, poruwVenue, mainVenue, poruwaTime, mainTime, sealUrl }: InvitationClientProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Store the invitation code so the public site's RSVP button can smart-redirect back here

@@ -125,9 +125,12 @@ model Contribution {
   amount           Float
   contributionDate DateTime @default(now())
   paymentMethod    String?
+  reference        String?
   purpose          String?
   notes            String?
+  status           String   @default("RECEIVED") // RECEIVED, PENDING, CANCELLED
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Task {

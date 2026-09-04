@@ -178,6 +178,46 @@ export async function deleteBudgetItem(id: string) {
   }
 }
 
+export async function saveContribution(formData: FormData) {
+  try {
+    await requirePermission(PERMISSIONS.BUDGET_EDIT);
+    const id = formData.get("id") as string | null;
+    const contributorName = formData.get("contributorName") as string;
+    const amount = parseFloat(formData.get("amount") as string || "0");
+    const contributionDateStr = formData.get("contributionDate") as string;
+    const paymentMethod = formData.get("paymentMethod") as string | null;
+    const reference = formData.get("reference") as string | null;
+    const notes = formData.get("notes") as string | null;
+    const status = formData.get("status") as string || "RECEIVED";
+
+    if (!contributorName || amount <= 0) {
+      return { success: false, error: "Valid contributor name and amount greater than 0 are required" };
+    }
+
+    const data = {
+      contributorName,
+      amount,
+      contributionDate: contributionDateStr ? new Date(contributionDateStr) : new Date(),
+      paymentMethod,
+      reference,
+      notes,
+      status,
+    };
+
+    if (id) {
+      await prisma.contribution.update({ where: { id }, data });
+    } else {
+      await prisma.contribution.create({ data });
+    }
+
+    revalidatePath("/admin/budget");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function deleteContribution(id: string) {
   try {
     const { session, error } = await checkDeletePermission(null); // SUPER_ADMIN only

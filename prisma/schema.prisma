@@ -59,6 +59,21 @@ model SeatingTable {
   updatedAt   DateTime @updatedAt
 }
 
+enum VendorStatus {
+  POTENTIAL
+  SHORTLISTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum ExpenseType {
+  ADVANCE
+  INSTALLMENT
+  FINAL_PAYMENT
+  OTHER
+}
+
 model BudgetCategory {
   id          String       @id @default(uuid())
   name        String
@@ -76,10 +91,11 @@ model Vendor {
   whatsappNumber  String?
   email           String?
   serviceCategory String?
-  quotationAmount Float        @default(0)
-  finalAmount     Float        @default(0)
-  advancePaid     Float        @default(0)
+  quotationAmount Decimal      @default(0) @db.Decimal(10, 2)
+  finalAmount     Decimal      @default(0) @db.Decimal(10, 2)
+  advancePaid     Decimal      @default(0) @db.Decimal(10, 2)
   nextPaymentDue  DateTime?
+  status          VendorStatus @default(POTENTIAL)
   notes           String?
   isArchived      Boolean      @default(false)
   items       BudgetItem[]
@@ -95,11 +111,11 @@ model BudgetItem {
   vendor            Vendor?        @relation(fields: [vendorId], references: [id])
   title             String
   description       String?
-  estimatedCost     Float          @default(0)
-  actualCost        Float          @default(0)
-  paidAmount        Float          @default(0)
+  estimatedCost     Decimal        @default(0) @db.Decimal(10, 2)
+  actualCost        Decimal        @default(0) @db.Decimal(10, 2)
+  paidAmount        Decimal        @default(0) @db.Decimal(10, 2)
   paymentDueDate    DateTime?
-  paymentStatus     String         @default("NOT_STARTED") // NOT_STARTED, ADVANCE_PAID, PARTIALLY_PAID, FULLY_PAID, OVERDUE
+  paymentStatus     String         @default("NOT_STARTED") // NOT_STARTED, PARTIALLY_PAID, FULLY_PAID, OVERDUE
   responsibleUserId String?
   notes             String?
   createdAt         DateTime       @default(now())
@@ -110,10 +126,11 @@ model BudgetItem {
 model Expense {
   id            String     @id @default(uuid())
   budgetItemId  String
-  budgetItem    BudgetItem @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+  budgetItem    BudgetItem @relation(fields: [budgetItemId], references: [id])
   expenseName   String
   expenseDate   DateTime   @default(now())
-  amount        Float
+  amount        Decimal    @db.Decimal(10, 2)
+  expenseType   ExpenseType @default(OTHER)
   paidByUserId  String?
   paymentMethod String?    // CASH, BANK_TRANSFER, CARD
   notes         String?
@@ -123,7 +140,7 @@ model Expense {
 model Contribution {
   id               String   @id @default(uuid())
   contributorName  String
-  amount           Float
+  amount           Decimal  @db.Decimal(10, 2)
   contributionDate DateTime @default(now())
   paymentMethod    String?
   reference        String?

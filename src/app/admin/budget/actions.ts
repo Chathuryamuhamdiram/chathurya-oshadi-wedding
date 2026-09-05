@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
+import { ExpenseType } from "@prisma/client";
 
 export async function saveBudgetCategory(formData: FormData) {
   try {
@@ -24,20 +25,48 @@ export async function saveBudgetCategory(formData: FormData) {
   }
 }
 
+export async function deleteBudgetCategory(id: string) {
+  try {
+    const { session, error } = await checkDeletePermission(null);
+    if (error) return { success: false, error };
+
+    const category = await prisma.budgetCategory.findUnique({
+      where: { id },
+      include: { items: true }
+    });
+    if (!category) return { success: false, error: "Category not found" };
+
+    if (category.items.length > 0) {
+      return { success: false, error: `This category cannot be deleted because it contains ${category.items.length} budget items. Move or delete those budget items before deleting this category.` };
+    }
+
+    await prisma.budgetCategory.delete({ where: { id } });
+    await createDeleteAuditLog(session!.userId, "BudgetCategory", id, { name: category.name }, "DELETE");
+    
+    revalidatePath("/admin/budget");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
 export async function saveBudgetItem(formData: FormData) {
   try {
     await requirePermission(PERMISSIONS.BUDGET_EDIT);
     const id = formData.get("id") as string | null;
     const title = formData.get("title") as string;
     const categoryId = formData.get("categoryId") as string;
+    const vendorId = formData.get("vendorId") as string | null;
     const estimatedCost = parseFloat(formData.get("estimatedCost") as string || "0");
     const paymentDueDateStr = formData.get("paymentDueDate") as string;
     
     if (!title || !categoryId) return { success: false, error: "Title and Category are required" };
 
-    const data = {
+    const data: any = {
       title,
       categoryId,
+      vendorId: vendorId === "none" ? null : (vendorId || null),
       estimatedCost,
       paymentDueDate: paymentDueDateStr ? new Date(paymentDueDateStr) : null,
     };
@@ -49,6 +78,7 @@ export async function saveBudgetItem(formData: FormData) {
     }
 
     revalidatePath("/admin/budget");
+    revalidatePath("/admin/vendors");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -61,6 +91,7 @@ export async function saveExpense(formData: FormData) {
     const budgetItemId = formData.get("budgetItemId") as string;
     const amount = parseFloat(formData.get("amount") as string);
     const expenseName = formData.get("expenseName") as string;
+    const expenseType = (formData.get("expenseType") as ExpenseType) || "OTHER";
     
     if (!budgetItemId || !amount || !expenseName) {
       return { success: false, error: "Required fields missing" };
@@ -74,6 +105,7 @@ export async function saveExpense(formData: FormData) {
           budgetItemId,
           expenseName,
           amount,
+          expenseType
         }
       });
 
@@ -84,9 +116,9 @@ export async function saveExpense(formData: FormData) {
       });
       
       if (item) {
-        const totalPaid = item.expenses.reduce((sum, e) => sum + e.amount, amount);
+        const totalPaid = item.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
         let status = "NOT_STARTED";
-        if (totalPaid >= item.estimatedCost && item.estimatedCost > 0) status = "FULLY_PAID";
+        if (totalPaid >= Number(item.estimatedCost) && Number(item.estimatedCost) > 0) status = "FULLY_PAID";
         else if (totalPaid > 0) status = "PARTIALLY_PAID";
         
         await tx.budgetItem.update({
@@ -100,6 +132,7 @@ export async function saveExpense(formData: FormData) {
     });
 
     revalidatePath("/admin/budget");
+    revalidatePath("/admin/vendors");
     revalidatePath("/admin"); // update dashboard
     return { success: true };
   } catch (error: any) {
@@ -128,9 +161,9 @@ export async function deleteExpense(id: string) {
       });
       
       if (item) {
-        const totalPaid = item.expenses.reduce((sum, e) => sum + e.amount, 0);
+        const totalPaid = item.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
         let status = "NOT_STARTED";
-        if (totalPaid >= item.estimatedCost && item.estimatedCost > 0) status = "FULLY_PAID";
+        if (totalPaid >= Number(item.estimatedCost) && Number(item.estimatedCost) > 0) status = "FULLY_PAID";
         else if (totalPaid > 0) status = "PARTIALLY_PAID";
         
         await tx.budgetItem.update({
@@ -143,8 +176,9 @@ export async function deleteExpense(id: string) {
       }
     });
 
-    await createDeleteAuditLog(session!.userId, "Expense", id, { expenseName: expense.expenseName, amount: expense.amount }, "DELETE");
+    await createDeleteAuditLog(session!.userId, "Expense", id, { expenseName: expense.expenseName, amount: Number(expense.amount) }, "DELETE");
     revalidatePath("/admin/budget");
+    revalidatePath("/admin/vendors");
     revalidatePath("/admin"); 
     return { success: true };
   } catch (error: any) {
@@ -168,9 +202,10 @@ export async function deleteBudgetItem(id: string) {
     }
 
     await prisma.budgetItem.delete({ where: { id } });
-    await createDeleteAuditLog(session!.userId, "BudgetItem", id, { title: item.title, estimatedCost: item.estimatedCost }, "DELETE");
+    await createDeleteAuditLog(session!.userId, "BudgetItem", id, { title: item.title, estimatedCost: Number(item.estimatedCost) }, "DELETE");
     
     revalidatePath("/admin/budget");
+    revalidatePath("/admin/vendors");
     revalidatePath("/admin");
     return { success: true };
   } catch (error: any) {
@@ -227,10 +262,9 @@ export async function deleteContribution(id: string) {
     if (!contribution) return { success: false, error: "Contribution not found" };
 
     await prisma.contribution.delete({ where: { id } });
-    await createDeleteAuditLog(session!.userId, "Contribution", id, { contributorName: contribution.contributorName, amount: contribution.amount }, "DELETE");
+    await createDeleteAuditLog(session!.userId, "Contribution", id, { contributorName: contribution.contributorName, amount: Number(contribution.amount) }, "DELETE");
 
-    // Revalidate paths when UI exists
-    // revalidatePath("/admin/contributions");
+    revalidatePath("/admin/budget");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

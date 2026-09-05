@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveExpense } from "./actions";
 import { DollarSign } from "lucide-react";
 import { DeleteExpenseButton } from "./DeleteExpenseButton";
@@ -14,7 +15,7 @@ export function ExpenseForm({
 }: { 
   budgetItemId: string; 
   itemName: string;
-  expenses?: { id: string; expenseName: string; amount: number; expenseDate: Date }[];
+  expenses?: { id: string; expenseName: string; amount: number; expenseDate: Date; expenseType?: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,11 +51,16 @@ export function ExpenseForm({
             {expenses.map(e => (
               <div key={e.id} className="flex justify-between items-center text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
                 <div>
-                  <div className="text-white/80">{e.expenseName}</div>
+                  <div className="text-white/80 flex items-center gap-2">
+                    {e.expenseName}
+                    {e.expenseType && (
+                      <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-white/50">{e.expenseType}</span>
+                    )}
+                  </div>
                   <div className="text-white/40 text-xs">{new Date(e.expenseDate).toLocaleDateString()}</div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="font-mono text-emerald-400 font-medium">${e.amount.toLocaleString()}</div>
+                  <div className="font-mono text-emerald-400 font-medium">{e.amount.toLocaleString()}</div>
                   <DeleteExpenseButton id={e.id} expenseName={e.expenseName} amount={e.amount} />
                 </div>
               </div>
@@ -65,14 +71,31 @@ export function ExpenseForm({
         <form action={onSubmit} className="space-y-4 mt-2 border-t border-white/10 pt-4">
           {error && <div className="text-sm text-red-400">{error}</div>}
           
-          <div className="space-y-1.5">
-            <label className="text-xs font-sans uppercase tracking-widest text-white/40">Expense Name / Note</label>
-            <Input name="expenseName" required placeholder="e.g., Advance Payment, Final Balance" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Expense Name / Note</label>
+              <Input name="expenseName" required placeholder="e.g., Advance Payment" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
+            </div>
+            
+            <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Payment Type</label>
+              <Select name="expenseType" defaultValue="OTHER">
+                <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                  <SelectItem value="ADVANCE">Advance</SelectItem>
+                  <SelectItem value="INSTALLMENT">Installment</SelectItem>
+                  <SelectItem value="FINAL_PAYMENT">Final Payment</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-xs font-sans uppercase tracking-widest text-white/40">Amount Paid</label>
-            <Input name="amount" type="number" min="0.01" step="0.01" required placeholder="$0.00" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
+            <Input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
           </div>
 
           <div className="flex justify-end pt-2">

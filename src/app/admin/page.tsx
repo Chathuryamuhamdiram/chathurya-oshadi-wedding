@@ -29,8 +29,8 @@ export default async function AdminDashboardPage() {
     const budgetStats = await prisma.budgetItem.aggregate({
       _sum: { estimatedCost: true, paidAmount: true }
     });
-    totalPlanned = budgetStats._sum.estimatedCost || 0;
-    totalSpent = budgetStats._sum.paidAmount || 0;
+    totalPlanned = Number(budgetStats._sum.estimatedCost || 0);
+    totalSpent = Number(budgetStats._sum.paidAmount || 0);
   }
 
   let allowedGuests = 0, confirmedGuests = 0;

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveBudgetItem } from "./actions";
 import { Plus } from "lucide-react";
 
-export function BudgetItemForm({ categories }: { categories: any[] }) {
+export function BudgetItemForm({ categories, vendors = [] }: { categories: any[], vendors?: any[] }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -57,8 +57,24 @@ export function BudgetItemForm({ categories }: { categories: any[] }) {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Estimated Cost</label>
-              <Input name="estimatedCost" type="number" min="0" step="0.01" required placeholder="$0.00" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
+              <Input name="estimatedCost" type="number" min="0" step="0.01" required placeholder="0.00" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-sans uppercase tracking-widest text-white/40">Linked Vendor (Optional)</label>
+            <Select name="vendorId">
+              <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                <SelectItem value="none">None</SelectItem>
+                {vendors.map(v => (
+                  <SelectItem key={v.id} value={v.id}>{v.vendorName}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-white/30">Select a vendor to sync expenses against their total bill.</p>
           </div>
 
           <div className="space-y-1.5">

@@ -80,24 +80,37 @@ export function VendorForm({ existingVendor }: { existingVendor?: any }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Quoted Amount</label>
-              <Input name="quotationAmount" type="number" min="0" step="0.01" defaultValue={existingVendor?.quotationAmount || ""} placeholder="$0.00" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
+              <Input name="quotationAmount" type="number" min="0" step="0.01" defaultValue={existingVendor?.quotationAmount || ""} placeholder="0.00" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Final Agreed</label>
-              <Input name="finalAmount" type="number" min="0" step="0.01" defaultValue={existingVendor?.finalAmount || ""} placeholder="$0.00" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Advance Paid</label>
-              <Input name="advancePaid" type="number" min="0" step="0.01" defaultValue={existingVendor?.advancePaid || ""} placeholder="$0.00" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
+              <Input name="finalAmount" type="number" min="0" step="0.01" defaultValue={existingVendor?.finalAmount || ""} placeholder="0.00" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-sans uppercase tracking-widest text-white/40">Next Payment Due Date</label>
-            <Input name="nextPaymentDue" type="date" defaultValue={existingVendor?.nextPaymentDue ? new Date(existingVendor.nextPaymentDue).toISOString().split('T')[0] : ""} className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Status</label>
+              <Select name="status" defaultValue={existingVendor?.status || "POTENTIAL"}>
+                <SelectTrigger className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                  <SelectItem value="POTENTIAL">Potential</SelectItem>
+                  <SelectItem value="SHORTLISTED">Shortlisted</SelectItem>
+                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Next Payment Due Date</label>
+              <Input name="nextPaymentDue" type="date" defaultValue={existingVendor?.nextPaymentDue ? new Date(existingVendor.nextPaymentDue).toISOString().split('T')[0] : ""} className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
+            </div>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-white/5">

@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { DollarSign, AlertCircle, CheckCircle2, PieChart, LayoutList, HandCoins } from "lucide-react";
+import { useState, useEffect } from "react";
+import { DollarSign, AlertCircle, CheckCircle2, PieChart, LayoutList, HandCoins, Building2 } from "lucide-react";
 import { CategoryForm } from "./CategoryForm";
 import { BudgetItemForm } from "./BudgetItemForm";
 import { ExpenseForm } from "./ExpenseForm";
 import { DeleteBudgetItemButton } from "./DeleteBudgetItemButton";
+import { DeleteBudgetCategoryButton } from "./DeleteBudgetCategoryButton";
 import { ContributionsList } from "./ContributionsList";
 import { ContributionForm } from "./ContributionForm";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export function BudgetContent({ 
   categories, 
   contributions,
+  vendors = [],
   plannedBudget,
   totalContributions,
   totalExpenses,
@@ -19,7 +22,23 @@ export function BudgetContent({
   fundingGap,
   fundingProgress
 }: any) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams?.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Sync state if URL changes
+  useEffect(() => {
+    const tab = searchParams?.get('tab');
+    if (tab && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    router.replace(`?tab=${tab}`, { scroll: false });
+  };
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8">
@@ -32,28 +51,28 @@ export function BudgetContent({
         <div className="flex items-center gap-4">
           <ContributionForm />
           <CategoryForm />
-          <BudgetItemForm categories={categories} />
+          <BudgetItemForm categories={categories} vendors={vendors} />
         </div>
       </div>
 
       {/* Tabs Navigation */}
       <div className="flex gap-2 border-b border-white/5 pb-px overflow-x-auto no-scrollbar">
         <button 
-          onClick={() => setActiveTab('overview')}
+          onClick={() => handleTabChange('overview')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
         >
           <PieChart className="w-4 h-4" />
           Overview
         </button>
         <button 
-          onClick={() => setActiveTab('budget-items')}
+          onClick={() => handleTabChange('budget-items')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'budget-items' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
         >
           <LayoutList className="w-4 h-4" />
           Budget Items
         </button>
         <button 
-          onClick={() => setActiveTab('contributions')}
+          onClick={() => handleTabChange('contributions')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'contributions' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
         >
           <HandCoins className="w-4 h-4" />
@@ -144,7 +163,10 @@ export function BudgetContent({
             categories.map((category: any) => (
               <div key={category.id} className="bg-[#1e2333] border border-white/5 rounded-2xl overflow-hidden">
                 <div className="px-6 py-4 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-white/70 uppercase tracking-widest">{category.name}</h2>
+                  <h2 className="text-sm font-semibold text-white/70 uppercase tracking-widest flex items-center">
+                    {category.name}
+                    <DeleteBudgetCategoryButton id={category.id} name={category.name} />
+                  </h2>
                   <div className="text-sm font-medium text-white/40">
                     {category.items.length} item{category.items.length === 1 ? "" : "s"}
                   </div>
@@ -172,11 +194,19 @@ export function BudgetContent({
                             <tr key={item.id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
                               <td className="px-6 py-4">
                                 <div className="font-medium text-white/90">{item.title}</div>
-                                {item.paymentDueDate && (
-                                  <div className="text-xs text-white/40 mt-1 flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3" /> Due {new Date(item.paymentDueDate).toLocaleDateString()}
-                                  </div>
-                                )}
+                                <div className="flex items-center gap-3 mt-1">
+                                  {item.vendor && (
+                                    <div className="text-[10px] text-blue-400/80 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                      <Building2 className="w-3 h-3" />
+                                      {item.vendor.vendorName}
+                                    </div>
+                                  )}
+                                  {item.paymentDueDate && (
+                                    <div className="text-xs text-white/40 flex items-center gap-1">
+                                      <AlertCircle className="w-3 h-3" /> Due {new Date(item.paymentDueDate).toLocaleDateString()}
+                                    </div>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-6 py-4 text-white/70 font-mono">
                                 {item.estimatedCost.toLocaleString()}

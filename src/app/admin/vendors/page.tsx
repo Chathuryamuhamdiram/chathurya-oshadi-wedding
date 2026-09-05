@@ -4,9 +4,39 @@ import { DeleteVendorButton } from "./DeleteVendorButton";
 import { Store, AlertCircle, Building2, Wallet } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminVendorsPage() {
-  const vendors = await prisma.vendor.findMany({
-    orderBy: { vendorName: 'asc' }
+  const vendorsRaw = await prisma.vendor.findMany({
+    orderBy: { vendorName: 'asc' },
+    include: {
+      items: {
+        include: { expenses: true }
+      }
+    }
+  });
+
+  // Calculate totals and serialize Decimals
+  const vendors = vendorsRaw.map(v => {
+    let vendorTotalPaid = Number(v.advancePaid);
+    v.items.forEach(item => {
+      item.expenses.forEach(exp => {
+        vendorTotalPaid += Number(exp.amount);
+      });
+    });
+
+    const finalAmount = Number(v.finalAmount);
+    const balance = finalAmount - vendorTotalPaid;
+    
+    return {
+      ...v,
+      quotationAmount: Number(v.quotationAmount),
+      finalAmount,
+      advancePaid: Number(v.advancePaid),
+      vendorTotalPaid,
+      outstandingBalance: Math.max(balance, 0),
+      items: undefined // Clean up for Client Components if passed
+    };
   });
 
   const totalVendors = vendors.filter(v => !v.isArchived).length;
@@ -15,6 +45,9 @@ export default async function AdminVendorsPage() {
   const next14Days = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
   
   const upcomingPayments = vendors.filter(v => 
+    !v.isArchived &&
+    v.status === "CONFIRMED" &&
+    v.outstandingBalance > 0 &&
     v.nextPaymentDue && 
     new Date(v.nextPaymentDue) >= now && 
     new Date(v.nextPaymentDue) <= next14Days
@@ -22,8 +55,8 @@ export default async function AdminVendorsPage() {
 
   let totalOutstanding = 0;
   vendors.forEach(v => {
-    if (!v.isArchived && v.finalAmount > v.advancePaid) {
-      totalOutstanding += (v.finalAmount - v.advancePaid);
+    if (!v.isArchived && v.status !== "CANCELLED") {
+      totalOutstanding += v.outstandingBalance;
     }
   });
 
@@ -68,7 +101,7 @@ export default async function AdminVendorsPage() {
             <Wallet className="w-4 h-4" /> Outstanding Vendor Balance
           </div>
           <div className="text-3xl font-semibold text-red-400 mt-auto">
-            ${totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            LKR {totalOutstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
         </div>
       </div>
@@ -99,58 +132,62 @@ export default async function AdminVendorsPage() {
                 </tr>
               </thead>
               <tbody>
-                {vendors.map(vendor => {
-                  const balance = vendor.finalAmount - vendor.advancePaid;
-                  return (
-                    <tr key={vendor.id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group ${vendor.isArchived ? 'opacity-50' : ''}`}>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-white/90 flex items-center gap-2">
-                          {vendor.vendorName}
-                          {vendor.isArchived && (
-                            <span className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/20 bg-white/5 text-white/50">
-                              Archived
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                          {vendor.serviceCategory || "General"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-white/80">{vendor.contactName || "No contact name"}</div>
-                        <div className="text-white/40 text-xs mt-0.5">{vendor.email || vendor.phone || "-"}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-white/80 font-mono">
-                          Agreed: ${vendor.finalAmount.toLocaleString()}
-                        </div>
-                        <div className="text-red-400/80 font-mono text-xs mt-0.5">
-                          Owes: ${balance > 0 ? balance.toLocaleString() : "0"}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        {vendor.nextPaymentDue ? (
-                          <div className={`flex items-center gap-1.5 ${
-                            new Date(vendor.nextPaymentDue) < now ? 'text-red-400 font-medium' : 'text-white/70'
-                          }`}>
-                            {new Date(vendor.nextPaymentDue).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <span className="text-white/20">-</span>
+                {vendors.map(vendor => (
+                  <tr key={vendor.id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group ${vendor.isArchived ? 'opacity-50' : ''}`}>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-white/90 flex items-center gap-2">
+                        {vendor.vendorName}
+                        {vendor.isArchived && (
+                          <span className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/20 bg-white/5 text-white/50">
+                            Archived
+                          </span>
                         )}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
-                        <Link href="/admin/budget" className="text-emerald-400/70 hover:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded transition-colors text-xs border border-emerald-500/20 inline-block">
+                        {vendor.status && (
+                          <span className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-white/50">
+                            {vendor.status}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        {vendor.serviceCategory || "General"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-white/80">{vendor.contactName || "No contact name"}</div>
+                      <div className="text-white/40 text-xs mt-0.5">{vendor.email || vendor.phone || "-"}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-white/80 font-mono">
+                        Agreed: {vendor.finalAmount.toLocaleString()}
+                      </div>
+                      <div className="text-red-400/80 font-mono text-xs mt-0.5">
+                        Owes: {vendor.outstandingBalance > 0 ? vendor.outstandingBalance.toLocaleString() : "0"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {vendor.nextPaymentDue ? (
+                        <div className={`flex items-center gap-1.5 ${
+                          new Date(vendor.nextPaymentDue) < now && vendor.outstandingBalance > 0 ? 'text-red-400 font-medium' : 'text-white/70'
+                        }`}>
+                          {new Date(vendor.nextPaymentDue).toLocaleDateString()}
+                        </div>
+                      ) : (
+                        <span className="text-white/20">-</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
+                      {!vendor.isArchived && vendor.outstandingBalance > 0 && (
+                        <Link href={`/admin/budget?tab=budget-items`} className="text-emerald-400/70 hover:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded transition-colors text-xs border border-emerald-500/20 inline-block">
                           Pay
                         </Link>
-                        <VendorForm existingVendor={vendor} />
-                        <DeleteVendorButton id={vendor.id} vendorName={vendor.vendorName} isArchived={vendor.isArchived} />
-                      </td>
-                    </tr>
-                  );
-                })}
+                      )}
+                      <VendorForm existingVendor={vendor} />
+                      <DeleteVendorButton id={vendor.id} vendorName={vendor.vendorName} isArchived={vendor.isArchived} />
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

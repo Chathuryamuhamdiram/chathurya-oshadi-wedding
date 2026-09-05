@@ -49,7 +49,7 @@ export default async function AdminCalendarPage() {
 
   vendors.forEach(v => {
     if (v.nextPaymentDue) {
-      const balance = v.finalAmount - v.advancePaid;
+      const balance = Number(v.finalAmount) - Number(v.advancePaid);
       if (balance > 0) {
         timeline.push({
           id: `vnd_${v.id}`,
@@ -65,7 +65,7 @@ export default async function AdminCalendarPage() {
 
   budgetItems.forEach(b => {
     if (b.paymentDueDate) {
-      const balance = b.estimatedCost - b.paidAmount;
+      const balance = Number(b.estimatedCost) - Number(b.paidAmount);
       if (balance > 0) {
         timeline.push({
           id: `bdg_${b.id}`,

@@ -1,16 +1,9 @@
 import { prisma } from "@/lib/db";
-import { CategoryForm } from "./CategoryForm";
-import { BudgetItemForm } from "./BudgetItemForm";
-import { ExpenseForm } from "./ExpenseForm";
-import { DeleteBudgetItemButton } from "./DeleteBudgetItemButton";
-import { DollarSign, AlertCircle, CheckCircle2, Wallet, TrendingUp, PieChart, LayoutList, HandCoins } from "lucide-react";
-import Link from "next/link";
-import { ContributionsList } from "./ContributionsList";
-import { ContributionForm } from "./ContributionForm";
+import { BudgetContent } from "./BudgetContent";
 
-export default async function AdminBudgetPage(props: { searchParams: { tab?: string } }) {
-  const activeTab = props.searchParams.tab || "overview";
+export const dynamic = "force-dynamic";
 
+export default async function AdminBudgetPage() {
   const categories = await prisma.budgetCategory.findMany({
     include: {
       items: {
@@ -42,213 +35,18 @@ export default async function AdminBudgetPage(props: { searchParams: { tab?: str
 
   const availableBalance = totalContributions - totalExpenses;
   const fundingGap = plannedBudget - totalContributions;
-
-  // Calculate funding progress
   const fundingProgress = plannedBudget > 0 ? Math.min(100, Math.max(0, (totalContributions / plannedBudget) * 100)) : 0;
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-white tracking-wide">Budget Management</h1>
-          <p className="text-white/50 text-sm mt-1">Track planned costs, contributions, and expenses.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <ContributionForm />
-          <CategoryForm />
-          <BudgetItemForm categories={categories} />
-        </div>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="flex gap-2 border-b border-white/5 pb-px overflow-x-auto no-scrollbar">
-        <Link 
-          href="/admin/budget?tab=overview" 
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
-        >
-          <PieChart className="w-4 h-4" />
-          Overview
-        </Link>
-        <Link 
-          href="/admin/budget?tab=budget-items" 
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'budget-items' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
-        >
-          <LayoutList className="w-4 h-4" />
-          Budget Items
-        </Link>
-        <Link 
-          href="/admin/budget?tab=contributions" 
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'contributions' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
-        >
-          <HandCoins className="w-4 h-4" />
-          Contributions
-        </Link>
-      </div>
-
-      {/* TABS CONTENT */}
-      {activeTab === "overview" && (
-        <div className="space-y-6">
-          {/* Summary Stat Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Planned Budget</span>
-              <div className="text-2xl lg:text-3xl font-semibold text-white mt-auto truncate" title={`LKR ${plannedBudget.toLocaleString()}`}>
-                LKR {plannedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-            
-            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Total Contributions</span>
-              <div className="text-2xl lg:text-3xl font-semibold text-emerald-400 mt-auto truncate" title={`LKR ${totalContributions.toLocaleString()}`}>
-                LKR {totalContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-
-            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Total Expenses</span>
-              <div className="text-2xl lg:text-3xl font-semibold text-rose-400 mt-auto truncate" title={`LKR ${totalExpenses.toLocaleString()}`}>
-                LKR {totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-
-            <div className={`bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group ${availableBalance < 0 ? 'ring-1 ring-rose-500/50' : ''}`}>
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none ${availableBalance < 0 ? 'bg-rose-500/10' : 'bg-[#BA9B5D]/10'}`} />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Available Balance</span>
-              <div className={`text-2xl lg:text-3xl font-semibold mt-auto truncate ${availableBalance < 0 ? 'text-rose-400' : 'text-[#BA9B5D]'}`} title={`LKR ${availableBalance.toLocaleString()}`}>
-                {availableBalance < 0 ? "-" : ""}LKR {Math.abs(availableBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-          </div>
-
-          {/* Progress / Funding Gap */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-medium">Funding Progress</h3>
-                  <span className="text-[#BA9B5D] font-mono text-xl">{fundingProgress.toFixed(1)}%</span>
-                </div>
-                <div className="w-full bg-black/40 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-amber-600 to-[#BA9B5D] h-full rounded-full" 
-                    style={{ width: `${fundingProgress}%` }}
-                  />
-                </div>
-                <p className="text-white/40 text-xs mt-3">
-                  LKR {totalContributions.toLocaleString()} contributed out of LKR {plannedBudget.toLocaleString()} planned.
-                </p>
-             </div>
-             
-             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-center">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-white font-medium mb-1">Funding Gap</h3>
-                    <p className="text-white/40 text-xs">Amount still needed to reach planned budget.</p>
-                  </div>
-                  <div className="text-2xl font-semibold text-white/90">
-                    {fundingGap > 0 ? `LKR ${fundingGap.toLocaleString()}` : "Fully Funded!"}
-                  </div>
-                </div>
-             </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "budget-items" && (
-        <div className="space-y-6">
-          {categories.length === 0 ? (
-            <div className="bg-white/5 rounded-2xl p-12 text-center border border-white/5">
-              <DollarSign className="w-12 h-12 text-white/20 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No Budget Data</h3>
-              <p className="text-white/40 text-sm">Create a category and add your first budget item to start tracking.</p>
-            </div>
-          ) : (
-            categories.map(category => (
-              <div key={category.id} className="bg-[#1e2333] border border-white/5 rounded-2xl overflow-hidden">
-                <div className="px-6 py-4 bg-white/[0.02] border-b border-white/5 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-white/70 uppercase tracking-widest">{category.name}</h2>
-                  <div className="text-sm font-medium text-white/40">
-                    {category.items.length} item{category.items.length === 1 ? "" : "s"}
-                  </div>
-                </div>
-                
-                {category.items.length === 0 ? (
-                  <div className="px-6 py-8 text-center text-white/30 text-sm">No items in this category.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm whitespace-nowrap">
-                      <thead>
-                        <tr className="text-white/30 text-xs uppercase tracking-widest border-b border-white/5">
-                          <th className="px-6 py-4 font-medium">Item</th>
-                          <th className="px-6 py-4 font-medium">Estimated (LKR)</th>
-                          <th className="px-6 py-4 font-medium">Paid (LKR)</th>
-                          <th className="px-6 py-4 font-medium">Balance (LKR)</th>
-                          <th className="px-6 py-4 font-medium">Status</th>
-                          <th className="px-6 py-4 font-medium text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {category.items.map(item => {
-                          const balance = item.estimatedCost - item.paidAmount;
-                          return (
-                            <tr key={item.id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group">
-                              <td className="px-6 py-4">
-                                <div className="font-medium text-white/90">{item.title}</div>
-                                {item.paymentDueDate && (
-                                  <div className="text-xs text-white/40 mt-1 flex items-center gap-1">
-                                    <AlertCircle className="w-3 h-3" /> Due {new Date(item.paymentDueDate).toLocaleDateString()}
-                                  </div>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-white/70 font-mono">
-                                {item.estimatedCost.toLocaleString()}
-                              </td>
-                              <td className="px-6 py-4 text-rose-400 font-mono">
-                                {item.paidAmount.toLocaleString()}
-                              </td>
-                              <td className="px-6 py-4 text-amber-400/80 font-mono">
-                                {balance > 0 ? balance.toLocaleString() : "0"}
-                              </td>
-                              <td className="px-6 py-4">
-                                {item.paymentStatus === "FULLY_PAID" ? (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                    <CheckCircle2 className="w-3.5 h-3.5" /> Paid
-                                  </span>
-                                ) : item.paymentStatus === "PARTIALLY_PAID" ? (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                    Partial
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 text-white/40 border border-white/10">
-                                    Pending
-                                  </span>
-                                )}
-                              </td>
-                              <td className="px-6 py-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <ExpenseForm budgetItemId={item.id} itemName={item.title} expenses={item.expenses} />
-                                  <DeleteBudgetItemButton id={item.id} title={item.title} />
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {activeTab === "contributions" && (
-        <ContributionsList contributions={contributions} />
-      )}
-    </div>
+    <BudgetContent 
+      categories={categories}
+      contributions={contributions}
+      plannedBudget={plannedBudget}
+      totalContributions={totalContributions}
+      totalExpenses={totalExpenses}
+      availableBalance={availableBalance}
+      fundingGap={fundingGap}
+      fundingProgress={fundingProgress}
+    />
   );
 }

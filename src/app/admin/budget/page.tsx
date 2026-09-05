@@ -64,21 +64,21 @@ export default async function AdminBudgetPage(props: { searchParams: { tab?: str
       {/* Tabs Navigation */}
       <div className="flex gap-2 border-b border-white/5 pb-px overflow-x-auto no-scrollbar">
         <Link 
-          href="?tab=overview" 
+          href="/admin/budget?tab=overview" 
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'overview' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
         >
           <PieChart className="w-4 h-4" />
           Overview
         </Link>
         <Link 
-          href="?tab=budget-items" 
+          href="/admin/budget?tab=budget-items" 
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'budget-items' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
         >
           <LayoutList className="w-4 h-4" />
           Budget Items
         </Link>
         <Link 
-          href="?tab=contributions" 
+          href="/admin/budget?tab=contributions" 
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'contributions' ? 'border-[#BA9B5D] text-[#BA9B5D]' : 'border-transparent text-white/50 hover:text-white/80'}`}
         >
           <HandCoins className="w-4 h-4" />

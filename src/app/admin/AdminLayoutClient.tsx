@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ReactNode, useState } from "react";
 import { logoutAction } from "@/app/login/actions";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
+import { EventSelector } from "@/components/admin/EventSelector";
 import { 
   LayoutDashboard, 
   Users, 
@@ -226,11 +227,15 @@ function AdminSidebar({
 export default function AdminLayoutClient({ 
   children, 
   role,
-  permissions 
+  permissions,
+  ceremonyEvents = [],
+  activeEventId = "all"
 }: { 
   children: ReactNode;
   role: string;
   permissions: string[];
+  ceremonyEvents?: { id: string; name: string; eventType: string }[];
+  activeEventId?: string;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -246,13 +251,16 @@ export default function AdminLayoutClient({
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Navbar */}
         <header className="h-16 bg-[#161d2d] border-b border-white/5 flex items-center justify-between px-4 lg:px-8 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex items-center gap-3 flex-1">
             <button 
               onClick={() => setIsSidebarOpen(true)}
               className="p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/5 lg:hidden transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
+
+            {/* Active Event Selector */}
+            <EventSelector events={ceremonyEvents} activeEventId={activeEventId} />
 
             {/* Quick Create Dropdown */}
             <Popover>

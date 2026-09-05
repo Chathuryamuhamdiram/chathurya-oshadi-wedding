@@ -3,14 +3,27 @@ import { VendorForm } from "./VendorForm";
 import { DeleteVendorButton } from "./DeleteVendorButton";
 import { Store, AlertCircle, Building2, Wallet } from "lucide-react";
 import Link from "next/link";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminVendorsPage() {
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
+
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
+
   const vendorsRaw = await prisma.vendor.findMany({
     orderBy: { vendorName: 'asc' },
     include: {
       items: {
+        where: isAllEvents ? {} : { eventId: activeEventId },
         include: { expenses: true }
       }
     }
@@ -66,7 +79,14 @@ export default async function AdminVendorsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-wide">Vendor Management</h1>
-          <p className="text-white/50 text-sm mt-1">Your digital address book for all wedding suppliers.</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-white/50 text-sm">Your digital address book for all wedding suppliers.</p>
+            {isAllEvents ? (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-white/5 text-white/40 border border-white/10">All Events</span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{activeEvent?.name}</span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <VendorForm />

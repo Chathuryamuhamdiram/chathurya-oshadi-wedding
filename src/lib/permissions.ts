@@ -42,6 +42,9 @@ export const PERMISSIONS = {
   CALENDAR_MANAGE: 'calendar.manage',
   CALENDAR_DELETE: 'calendar.delete',
 
+  EVENT_EDIT: 'calendar.manage',
+  EVENT_DELETE: 'calendar.delete',
+
   WEDDING_DAY_VIEW: 'wedding_day.view',
   WEDDING_DAY_MANAGE: 'wedding_day.manage',
 

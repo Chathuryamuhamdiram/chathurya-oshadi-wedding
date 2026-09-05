@@ -1,13 +1,24 @@
 import { prisma } from "@/lib/db";
 import { BudgetContent } from "./BudgetContent";
+import { getActiveEventId, buildEventFilter, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminBudgetPage() {
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
+  const itemsFilter = buildEventFilter(activeEventId);
+
+  // Categories are global; items are event-filtered
   const categoriesRaw = await prisma.budgetCategory.findMany({
     include: {
       items: {
-        include: { vendor: true, expenses: true },
+        where: isAllEvents ? {} : { eventId: activeEventId },
+        include: { 
+          vendor: true, 
+          expenses: true,
+          event: { select: { id: true, name: true, eventType: true } }
+        },
         orderBy: { createdAt: 'asc' }
       }
     },
@@ -15,8 +26,18 @@ export default async function AdminBudgetPage() {
   });
 
   const contributionsRaw = await prisma.contribution.findMany({
+    where: isAllEvents ? {} : { eventId: activeEventId },
     orderBy: { contributionDate: 'desc' }
   });
+
+  // Fetch active event info for display
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
 
   // Serialize Decimals for Client Component
   const categories = categoriesRaw.map(c => ({
@@ -88,6 +109,10 @@ export default async function AdminBudgetPage() {
       availableBalance={availableBalance}
       fundingGap={fundingGap}
       fundingProgress={fundingProgress}
+      activeEventId={activeEventId}
+      activeEventName={isAllEvents ? "All Events" : (activeEvent?.name ?? "")}
+      isAllEvents={isAllEvents}
     />
   );
 }
+

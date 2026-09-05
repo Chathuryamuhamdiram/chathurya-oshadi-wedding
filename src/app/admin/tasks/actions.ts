@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAdminSession, requirePermission } from "@/lib/auth";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export async function saveTask(formData: FormData) {
   try {
@@ -50,7 +51,17 @@ export async function saveTask(formData: FormData) {
       reminderSettingsJson = JSON.stringify({ remindAt: [reminderType] });
     }
 
-    const data = {
+    let eventId = formData.get("eventId") as string | null;
+
+    if (!id && !eventId) {
+      eventId = await getActiveEventId();
+      if (eventId === ALL_EVENTS_VALUE) {
+        const wedding = await prisma.ceremonyEvent.findFirst({ where: { eventType: "WEDDING", isActive: true } });
+        if (wedding) eventId = wedding.id;
+      }
+    }
+
+    const data: any = {
       title,
       description,
       category,
@@ -61,6 +72,10 @@ export async function saveTask(formData: FormData) {
       reminderSettings: reminderSettingsJson,
       status: formData.get("status") as string || "NOT_STARTED", // use provided status or default
     };
+
+    if (eventId) {
+      data.eventId = eventId;
+    }
 
     if (id) {
       // Update task

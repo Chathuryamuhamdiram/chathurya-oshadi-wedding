@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveBudgetItem } from "./actions";
 import { Plus, Edit2, Info } from "lucide-react";
 
-export function BudgetItemForm({ categories, vendors = [], existingItem, trigger }: { categories: any[], vendors?: any[], existingItem?: any, trigger?: React.ReactNode }) {
+export function BudgetItemForm({ categories, vendors = [], existingItem, trigger, activeEventId }: { categories: any[], vendors?: any[], existingItem?: any, trigger?: React.ReactNode, activeEventId?: string | null }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -52,6 +52,7 @@ export function BudgetItemForm({ categories, vendors = [], existingItem, trigger
           <DialogTitle className="font-serif text-xl tracking-wide">{isEdit ? "Edit Budget Item" : "Add Budget Item"}</DialogTitle>
         </DialogHeader>
         <form action={onSubmit} className="space-y-5 mt-2">
+          {activeEventId && <input type="hidden" name="eventId" value={activeEventId} />}
           {error && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg">{error}</div>}
           
           <div className="space-y-1.5">

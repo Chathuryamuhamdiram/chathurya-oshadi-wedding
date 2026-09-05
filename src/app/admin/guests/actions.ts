@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 const guestSchema = z.object({
   id: z.string().optional(),
@@ -68,7 +69,16 @@ export async function saveGuestAction(formData: FormData) {
       // Create
       // Generate a unique 8-character invitation code
       const code = nanoid(8).toUpperCase();
-      await prisma.guest.create({
+      let eventId = formData.get("eventId") as string | null;
+      if (!eventId) {
+        eventId = await getActiveEventId();
+        if (eventId === ALL_EVENTS_VALUE) {
+          const wedding = await prisma.ceremonyEvent.findFirst({ where: { eventType: "WEDDING", isActive: true } });
+          if (wedding) eventId = wedding.id;
+        }
+      }
+
+      const newGuest = await prisma.guest.create({
         data: {
           displayName: validatedData.displayName,
           primaryContactName: validatedData.primaryContactName,
@@ -85,6 +95,14 @@ export async function saveGuestAction(formData: FormData) {
           confirmedGuestCount: 0,
         },
       });
+
+      if (eventId && eventId !== ALL_EVENTS_VALUE) {
+        await prisma.eventGuest.upsert({
+          where: { guestId_eventId: { guestId: newGuest.id, eventId } },
+          create: { guestId: newGuest.id, eventId, rsvpStatus: "PENDING" },
+          update: {},
+        });
+      }
     }
 
     revalidatePath("/admin/guests");

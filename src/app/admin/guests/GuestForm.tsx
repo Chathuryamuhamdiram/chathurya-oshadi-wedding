@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveGuestAction } from "./actions";
 
-export function GuestForm({ existingGuest }: { existingGuest?: any }) {
+export function GuestForm({ existingGuest, activeEventId }: { existingGuest?: any, activeEventId?: string | null }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -63,6 +63,7 @@ export function GuestForm({ existingGuest }: { existingGuest?: any }) {
         </DialogHeader>
 
         <form action={onSubmit} className="space-y-5 mt-2">
+          {activeEventId && <input type="hidden" name="eventId" value={activeEventId} />}
           {error && (
             <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400 font-sans">
               {error}

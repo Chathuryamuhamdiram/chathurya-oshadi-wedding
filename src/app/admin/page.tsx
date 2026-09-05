@@ -4,6 +4,7 @@ import { ArrowRight, ArrowUpRight, ArrowDownRight, MoreHorizontal, Filter, Downl
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { verifyJWT } from "@/lib/auth";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export default async function AdminDashboardPage() {
   const sessionCookie = (await cookies()).get("admin_session")?.value;
@@ -17,6 +18,17 @@ export default async function AdminDashboardPage() {
   const canViewGuests = permissions.includes("guest.view") || role === "SUPER_ADMIN";
   const canViewTasks = permissions.includes("task.view") || role === "SUPER_ADMIN" || role === "FAMILY_MEMBER";
 
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
+
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
+
   // 1. Fetch Top Stats Data
   const now = new Date();
   const nextEvent = await prisma.weddingEvent.findFirst({
@@ -27,6 +39,7 @@ export default async function AdminDashboardPage() {
   let totalPlanned = 0, totalSpent = 0;
   if (canViewBudget) {
     const budgetStats = await prisma.budgetItem.aggregate({
+      where: isAllEvents ? {} : { eventId: activeEventId },
       _sum: { estimatedCost: true, paidAmount: true }
     });
     totalPlanned = Number(budgetStats._sum.estimatedCost || 0);
@@ -80,6 +93,7 @@ export default async function AdminDashboardPage() {
   let recentExpenses: any[] = [];
   if (canViewBudget) {
     recentExpenses = await prisma.expense.findMany({
+      where: isAllEvents ? {} : { budgetItem: { eventId: activeEventId } },
       take: 4,
       orderBy: { expenseDate: 'desc' },
       include: { budgetItem: true }
@@ -92,7 +106,14 @@ export default async function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-wide">Dashboard</h1>
-          <p className="text-white/50 text-sm mt-1">An easy way to manage your wedding with care and precision.</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-white/50 text-sm">An easy way to manage your wedding with care and precision.</p>
+            {isAllEvents ? (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-white/5 text-white/40 border border-white/10">All Events</span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{activeEvent?.name}</span>
+            )}
+          </div>
         </div>
       </div>
 

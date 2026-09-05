@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 import { ExpenseType } from "@prisma/client";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export async function saveBudgetCategory(formData: FormData) {
   try {
@@ -64,7 +65,18 @@ export async function saveBudgetItem(formData: FormData) {
     const advancePaid = advancePaidStr ? parseFloat(advancePaidStr) : 0;
     const advancePaymentDateStr = formData.get("advancePaymentDate") as string;
     
+    let eventId = formData.get("eventId") as string | null;
+
+    if (!id && !eventId) {
+      eventId = await getActiveEventId();
+      if (eventId === ALL_EVENTS_VALUE) {
+        const wedding = await prisma.ceremonyEvent.findFirst({ where: { eventType: "WEDDING", isActive: true } });
+        if (wedding) eventId = wedding.id;
+      }
+    }
+
     if (!title || !categoryId) return { success: false, error: "Title and Category are required" };
+    if (!id && !eventId) return { success: false, error: "Event ID is required for creating a budget item" };
 
     const data: any = {
       title,
@@ -73,6 +85,10 @@ export async function saveBudgetItem(formData: FormData) {
       estimatedCost,
       paymentDueDate: paymentDueDateStr ? new Date(paymentDueDateStr) : null,
     };
+
+    if (!id && eventId) {
+      data.eventId = eventId;
+    }
 
     await prisma.$transaction(async (tx) => {
       let budgetItemId = id;
@@ -285,11 +301,21 @@ export async function saveContribution(formData: FormData) {
     const notes = formData.get("notes") as string | null;
     const status = formData.get("status") as string || "RECEIVED";
 
+    let eventId = formData.get("eventId") as string | null;
+
+    if (!id && !eventId) {
+      eventId = await getActiveEventId();
+      if (eventId === ALL_EVENTS_VALUE) {
+        const wedding = await prisma.ceremonyEvent.findFirst({ where: { eventType: "WEDDING", isActive: true } });
+        if (wedding) eventId = wedding.id;
+      }
+    }
+
     if (!contributorName || amount <= 0) {
       return { success: false, error: "Valid contributor name and amount greater than 0 are required" };
     }
 
-    const data = {
+    const data: any = {
       contributorName,
       amount,
       contributionDate: contributionDateStr ? new Date(contributionDateStr) : new Date(),
@@ -298,6 +324,10 @@ export async function saveContribution(formData: FormData) {
       notes,
       status,
     };
+
+    if (eventId) {
+      data.eventId = eventId;
+    }
 
     if (id) {
       await prisma.contribution.update({ where: { id }, data });

@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { GuestForm } from "./GuestForm";
 import { WhatsAppShareModal } from "./WhatsAppShareModal";
 import { DeleteGuestButton } from "./DeleteGuestButton";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 function getRsvpColor(status: string) {
   switch (status) {
@@ -25,9 +26,29 @@ function getTypeColor(type: string) {
 }
 
 export default async function AdminGuestsPage() {
-  const guests = await prisma.guest.findMany({
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
+
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
+
+  const rawGuests = await prisma.guest.findMany({
+    include: {
+      eventGuests: {
+        include: { event: { select: { id: true, name: true } } }
+      }
+    },
     orderBy: { createdAt: "desc" },
   });
+
+  const guests = isAllEvents 
+    ? rawGuests 
+    : rawGuests.filter(g => g.eventGuests.some(eg => eg.eventId === activeEventId) || g.eventGuests.length === 0);
 
   const totalAllowed = guests.reduce((sum, g) => sum + g.allowedGuestCount, 0);
   const totalConfirmed = guests.reduce((sum, g) => sum + g.confirmedGuestCount, 0);
@@ -38,10 +59,17 @@ export default async function AdminGuestsPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-serif text-white tracking-wide">Guest Management</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-serif text-white tracking-wide">Guest Management</h1>
+            {isAllEvents ? (
+              <span className="text-xs px-2.5 py-1 rounded-md bg-white/5 text-white/40 border border-white/10 font-sans">All Events</span>
+            ) : (
+              <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-sans">{activeEvent?.name}</span>
+            )}
+          </div>
           <p className="text-white/40 text-sm font-sans mt-1">{guests.length} guests · {totalAllowed} seats allocated</p>
         </div>
-        <GuestForm />
+        <GuestForm activeEventId={isAllEvents ? null : activeEventId} />
       </div>
 
       {/* Summary Cards */}
@@ -142,7 +170,7 @@ export default async function AdminGuestsPage() {
                         <WhatsAppShareModal guest={guest} />
 
                         <div>
-                          <GuestForm existingGuest={guest} />
+                          <GuestForm existingGuest={guest} activeEventId={isAllEvents ? null : activeEventId} />
                         </div>
                         
                         <DeleteGuestButton guest={{ id: guest.id, displayName: guest.displayName }} />

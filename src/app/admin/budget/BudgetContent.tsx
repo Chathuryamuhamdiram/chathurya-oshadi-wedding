@@ -21,7 +21,10 @@ export function BudgetContent({
   totalExpenses,
   availableBalance,
   fundingGap,
-  fundingProgress
+  fundingProgress,
+  activeEventId = "all",
+  activeEventName = "All Events",
+  isAllEvents = false
 }: any) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,12 +52,22 @@ export function BudgetContent({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-wide">Budget Management</h1>
-          <p className="text-white/50 text-sm mt-1">Track planned costs, contributions, and expenses.</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-white/50 text-sm">Track planned costs, contributions, and expenses.</p>
+            {isAllEvents ? (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-white/5 text-white/40 border border-white/10">All Events</span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{activeEventName}</span>
+            )}
+          </div>
+          {isAllEvents && (
+            <p className="text-amber-400/70 text-xs mt-1">⚠️ Viewing all events — creating records requires selecting a specific event first</p>
+          )}
         </div>
         <div className="flex items-center gap-4">
-          <ContributionForm />
+          <ContributionForm activeEventId={isAllEvents ? null : activeEventId} />
           <CategoryForm />
-          <BudgetItemForm categories={categories} vendors={vendors} />
+          <BudgetItemForm categories={categories} vendors={vendors} activeEventId={isAllEvents ? null : activeEventId} />
         </div>
       </div>
 

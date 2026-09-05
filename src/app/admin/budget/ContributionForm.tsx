@@ -8,9 +8,10 @@ import { Contribution } from "@prisma/client";
 interface ContributionFormProps {
   contribution?: any;
   trigger?: React.ReactNode;
+  activeEventId?: string | null;
 }
 
-export function ContributionForm({ contribution, trigger }: ContributionFormProps) {
+export function ContributionForm({ contribution, trigger, activeEventId }: ContributionFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -65,6 +66,7 @@ export function ContributionForm({ contribution, trigger }: ContributionFormProp
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              {activeEventId && <input type="hidden" name="eventId" value={activeEventId} />}
               {error && <div className="text-sm text-red-400">{error}</div>}
               <div>
                 <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">

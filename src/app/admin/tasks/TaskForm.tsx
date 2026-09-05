@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveTask } from "./actions";
 import { Plus } from "lucide-react";
 
-export function TaskForm({ users, existingTask }: { users: any[], existingTask?: any }) {
+export function TaskForm({ users, existingTask, activeEventId }: { users: any[], existingTask?: any, activeEventId?: string | null }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -67,6 +67,7 @@ export function TaskForm({ users, existingTask }: { users: any[], existingTask?:
           <DialogTitle className="font-serif text-xl tracking-wide">{existingTask ? "Edit Task" : "New Task"}</DialogTitle>
         </DialogHeader>
         <form action={onSubmit} className="space-y-4 mt-2">
+          {activeEventId && <input type="hidden" name="eventId" value={activeEventId} />}
           {error && <div className="text-sm text-red-400">{error}</div>}
           
           <div className="space-y-1.5">

@@ -5,6 +5,7 @@ import { verifyJWT } from "@/lib/auth";
 import { TaskForm } from "./TaskForm";
 import { DeleteTaskButton } from "./DeleteTaskButton";
 import { CheckSquare, AlertCircle, Clock, Calendar as CalendarIcon, ArrowUp, ArrowDown } from "lucide-react";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 type PageProps = {
   searchParams: Promise<{ sort?: string; order?: string }>;
@@ -14,6 +15,9 @@ export default async function AdminTasksPage(props: PageProps) {
   const searchParams = await props.searchParams;
   const sort = searchParams.sort || 'dueDate';
   const order = searchParams.order === 'desc' ? 'desc' : 'asc';
+
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
 
   let orderBy: any = {};
   if (sort === 'assignee') {
@@ -35,15 +39,31 @@ export default async function AdminTasksPage(props: PageProps) {
     }
   }
 
+  const baseWhere: any = isAllEvents ? {} : { eventId: activeEventId };
+  if (userRole === "FAMILY_MEMBER") {
+    baseWhere.assignedUserId = userId;
+  }
+
   const tasks = await prisma.task.findMany({
-    where: userRole === "FAMILY_MEMBER" ? { assignedUserId: userId } : undefined,
-    include: { assignedUser: true },
+    where: baseWhere,
+    include: { 
+      assignedUser: true,
+      event: { select: { id: true, name: true, eventType: true } }
+    },
     orderBy
   });
 
   const users = await prisma.user.findMany({
     orderBy: { fullName: 'asc' }
   });
+
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
 
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === "COMPLETED").length;
@@ -75,10 +95,17 @@ export default async function AdminTasksPage(props: PageProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-wide">Task Management</h1>
-          <p className="text-white/50 text-sm mt-1">Collaborate with your family and vendors to stay on track.</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-white/50 text-sm">Collaborate with your family and vendors to stay on track.</p>
+            {isAllEvents ? (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-white/5 text-white/40 border border-white/10">All Events</span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{activeEvent?.name}</span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
-          <TaskForm users={users} />
+          <TaskForm users={users} activeEventId={isAllEvents ? null : activeEventId} />
         </div>
       </div>
 
@@ -216,7 +243,7 @@ export default async function AdminTasksPage(props: PageProps) {
                           <Link href={`/admin/tasks/${task.id}`} className="text-xs text-white/50 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded border border-white/5 transition-colors">
                             Details
                           </Link>
-                          <TaskForm users={users} existingTask={task} />
+                          <TaskForm users={users} existingTask={task} activeEventId={isAllEvents ? null : activeEventId} />
                           <DeleteTaskButton task={{ id: task.id, title: task.title }} />
                         </div>
                       </td>

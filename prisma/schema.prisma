@@ -26,6 +26,71 @@ model User {
   userPermissions  UserPermission[]
 }
 
+// ─── Multi-Event Enums ──────────────────────────────────────────────────────
+
+enum CeremonyType {
+  WEDDING
+  HOMECOMING
+  PORUWA
+  ENGAGEMENT
+  PRE_SHOOT
+  AFTER_PARTY
+  OTHER
+}
+
+enum CeremonyStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ─── CeremonyEvent ──────────────────────────────────────────────────────────
+
+model CeremonyEvent {
+  id           String         @id @default(uuid())
+  name         String
+  eventType    CeremonyType   @default(WEDDING)
+  eventDate    DateTime?
+  startTime    String?
+  endTime      String?
+  venueName    String?
+  venueAddress String?
+  description  String?
+  status       CeremonyStatus @default(PLANNING)
+  isActive     Boolean        @default(true)
+
+  budgetItems   BudgetItem[]
+  tasks         Task[]
+  contributions Contribution[]
+  guestLinks    EventGuest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── EventGuest (shared guest identity, per-event membership) ───────────────
+
+model EventGuest {
+  id             String        @id @default(uuid())
+  guestId        String
+  eventId        String
+  invitationCount Int?
+  rsvpStatus     String?
+  confirmedCount Int?
+  liquorCount    Int?
+  tableNumber    String?
+  notes          String?
+
+  guest Guest         @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  event CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([guestId, eventId])
+}
+
 model Guest {
   id                       String    @id @default(uuid())
   invitationCode           String    @unique
@@ -48,6 +113,7 @@ model Guest {
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
   logistics                GuestLogistics?
+  eventGuests              EventGuest[]
 }
 
 model SeatingTable {
@@ -105,6 +171,8 @@ model Vendor {
 
 model BudgetItem {
   id                String         @id @default(uuid())
+  eventId           String?
+  event             CeremonyEvent? @relation(fields: [eventId], references: [id])
   categoryId        String
   category          BudgetCategory @relation(fields: [categoryId], references: [id])
   vendorId          String?
@@ -138,21 +206,25 @@ model Expense {
 }
 
 model Contribution {
-  id               String   @id @default(uuid())
+  id               String         @id @default(uuid())
+  eventId          String?
+  event            CeremonyEvent? @relation(fields: [eventId], references: [id])
   contributorName  String
-  amount           Decimal  @db.Decimal(10, 2)
-  contributionDate DateTime @default(now())
+  amount           Decimal        @db.Decimal(10, 2)
+  contributionDate DateTime       @default(now())
   paymentMethod    String?
   reference        String?
   purpose          String?
   notes            String?
-  status           String   @default("RECEIVED") // RECEIVED, PENDING, CANCELLED
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  status           String         @default("RECEIVED") // RECEIVED, PENDING, CANCELLED
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model Task {
   id               String         @id @default(uuid())
+  eventId          String?
+  event            CeremonyEvent? @relation(fields: [eventId], references: [id])
   title            String
   description      String?
   category         String?

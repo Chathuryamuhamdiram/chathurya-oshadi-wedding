@@ -52,8 +52,10 @@ export default async function AdminBudgetPage() {
   const vendors = vendorsRaw.map(v => ({
     id: v.id,
     vendorName: v.vendorName,
+    serviceCategory: v.serviceCategory,
     quotationAmount: Number(v.quotationAmount),
-    finalAmount: Number(v.finalAmount)
+    finalAmount: Number(v.finalAmount),
+    advancePaid: Number(v.advancePaid)
   }));
 
   // Calculate totals

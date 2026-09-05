@@ -179,7 +179,7 @@ export default async function AdminVendorsPage() {
                     </td>
                     <td className="px-6 py-4 text-right space-x-2 flex items-center justify-end">
                       {!vendor.isArchived && vendor.outstandingBalance > 0 && (
-                        <Link href={`/admin/budget?tab=budget-items`} className="text-emerald-400/70 hover:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded transition-colors text-xs border border-emerald-500/20 inline-block">
+                        <Link href={`/admin/budget?tab=budget-items&action=payment&vendorId=${vendor.id}`} className="text-emerald-400/70 hover:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded transition-colors text-xs border border-emerald-500/20 inline-block">
                           Pay
                         </Link>
                       )}

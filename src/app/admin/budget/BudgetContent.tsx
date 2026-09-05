@@ -9,6 +9,7 @@ import { DeleteBudgetItemButton } from "./DeleteBudgetItemButton";
 import { DeleteBudgetCategoryButton } from "./DeleteBudgetCategoryButton";
 import { ContributionsList } from "./ContributionsList";
 import { ContributionForm } from "./ContributionForm";
+import { VendorPaymentModal } from "./VendorPaymentModal";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export function BudgetContent({ 
@@ -42,6 +43,8 @@ export function BudgetContent({
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8">
+      <VendorPaymentModal vendors={vendors} categories={categories} />
+      
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -211,8 +214,15 @@ export function BudgetContent({
                               <td className="px-6 py-4 text-white/70 font-mono">
                                 {item.estimatedCost.toLocaleString()}
                               </td>
-                              <td className="px-6 py-4 text-rose-400 font-mono">
-                                {item.paidAmount.toLocaleString()}
+                              <td className="px-6 py-4 font-mono">
+                                <div className="text-rose-400">
+                                  {item.paidAmount.toLocaleString()}
+                                </div>
+                                {item.expenses && item.expenses.find((e: any) => e.expenseType === 'ADVANCE') && (
+                                  <div className="text-[10px] text-white/40 mt-1">
+                                    Incl. Advance: {Number(item.expenses.find((e: any) => e.expenseType === 'ADVANCE').amount).toLocaleString()}
+                                  </div>
+                                )}
                               </td>
                               <td className="px-6 py-4 text-amber-400/80 font-mono">
                                 {balance > 0 ? balance.toLocaleString() : "0"}
@@ -235,6 +245,16 @@ export function BudgetContent({
                               <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2">
                                   <ExpenseForm budgetItemId={item.id} itemName={item.title} expenses={item.expenses} />
+                                  <BudgetItemForm 
+                                    categories={categories} 
+                                    vendors={vendors} 
+                                    existingItem={item}
+                                    trigger={
+                                      <button className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-md transition-colors" title="Edit Budget Item">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                      </button>
+                                    }
+                                  />
                                   <DeleteBudgetItemButton id={item.id} title={item.title} />
                                 </div>
                               </td>

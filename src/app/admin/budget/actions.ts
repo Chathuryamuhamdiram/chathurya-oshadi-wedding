@@ -60,6 +60,9 @@ export async function saveBudgetItem(formData: FormData) {
     const vendorId = formData.get("vendorId") as string | null;
     const estimatedCost = parseFloat(formData.get("estimatedCost") as string || "0");
     const paymentDueDateStr = formData.get("paymentDueDate") as string;
+    const advancePaidStr = formData.get("advancePaid") as string;
+    const advancePaid = advancePaidStr ? parseFloat(advancePaidStr) : 0;
+    const advancePaymentDateStr = formData.get("advancePaymentDate") as string;
     
     if (!title || !categoryId) return { success: false, error: "Title and Category are required" };
 
@@ -71,11 +74,68 @@ export async function saveBudgetItem(formData: FormData) {
       paymentDueDate: paymentDueDateStr ? new Date(paymentDueDateStr) : null,
     };
 
-    if (id) {
-      await prisma.budgetItem.update({ where: { id }, data });
-    } else {
-      await prisma.budgetItem.create({ data });
-    }
+    await prisma.$transaction(async (tx) => {
+      let budgetItemId = id;
+
+      if (id) {
+        await tx.budgetItem.update({ where: { id }, data });
+      } else {
+        const newItem = await tx.budgetItem.create({ data });
+        budgetItemId = newItem.id;
+      }
+
+      // Handle ADVANCE Expense
+      if (budgetItemId) {
+        const existingAdvance = await tx.expense.findFirst({
+          where: { budgetItemId, expenseType: "ADVANCE" }
+        });
+
+        if (advancePaid > 0) {
+          if (existingAdvance) {
+            await tx.expense.update({
+              where: { id: existingAdvance.id },
+              data: {
+                amount: advancePaid,
+                expenseDate: advancePaymentDateStr ? new Date(advancePaymentDateStr) : new Date()
+              }
+            });
+          } else {
+            await tx.expense.create({
+              data: {
+                budgetItemId,
+                expenseName: "Advance Payment",
+                expenseType: "ADVANCE",
+                amount: advancePaid,
+                expenseDate: advancePaymentDateStr ? new Date(advancePaymentDateStr) : new Date()
+              }
+            });
+          }
+        } else if (advancePaid === 0 && existingAdvance) {
+          await tx.expense.delete({ where: { id: existingAdvance.id } });
+        }
+
+        // Recalculate Budget Item
+        const item = await tx.budgetItem.findUnique({ 
+          where: { id: budgetItemId },
+          include: { expenses: true }
+        });
+        
+        if (item) {
+          const totalPaid = item.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+          let status = "NOT_STARTED";
+          if (totalPaid >= Number(item.estimatedCost) && Number(item.estimatedCost) > 0) status = "FULLY_PAID";
+          else if (totalPaid > 0) status = "PARTIALLY_PAID";
+          
+          await tx.budgetItem.update({
+            where: { id: budgetItemId },
+            data: {
+              paidAmount: totalPaid,
+              paymentStatus: status,
+            }
+          });
+        }
+      }
+    });
 
     revalidatePath("/admin/budget");
     revalidatePath("/admin/vendors");

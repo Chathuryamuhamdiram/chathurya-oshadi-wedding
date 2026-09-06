@@ -42,45 +42,56 @@ export default async function AdminDashboardPage() {
 
   // 2. Financial Metrics (Budget, Expenses, Contributions)
   let totalPlanned = 0, totalSpent = 0, outstandingBalance = 0, availableFunds = 0;
-  let categoryData: any[] = [];
+  let chartData: any[] = [];
   let recentExpenses: any[] = [];
 
   if (canViewBudget) {
-    const categories = await prisma.budgetCategory.findMany({
-      include: {
-        items: {
-          where: isAllEvents ? {} : { eventId: activeEventId },
-          include: { expenses: true }
-        }
-      },
-      orderBy: { sortOrder: 'asc' }
+    const budgetItems = await prisma.budgetItem.findMany({
+      where: isAllEvents ? {} : { eventId: activeEventId },
+      include: { expenses: true }
     });
 
-    categories.forEach(c => {
-      let catPlanned = 0;
-      let catSpent = 0;
+    const timelineMap: Record<string, { planned: number, spent: number }> = {};
+
+    budgetItems.forEach(item => {
+      const itemPlanned = Number(item.estimatedCost || 0);
+      totalPlanned += itemPlanned;
       
-      c.items.forEach(item => {
-        const itemPlanned = Number(item.estimatedCost || 0);
-        catPlanned += itemPlanned;
+      const monthKey = item.createdAt.toISOString().slice(0, 7); // YYYY-MM
+      if (!timelineMap[monthKey]) timelineMap[monthKey] = { planned: 0, spent: 0 };
+      timelineMap[monthKey].planned += itemPlanned;
+      
+      let itemSpent = 0;
+      item.expenses.forEach(exp => {
+        const expAmount = Number(exp.amount || 0);
+        itemSpent += expAmount;
+        totalSpent += expAmount;
         
-        let itemSpent = 0;
-        item.expenses.forEach(exp => {
-          itemSpent += Number(exp.amount || 0);
-        });
-        
-        catSpent += itemSpent;
-        
-        // Outstanding Balance per item
-        outstandingBalance += Math.max(itemPlanned - itemSpent, 0);
+        const expMonthKey = exp.expenseDate.toISOString().slice(0, 7);
+        if (!timelineMap[expMonthKey]) timelineMap[expMonthKey] = { planned: 0, spent: 0 };
+        timelineMap[expMonthKey].spent += expAmount;
       });
       
-      totalPlanned += catPlanned;
-      totalSpent += catSpent;
+      outstandingBalance += Math.max(itemPlanned - itemSpent, 0);
+    });
+
+    const sortedMonths = Object.keys(timelineMap).sort();
+    
+    let cumulativePlanned = 0;
+    let cumulativeSpent = 0;
+    
+    chartData = sortedMonths.map(monthKey => {
+      cumulativePlanned += timelineMap[monthKey].planned;
+      cumulativeSpent += timelineMap[monthKey].spent;
       
-      if (catPlanned > 0 || catSpent > 0) {
-        categoryData.push({ name: c.name, planned: catPlanned, spent: catSpent });
-      }
+      const date = new Date(monthKey + "-01T00:00:00Z");
+      const name = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      
+      return {
+        name,
+        planned: cumulativePlanned,
+        spent: cumulativeSpent
+      };
     });
 
     const contributions = await prisma.contribution.aggregate({
@@ -260,20 +271,20 @@ export default async function AdminDashboardPage() {
           {canViewBudget && (
             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6">
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <h2 className="text-lg font-semibold text-white">Budget Breakdown</h2>
+                <h2 className="text-lg font-semibold text-white">Budget Overview</h2>
                 <div className="flex items-center gap-4 text-xs font-medium">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-slate-400"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
                     <span className="text-white/50">Planned</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                     <span className="text-white/50">Paid</span>
                   </div>
                 </div>
               </div>
               
-              {/* Budget Breakdown Header Grid */}
+              {/* Budget Overview Header Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 p-4 rounded-xl bg-black/20 border border-white/5">
                 <div>
                   <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Total Planned</p>
@@ -297,8 +308,8 @@ export default async function AdminDashboardPage() {
                 </div>
               </div>
               
-              {/* Recharts Bar Chart */}
-              <BudgetBreakdownChart data={categoryData} />
+              {/* Recharts Line Chart */}
+              <BudgetBreakdownChart data={chartData} />
             </div>
           )}
 

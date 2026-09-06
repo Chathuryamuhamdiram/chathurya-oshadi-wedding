@@ -1,17 +1,17 @@
 "use client";
 
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from "recharts";
 import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
 
-// 1. Budget Breakdown Chart (Bar Chart)
+// 1. Budget Breakdown Chart (Line Chart)
 export function BudgetBreakdownChart({ data }: { data: any[] }) {
   if (!data || data.length === 0) {
     return (
       <div className="h-[250px] w-full mt-4 flex items-center justify-center border border-white/5 bg-black/20 rounded-xl">
-        <p className="text-white/40 text-sm">No budget items added for this event yet.</p>
+        <p className="text-white/40 text-sm">No budget activity recorded for this event yet.</p>
       </div>
     );
   }
@@ -19,7 +19,7 @@ export function BudgetBreakdownChart({ data }: { data: any[] }) {
   return (
     <div className="h-[250px] w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }} barGap={2}>
+        <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
           <XAxis 
             dataKey="name" 
@@ -40,9 +40,9 @@ export function BudgetBreakdownChart({ data }: { data: any[] }) {
             itemStyle={{ color: '#fff' }}
             formatter={(value: any) => [formatCurrency(value), ""]}
           />
-          <Bar dataKey="planned" fill="#94a3b8" radius={[4, 4, 0, 0]} name="Planned" maxBarSize={50} />
-          <Bar dataKey="spent" fill="#34d399" radius={[4, 4, 0, 0]} name="Paid" maxBarSize={50} />
-        </BarChart>
+          <Line type="monotone" dataKey="planned" stroke="#94a3b8" strokeWidth={3} dot={{ r: 4, fill: '#1e2333', strokeWidth: 2 }} activeDot={{ r: 6 }} name="Planned" />
+          <Line type="monotone" dataKey="spent" stroke="#34d399" strokeWidth={3} dot={{ r: 4, fill: '#1e2333', strokeWidth: 2 }} activeDot={{ r: 6 }} name="Paid" />
+        </LineChart>
       </ResponsiveContainer>
     </div>
   );

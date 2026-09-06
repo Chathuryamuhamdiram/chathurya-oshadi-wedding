@@ -64,6 +64,7 @@ model CeremonyEvent {
   tasks         Task[]
   contributions Contribution[]
   guestLinks    EventGuest[]
+  itineraryEvents WeddingEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -306,7 +307,9 @@ model Venue {
 }
 
 model WeddingEvent {
-  id          String    @id @default(uuid())
+  id          String         @id @default(uuid())
+  eventId     String?
+  event       CeremonyEvent? @relation(fields: [eventId], references: [id])
   title       String
   description String?
   eventDate   DateTime?

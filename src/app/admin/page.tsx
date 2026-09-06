@@ -25,14 +25,17 @@ export default async function AdminDashboardPage() {
   if (!isAllEvents) {
     activeEvent = await prisma.ceremonyEvent.findUnique({
       where: { id: activeEventId },
-      select: { id: true, name: true, eventType: true }
+      select: { id: true, name: true, eventType: true, eventDate: true }
     });
   }
 
   // 1. Fetch Top Stats Data
   const now = new Date();
   const nextEvent = await prisma.weddingEvent.findFirst({
-    where: { eventDate: { gte: now } },
+    where: { 
+      eventDate: { gte: now },
+      ...(isAllEvents ? {} : { eventId: activeEventId })
+    },
     orderBy: { eventDate: 'asc' }
   });
 
@@ -47,32 +50,35 @@ export default async function AdminDashboardPage() {
   }
 
   let allowedGuests = 0, confirmedGuests = 0;
-  if (canViewGuests) {
-    const guestStats = await prisma.guest.aggregate({
-      _sum: { allowedGuestCount: true, confirmedGuestCount: true }
-    });
-    allowedGuests = guestStats._sum.allowedGuestCount || 0;
-    confirmedGuests = guestStats._sum.confirmedGuestCount || 0;
-  }
-
-  // 2. Fetch Chart Data
   let donutData = [
     { name: 'Attending', value: 0 },
     { name: 'Declined', value: 0 },
     { name: 'Pending', value: 0 },
   ];
   let attending = 0, declined = 0, pending = 0;
-  
+
   if (canViewGuests) {
-    const rsvpGroup = await prisma.guest.groupBy({
-      by: ['rsvpStatus'],
-      _sum: { allowedGuestCount: true }
+    const rawGuests = await prisma.guest.findMany({
+      include: {
+        eventGuests: isAllEvents ? true : { where: { eventId: activeEventId } }
+      }
     });
-    rsvpGroup.forEach(g => {
-      if (g.rsvpStatus === 'ATTENDING') attending += g._sum.allowedGuestCount || 0;
-      else if (g.rsvpStatus === 'NOT_ATTENDING') declined += g._sum.allowedGuestCount || 0;
-      else pending += g._sum.allowedGuestCount || 0;
+
+    const scopedGuests = isAllEvents 
+      ? rawGuests 
+      : rawGuests.filter(g => g.eventGuests.some(eg => eg.eventId === activeEventId) || g.eventGuests.length === 0);
+
+    scopedGuests.forEach(g => {
+      const allowed = g.allowedGuestCount || 0;
+      const confirmed = g.confirmedGuestCount || 0;
+      allowedGuests += allowed;
+      confirmedGuests += confirmed;
+
+      if (g.rsvpStatus === 'ATTENDING') attending += allowed;
+      else if (g.rsvpStatus === 'NOT_ATTENDING') declined += allowed;
+      else pending += allowed;
     });
+
     donutData = [
       { name: 'Attending', value: attending },
       { name: 'Declined', value: declined },
@@ -138,10 +144,12 @@ export default async function AdminDashboardPage() {
               Upcoming Event
             </span>
             <div className="text-white/90 text-sm font-medium mb-1">
-              {nextEvent?.eventDate ? new Date(nextEvent.eventDate).toLocaleDateString() : "No upcoming events"}
+              {nextEvent?.eventDate 
+                ? new Date(nextEvent.eventDate).toLocaleDateString() 
+                : (activeEvent?.eventDate ? new Date(activeEvent.eventDate).toLocaleDateString() : "No upcoming events")}
             </div>
             <div className="text-white text-xl font-semibold leading-tight">
-              {nextEvent?.title || "Plan your next milestone"}
+              {nextEvent?.title || activeEvent?.name || "Plan your next milestone"}
             </div>
           </div>
           <Link href="/admin/events" className="relative z-10 flex items-center gap-2 text-white text-sm font-medium hover:opacity-80 transition-opacity mt-2 w-fit">

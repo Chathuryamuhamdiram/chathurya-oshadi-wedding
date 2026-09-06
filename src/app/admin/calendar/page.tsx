@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
-import { EventForm } from "./EventForm";
+import { EventForm } from "../events/EventForm";
 import { Calendar as CalendarIcon, Clock, CheckSquare, Building2, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 type TimelineItem = {
   id: string;
@@ -15,12 +16,27 @@ type TimelineItem = {
 };
 
 export default async function AdminCalendarPage() {
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
+
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
+
   // 1. Fetch all dates
-  const [events, tasks, vendors, budgetItems] = await Promise.all([
-    prisma.weddingEvent.findMany({ where: { eventDate: { not: null } } }),
-    prisma.task.findMany({ where: { dueDate: { not: null }, status: { not: "COMPLETED" } } }),
-    prisma.vendor.findMany({ where: { nextPaymentDue: { not: null } } }),
-    prisma.budgetItem.findMany({ where: { paymentDueDate: { not: null }, paymentStatus: { not: "FULLY_PAID" } } })
+  const [events, tasks, vendors, budgetItems, venues] = await Promise.all([
+    prisma.weddingEvent.findMany({ where: { eventDate: { not: null }, ...(isAllEvents ? {} : { eventId: activeEventId }) } }),
+    prisma.task.findMany({ where: { dueDate: { not: null }, status: { not: "COMPLETED" }, ...(isAllEvents ? {} : { eventId: activeEventId }) } }),
+    prisma.vendor.findMany({
+      where: { nextPaymentDue: { not: null } },
+      include: { items: { where: isAllEvents ? {} : { eventId: activeEventId } } }
+    }),
+    prisma.budgetItem.findMany({ where: { paymentDueDate: { not: null }, paymentStatus: { not: "FULLY_PAID" }, ...(isAllEvents ? {} : { eventId: activeEventId }) } }),
+    prisma.venue.findMany({ orderBy: { name: 'asc' } })
   ]);
 
   // 2. Aggregate into timeline
@@ -99,10 +115,17 @@ export default async function AdminCalendarPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-wide">Master Timeline</h1>
-          <p className="text-white/50 text-sm mt-1">Every event, task, and payment in one unified view.</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-white/50 text-sm">Every event, task, and payment in one unified view.</p>
+            {isAllEvents ? (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-white/5 text-white/40 border border-white/10">All Events</span>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{activeEvent?.name}</span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-4">
-          <EventForm />
+          <EventForm venues={venues} activeEventId={isAllEvents ? null : activeEventId} />
         </div>
       </div>
 

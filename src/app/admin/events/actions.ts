@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 const venueSchema = z.object({
   id: z.string().optional(),
@@ -101,6 +102,16 @@ export async function saveEventAction(formData: FormData) {
     const parsed = eventSchema.parse(rawData);
     const dateObj = parsed.eventDate ? new Date(parsed.eventDate) : null;
 
+    let eventId = formData.get("eventId") as string | null;
+
+    if (!parsed.id && !eventId) {
+      eventId = await getActiveEventId();
+      if (eventId === ALL_EVENTS_VALUE) {
+        const wedding = await prisma.ceremonyEvent.findFirst({ where: { eventType: "WEDDING", isActive: true } });
+        if (wedding) eventId = wedding.id;
+      }
+    }
+
     if (parsed.id) {
       await prisma.weddingEvent.update({
         where: { id: parsed.id },
@@ -113,6 +124,7 @@ export async function saveEventAction(formData: FormData) {
           venueId: parsed.venueId,
           visibility: parsed.visibility,
           sortOrder: parsed.sortOrder,
+          ...(eventId ? { eventId } : {}),
         },
       });
     } else {
@@ -126,6 +138,7 @@ export async function saveEventAction(formData: FormData) {
           venueId: parsed.venueId,
           visibility: parsed.visibility,
           sortOrder: parsed.sortOrder,
+          ...(eventId ? { eventId } : {}),
         }
       });
     }

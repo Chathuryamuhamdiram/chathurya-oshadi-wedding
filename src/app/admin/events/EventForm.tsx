@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TimePicker } from "@/components/ui/TimePicker";
 import { saveEventAction } from "./actions";
 
-export function EventForm({ venues, existingEvent }: { venues: any[], existingEvent?: any }) {
+export function EventForm({ venues, existingEvent, activeEventId }: { venues: any[], existingEvent?: any, activeEventId?: string | null }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,6 +52,7 @@ export function EventForm({ venues, existingEvent }: { venues: any[], existingEv
         </DialogHeader>
 
         <form action={onSubmit} className="space-y-5 mt-2" key={existingEvent?.updatedAt || "new"}>
+          {activeEventId && <input type="hidden" name="eventId" value={activeEventId} />}
           {error && (
             <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400 font-sans">
               {error}

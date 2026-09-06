@@ -3,14 +3,27 @@ import { EventForm } from "./EventForm";
 import { VenueForm } from "./VenueForm";
 import { EventItemList } from "./EventItemList";
 import { DeleteEventButton } from "./DeleteEventButton";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export default async function EventsDashboardPage() {
+  const activeEventId = await getActiveEventId();
+  const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
+
+  let activeEvent = null;
+  if (!isAllEvents) {
+    activeEvent = await prisma.ceremonyEvent.findUnique({
+      where: { id: activeEventId },
+      select: { id: true, name: true, eventType: true }
+    });
+  }
+
   const venues = await prisma.venue.findMany({
     orderBy: { name: 'asc' }
   });
 
   const events = await prisma.weddingEvent.findMany({
-    include: { venue: true, items: true },
+    where: isAllEvents ? {} : { eventId: activeEventId },
+    include: { venue: true, items: true, event: { select: { id: true, name: true } } },
     orderBy: [
       { eventDate: 'asc' },
       { sortOrder: 'asc' },
@@ -23,12 +36,19 @@ export default async function EventsDashboardPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-serif text-white tracking-wide">Itinerary & Events</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-serif text-white tracking-wide">Itinerary & Events</h1>
+            {isAllEvents ? (
+              <span className="text-xs px-2.5 py-1 rounded-md bg-white/5 text-white/40 border border-white/10 font-sans">All Events</span>
+            ) : (
+              <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-sans">{activeEvent?.name}</span>
+            )}
+          </div>
           <p className="text-white/40 text-sm font-sans mt-1">Manage venues and the wedding day schedule.</p>
         </div>
         <div className="flex gap-3">
           <VenueForm />
-          <EventForm venues={venues} />
+          <EventForm venues={venues} activeEventId={isAllEvents ? null : activeEventId} />
         </div>
       </div>
 
@@ -84,7 +104,7 @@ export default async function EventsDashboardPage() {
                     </div>
                     
                     <div className="shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity mt-4 md:mt-0 flex items-center gap-2">
-                      <EventForm venues={venues} existingEvent={event} />
+                      <EventForm venues={venues} existingEvent={event} activeEventId={isAllEvents ? null : activeEventId} />
                       <DeleteEventButton type="event" id={event.id} title={event.title} />
                     </div>
                   </div>

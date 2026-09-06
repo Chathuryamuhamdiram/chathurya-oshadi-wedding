@@ -112,6 +112,21 @@ async function main() {
   }
   console.log(`  ✅ Created ${createdEventGuests} EventGuest links (${guests.length - createdEventGuests} already existed)`);
 
+  // 7. Migrate existing WeddingEvent (itinerary items) without eventId → assign to Wedding
+  const unlinkedItinerary = await prisma.weddingEvent.findMany({
+    where: { eventId: null },
+    select: { id: true },
+  });
+  if (unlinkedItinerary.length > 0) {
+    await prisma.weddingEvent.updateMany({
+      where: { eventId: null },
+      data: { eventId: wedding.id },
+    });
+    console.log(`  ✅ Migrated ${unlinkedItinerary.length} Itinerary Events → Wedding`);
+  } else {
+    console.log(`  ℹ️  No unlinked Itinerary Events to migrate`);
+  }
+
   console.log(`\n🎉 Seed complete!`);
   console.log(`   Wedding event ID:    ${wedding.id}`);
   console.log(`   Homecoming event ID: ${homecoming.id}\n`);

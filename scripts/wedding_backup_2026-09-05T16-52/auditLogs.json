@@ -1,0 +1,172 @@
+[
+  {
+    "id": "a554e430-dc53-4357-a425-3c5923239cc0",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "Guest",
+    "entityId": "828b38b9-3db2-4cf5-9af3-bf15fef46f33",
+    "oldValue": "{\"displayName\":\"Chathurya Muhamdiram\",\"invitationCode\":\"LJLUOTSH\"}",
+    "newValue": null,
+    "createdAt": "2026-09-02T15:01:13.949Z"
+  },
+  {
+    "id": "01fe48f7-7f21-4977-9084-431189422359",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "GuestbookEntry",
+    "entityId": "abd3aa2a-e9ec-4683-a05c-62349145adab",
+    "oldValue": "{\"authorName\":\"Amma\",\"contentPreview\":\"love\\r\\n\\r\\n— Memory: love\"}",
+    "newValue": null,
+    "createdAt": "2026-09-02T16:45:16.704Z"
+  },
+  {
+    "id": "4f28621c-caaf-4540-86fb-396975a573a9",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "GalleryImage",
+    "entityId": "31de12a9-b79c-40ba-b6dd-4889a6cf09c1",
+    "oldValue": "{\"url\":\"<base64_data>\"}",
+    "newValue": null,
+    "createdAt": "2026-09-02T19:07:52.497Z"
+  },
+  {
+    "id": "c7ac2065-5446-4c31-b75a-269a1c63b560",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "WeddingEvent",
+    "entityId": "6a98d749-705c-4c48-92c3-43a6c838f5ee",
+    "oldValue": "{\"title\":\"Honeymoon\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T13:11:02.883Z"
+  },
+  {
+    "id": "7b0b7ff3-0b68-40df-a4b6-b9801027e4e2",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "WeddingEvent",
+    "entityId": "d6d1cadb-e3be-4536-b79e-b81e26c2a9e6",
+    "oldValue": "{\"title\":\"Honeymoon\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T13:15:59.530Z"
+  },
+  {
+    "id": "97266efe-51ae-485f-a69f-3b688ddee690",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "Guest",
+    "entityId": "d5ce0a39-3548-438c-852c-61721922f059",
+    "oldValue": "{\"displayName\":\"Test Individual\",\"invitationCode\":\"TEST_IND_B\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T14:42:51.019Z"
+  },
+  {
+    "id": "ee8c095e-ab95-4566-a68a-7c163a345660",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "Guest",
+    "entityId": "13300721-8eda-4ab7-ad4e-657daefa9815",
+    "oldValue": "{\"displayName\":\"Perera Family\",\"invitationCode\":\"TEST_FAM_A\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T14:42:59.643Z"
+  },
+  {
+    "id": "bd6f36c0-34d9-419d-b5bd-b56ac01accee",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "WeddingEvent",
+    "entityId": "9466395d-1de4-487e-a30a-ad614a3979bb",
+    "oldValue": "{\"title\":\"Test Event\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T14:43:55.221Z"
+  },
+  {
+    "id": "e42cac62-6659-4cd1-a62e-d6cb4c48470f",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "User",
+    "entityId": "90f6fe6b-2392-4122-aacc-3d9ba5928c11",
+    "oldValue": "{\"email\":\"admin@test.com\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T15:23:15.036Z"
+  },
+  {
+    "id": "80385fea-e28f-4776-a140-b464320f6f64",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "User",
+    "entityId": "e6c001ac-ee5c-4f04-9518-f12bb9f93574",
+    "oldValue": "{\"email\":\"familyA@test.com\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T15:29:59.990Z"
+  },
+  {
+    "id": "b53d7474-e1af-4b05-b7de-cff3c451ccfa",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "User",
+    "entityId": "e6747823-caac-4bf4-9883-ea3f6973c5d5",
+    "oldValue": "{\"email\":\"familyB@test.com\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T15:30:16.384Z"
+  },
+  {
+    "id": "28844e86-23ae-41ea-8744-56728cc55d2e",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "User",
+    "entityId": "f94c5ec8-229a-4031-8cb3-3b25fb5d5a3a",
+    "oldValue": "{\"email\":\"admin@wedding.com\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T15:30:34.596Z"
+  },
+  {
+    "id": "f3218ad5-19a5-4129-ad99-718a88d77d0d",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "User",
+    "entityId": "a0cf9158-4146-4131-a056-47c12388ff0e",
+    "oldValue": "{\"email\":\"superadmin@test.com\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T15:31:29.841Z"
+  },
+  {
+    "id": "d44a0b4a-b852-4aaf-a0d4-95ffddbfbaba",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "User",
+    "entityId": "57249e97-96cd-4f6e-a5db-c271717018b1",
+    "oldValue": "{\"email\":\"viewer@test.com\"}",
+    "newValue": null,
+    "createdAt": "2026-09-03T15:31:43.517Z"
+  },
+  {
+    "id": "8a3d1f38-a308-4a76-8d0a-e2a68f0632a5",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "BudgetItem",
+    "entityId": "8606b451-a6b5-4655-905f-c42b4f4ee837",
+    "oldValue": "{\"title\":\"Contribution Achchi Amma\",\"estimatedCost\":50000}",
+    "newValue": null,
+    "createdAt": "2026-09-05T07:48:39.606Z"
+  },
+  {
+    "id": "d4206f3d-a48b-4654-91d3-72624b7fdf57",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "BudgetCategory",
+    "entityId": "a9dc8e1a-2556-456b-bcc1-68f96cbad20f",
+    "oldValue": "{\"name\":\"Contribution Achchi Amma\"}",
+    "newValue": null,
+    "createdAt": "2026-09-05T15:57:25.386Z"
+  },
+  {
+    "id": "1b39cff3-21d3-4656-9e7a-4451543337c6",
+    "userId": "bb4aa3bf-ed58-43fb-8e26-9c1d66c584ef",
+    "action": "DELETE",
+    "entity": "Guest",
+    "entityId": "241ebbf4-2925-4e33-8f42-136bb23e495e",
+    "oldValue": "{\"displayName\":\"Bhanu Bappa\",\"invitationCode\":\"BSGMISAP\"}",
+    "newValue": null,
+    "createdAt": "2026-09-05T16:34:21.395Z"
+  }
+]

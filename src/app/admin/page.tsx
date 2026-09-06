@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/db";
 import { BudgetBreakdownChart, GuestAttendanceDonut } from "@/components/admin/DashboardCharts";
-import { ArrowRight, ArrowUpRight, ArrowDownRight, MoreHorizontal, Filter, Download, Plus, Settings, DollarSign } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ArrowDownRight, MoreHorizontal, Filter, Download, Plus, Settings, DollarSign, Wallet } from "lucide-react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { verifyJWT } from "@/lib/auth";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
   const sessionCookie = (await cookies()).get("admin_session")?.value;
@@ -39,16 +40,68 @@ export default async function AdminDashboardPage() {
     orderBy: { eventDate: 'asc' }
   });
 
-  let totalPlanned = 0, totalSpent = 0;
+  // 2. Financial Metrics (Budget, Expenses, Contributions)
+  let totalPlanned = 0, totalSpent = 0, outstandingBalance = 0, availableFunds = 0;
+  let categoryData: any[] = [];
+  let recentExpenses: any[] = [];
+
   if (canViewBudget) {
-    const budgetStats = await prisma.budgetItem.aggregate({
-      where: isAllEvents ? {} : { eventId: activeEventId },
-      _sum: { estimatedCost: true, paidAmount: true }
+    const categories = await prisma.budgetCategory.findMany({
+      include: {
+        items: {
+          where: isAllEvents ? {} : { eventId: activeEventId },
+          include: { expenses: true }
+        }
+      },
+      orderBy: { sortOrder: 'asc' }
     });
-    totalPlanned = Number(budgetStats._sum.estimatedCost || 0);
-    totalSpent = Number(budgetStats._sum.paidAmount || 0);
+
+    categories.forEach(c => {
+      let catPlanned = 0;
+      let catSpent = 0;
+      
+      c.items.forEach(item => {
+        const itemPlanned = Number(item.estimatedCost || 0);
+        catPlanned += itemPlanned;
+        
+        let itemSpent = 0;
+        item.expenses.forEach(exp => {
+          itemSpent += Number(exp.amount || 0);
+        });
+        
+        catSpent += itemSpent;
+        
+        // Outstanding Balance per item
+        outstandingBalance += Math.max(itemPlanned - itemSpent, 0);
+      });
+      
+      totalPlanned += catPlanned;
+      totalSpent += catSpent;
+      
+      if (catPlanned > 0 || catSpent > 0) {
+        categoryData.push({ name: c.name, planned: catPlanned, spent: catSpent });
+      }
+    });
+
+    const contributions = await prisma.contribution.aggregate({
+      where: {
+        status: "RECEIVED",
+        ...(isAllEvents ? {} : { eventId: activeEventId })
+      },
+      _sum: { amount: true }
+    });
+    
+    availableFunds = Number(contributions._sum.amount || 0) - totalSpent;
+
+    recentExpenses = await prisma.expense.findMany({
+      where: isAllEvents ? {} : { budgetItem: { eventId: activeEventId } },
+      take: 4,
+      orderBy: { expenseDate: 'desc' },
+      include: { budgetItem: { include: { vendor: true } } }
+    });
   }
 
+  // 3. Guest Metrics
   let allowedGuests = 0, confirmedGuests = 0;
   let donutData = [
     { name: 'Attending', value: 0 },
@@ -87,25 +140,8 @@ export default async function AdminDashboardPage() {
     ];
   }
 
-  // Area Chart Mock Data for Demo (Could aggregate real expenses by month)
-  const areaData = [
-    { name: 'Jan', planned: 4000, spent: 2400 },
-    { name: 'Feb', planned: 5000, spent: 3800 },
-    { name: 'Mar', planned: 6000, spent: 5800 },
-    { name: 'Apr', planned: 8000, spent: 7500 },
-    { name: 'May', planned: 12000, spent: Math.round(totalSpent) },
-  ];
-
-  // 3. Fetch Recent Activity (Expenses)
-  let recentExpenses: any[] = [];
-  if (canViewBudget) {
-    recentExpenses = await prisma.expense.findMany({
-      where: isAllEvents ? {} : { budgetItem: { eventId: activeEventId } },
-      take: 4,
-      orderBy: { expenseDate: 'desc' },
-      include: { budgetItem: true }
-    });
-  }
+  const utilizationPercent = totalPlanned > 0 ? Math.round((totalSpent / totalPlanned) * 100) : 0;
+  const isOverspent = totalSpent > totalPlanned;
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -125,11 +161,10 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* TOP AREA: Quick Info Stat Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${canViewBudget && canViewGuests ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6`}>
         
-        {/* Stat Card 1: Green Alert Banner */}
+        {/* Stat Card 1: Upcoming Event */}
         <div className="relative overflow-hidden rounded-2xl bg-emerald-500 p-6 flex flex-col justify-between shadow-lg shadow-emerald-500/20 group h-[160px]">
-          {/* SVG Background Decoration (Matches Spark Admin Geometric Star) */}
           <div className="absolute -top-12 -right-12 w-48 h-48 opacity-20 pointer-events-none transform group-hover:rotate-12 transition-transform duration-700">
             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g transform="translate(50,50)">
@@ -149,14 +184,10 @@ export default async function AdminDashboardPage() {
                 ? new Date(nextEvent.eventDate).toLocaleDateString() 
                 : (activeEvent?.eventDate ? new Date(activeEvent.eventDate).toLocaleDateString() : "No upcoming events")}
             </div>
-            <div className="text-white text-xl font-semibold leading-tight">
+            <div className="text-white text-xl font-semibold leading-tight truncate">
               {nextEvent?.title || activeEvent?.name || "Plan your next milestone"}
             </div>
           </div>
-          <Link href="/admin/events" className="relative z-10 flex items-center gap-2 text-white text-sm font-medium hover:opacity-80 transition-opacity mt-2 w-fit">
-            <span>See Events</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
         </div>
 
         {/* Stat Card 2: Budget Utilization */}
@@ -164,28 +195,44 @@ export default async function AdminDashboardPage() {
           <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[160px]">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-white/50 text-sm font-medium tracking-wide">Budget Utilization</span>
-                <button className="text-white/40 hover:text-white transition-colors">
-                  <MoreHorizontal className="w-5 h-5" />
-                </button>
+                <span className="text-white/50 text-sm font-medium tracking-wide">Total Paid</span>
+                <Wallet className="w-5 h-5 text-white/20" />
               </div>
               <div className="text-3xl font-semibold text-white">
-                ${totalSpent.toLocaleString()}
+                {formatCurrencyCompact(totalSpent)}
               </div>
-              <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-emerald-400 bg-emerald-500/10 w-fit px-2 py-1 rounded-md">
+              <div className={`flex items-center gap-1.5 mt-2 text-xs font-medium w-fit px-2 py-1 rounded-md ${isOverspent ? 'text-red-400 bg-red-500/10' : 'text-emerald-400 bg-emerald-500/10'}`}>
                 <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>{totalPlanned > 0 ? Math.round((totalSpent/totalPlanned)*100) : 0}% of Planned</span>
+                <span>{utilizationPercent}% of Planned Budget</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Stat Card 3: Guest Confirmations */}
+        {/* Stat Card 3: Available Funds */}
+        {canViewBudget && (
+          <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[160px]">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/50 text-sm font-medium tracking-wide">Available Funds</span>
+                <DollarSign className="w-5 h-5 text-white/20" />
+              </div>
+              <div className="text-3xl font-semibold text-white">
+                {formatCurrencyCompact(availableFunds)}
+              </div>
+              <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-indigo-400 bg-indigo-500/10 w-fit px-2 py-1 rounded-md">
+                <span>Based on contributions</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stat Card 4: Guest Confirmations */}
         {canViewGuests && (
           <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[160px]">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-white/50 text-sm font-medium tracking-wide">Total Confirmations</span>
+                <span className="text-white/50 text-sm font-medium tracking-wide">Confirmations</span>
                 <button className="text-white/40 hover:text-white transition-colors">
                   <MoreHorizontal className="w-5 h-5" />
                 </button>
@@ -212,26 +259,46 @@ export default async function AdminDashboardPage() {
           {/* Revenue Chart Box */}
           {canViewBudget && (
             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <h2 className="text-lg font-semibold text-white">Budget Breakdown</h2>
                 <div className="flex items-center gap-4 text-xs font-medium">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                    <span className="w-2.5 h-2.5 rounded-sm bg-slate-400"></span>
                     <span className="text-white/50">Planned</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                    <span className="text-white/50">Spent</span>
+                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400"></span>
+                    <span className="text-white/50">Paid</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-3xl font-semibold text-white">${totalPlanned.toLocaleString()}</span>
-                <span className="text-xs font-medium text-white/40 uppercase tracking-widest">Total Planned</span>
+              
+              {/* Budget Breakdown Header Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 p-4 rounded-xl bg-black/20 border border-white/5">
+                <div>
+                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Total Planned</p>
+                  <p className="text-xl font-semibold text-white">{formatCurrency(totalPlanned)}</p>
+                </div>
+                <div>
+                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Total Paid</p>
+                  <p className="text-xl font-semibold text-white">{formatCurrency(totalSpent)}</p>
+                </div>
+                <div>
+                  <p className={`text-xs uppercase tracking-widest mb-1 ${isOverspent ? 'text-red-400/80' : 'text-white/40'}`}>
+                    {isOverspent ? "Overspent" : "Remaining"}
+                  </p>
+                  <p className={`text-xl font-semibold ${isOverspent ? 'text-red-400' : 'text-white'}`}>
+                    {formatCurrency(Math.abs(totalPlanned - totalSpent))}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Outstanding Balance</p>
+                  <p className="text-xl font-semibold text-amber-400">{formatCurrency(outstandingBalance)}</p>
+                </div>
               </div>
               
-              {/* Recharts Area Chart */}
-              <BudgetBreakdownChart data={areaData} />
+              {/* Recharts Bar Chart */}
+              <BudgetBreakdownChart data={categoryData} />
             </div>
           )}
 
@@ -249,7 +316,7 @@ export default async function AdminDashboardPage() {
                 
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
                   {recentExpenses.length === 0 ? (
-                    <div className="text-center text-white/30 text-sm mt-10">No recent payments.</div>
+                    <div className="text-center text-white/30 text-sm mt-10">No payments recorded yet.</div>
                   ) : (
                     recentExpenses.map(exp => (
                       <div key={exp.id} className="flex items-center gap-4">
@@ -258,10 +325,13 @@ export default async function AdminDashboardPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-white font-medium truncate">{exp.expenseName}</div>
-                          <div className="text-xs text-white/50 mt-0.5">{new Date(exp.expenseDate).toLocaleDateString()}</div>
+                          <div className="text-xs text-white/50 mt-0.5">
+                            {exp.budgetItem.vendor ? `${exp.budgetItem.vendor.vendorName} • ` : ""}
+                            {new Date(exp.expenseDate).toLocaleDateString()}
+                          </div>
                         </div>
                         <div className="text-emerald-400 font-semibold whitespace-nowrap">
-                          +${exp.amount.toLocaleString()}
+                          {formatCurrency(exp.amount)}
                         </div>
                       </div>
                     ))

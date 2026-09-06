@@ -1,0 +1,29 @@
+{
+  "exportedAt": "2026-09-05T16:53:28.375Z",
+  "tables": {
+    "guests": 31,
+    "seatingTables": 0,
+    "guestLogistics": 0,
+    "budgetCategories": 1,
+    "budgetItems": 1,
+    "expenses": 0,
+    "contributions": 1,
+    "vendors": 0,
+    "tasks": 0,
+    "taskComments": 0,
+    "taskAttachments": 0,
+    "taskReminders": 0,
+    "taskDependencies": 0,
+    "weddingEvents": 1,
+    "eventItems": 2,
+    "venues": 0,
+    "users": 1,
+    "notifications": 0,
+    "announcements": 0,
+    "guestbookEntries": 1,
+    "auditLogs": 17,
+    "galleryImages": 6,
+    "siteAssets": 0
+  },
+  "totalRecords": 62
+}

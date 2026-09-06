@@ -1,0 +1,18 @@
+[
+  {
+    "id": "88c66ab4-0c11-4a45-a103-db9b392e8449",
+    "categoryId": "afdf8558-0106-4c61-952a-b623ff09197f",
+    "vendorId": null,
+    "title": "Photography & Videography",
+    "description": null,
+    "estimatedCost": "290000",
+    "actualCost": "0",
+    "paidAmount": "0",
+    "paymentDueDate": "2026-10-06T00:00:00.000Z",
+    "paymentStatus": "NOT_STARTED",
+    "responsibleUserId": null,
+    "notes": null,
+    "createdAt": "2026-09-05T07:51:58.365Z",
+    "updatedAt": "2026-09-05T07:51:58.365Z"
+  }
+]

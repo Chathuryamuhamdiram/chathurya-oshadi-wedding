@@ -1,26 +1,25 @@
 "use client";
 
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from "recharts";
+import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
 
-// 1. Budget Breakdown Chart (Area Chart)
+// 1. Budget Breakdown Chart (Bar Chart)
 export function BudgetBreakdownChart({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-[250px] w-full mt-4 flex items-center justify-center border border-white/5 bg-black/20 rounded-xl">
+        <p className="text-white/40 text-sm">No budget items added for this event yet.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="h-[250px] w-full mt-4">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          <defs>
-            <linearGradient id="colorSpent" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#34d399" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
-            </linearGradient>
-            <linearGradient id="colorPlanned" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#94a3b8" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
+        <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }} barGap={2}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
           <XAxis 
             dataKey="name" 
@@ -33,15 +32,17 @@ export function BudgetBreakdownChart({ data }: { data: any[] }) {
             axisLine={false} 
             tickLine={false} 
             tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-            tickFormatter={(value) => `$${value/1000}k`}
+            tickFormatter={(value) => formatCurrencyCompact(value)}
+            width={80}
           />
           <Tooltip 
             contentStyle={{ backgroundColor: '#1e2333', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
             itemStyle={{ color: '#fff' }}
+            formatter={(value: any) => [formatCurrency(value), ""]}
           />
-          <Area type="monotone" dataKey="planned" stroke="#94a3b8" fillOpacity={1} fill="url(#colorPlanned)" strokeWidth={2} name="Planned" />
-          <Area type="monotone" dataKey="spent" stroke="#34d399" fillOpacity={1} fill="url(#colorSpent)" strokeWidth={2} name="Spent" />
-        </AreaChart>
+          <Bar dataKey="planned" fill="#94a3b8" radius={[4, 4, 0, 0]} name="Planned" />
+          <Bar dataKey="spent" fill="#34d399" radius={[4, 4, 0, 0]} name="Paid" />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

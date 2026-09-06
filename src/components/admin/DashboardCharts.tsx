@@ -40,8 +40,8 @@ export function BudgetBreakdownChart({ data }: { data: any[] }) {
             itemStyle={{ color: '#fff' }}
             formatter={(value: any) => [formatCurrency(value), ""]}
           />
-          <Bar dataKey="planned" fill="#94a3b8" radius={[4, 4, 0, 0]} name="Planned" />
-          <Bar dataKey="spent" fill="#34d399" radius={[4, 4, 0, 0]} name="Paid" />
+          <Bar dataKey="planned" fill="#94a3b8" radius={[4, 4, 0, 0]} name="Planned" maxBarSize={50} />
+          <Bar dataKey="spent" fill="#34d399" radius={[4, 4, 0, 0]} name="Paid" maxBarSize={50} />
         </BarChart>
       </ResponsiveContainer>
     </div>

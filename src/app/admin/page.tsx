@@ -7,6 +7,8 @@ import { verifyJWT } from "@/lib/auth";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const sessionCookie = (await cookies()).get("admin_session")?.value;
   if (!sessionCookie) return null;

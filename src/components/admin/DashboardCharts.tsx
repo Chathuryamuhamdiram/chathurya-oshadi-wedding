@@ -1,55 +1,138 @@
 "use client";
 
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from "recharts";
-import { formatCurrency, formatCurrencyCompact } from "@/lib/utils";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { formatCurrency } from "@/lib/utils";
 
-// 1. Budget Breakdown Chart (Line Chart)
-export function BudgetBreakdownChart({ data }: { data: any[] }) {
-  if (!data || data.length === 0) {
+// 1. Budget Overview Chart (Donut + Progress Bar)
+export function BudgetBreakdownChart({
+  totalPlanned,
+  totalSpent,
+}: {
+  totalPlanned: number;
+  totalSpent: number;
+}) {
+  const remaining = Math.max(totalPlanned - totalSpent, 0);
+  const percent =
+    totalPlanned > 0 ? Math.round((totalSpent / totalPlanned) * 100) : 0;
+  const isOverspent = totalSpent > totalPlanned;
+  const progressWidth = Math.min(percent, 100);
+
+  const donutData = [
+    { name: "Paid", value: totalSpent || 0 },
+    { name: "Remaining", value: remaining || (totalPlanned === 0 ? 1 : 0) },
+  ];
+  const DONUT_COLORS = ["#34d399", "#1e293b"];
+
+  if (totalPlanned === 0) {
     return (
-      <div className="h-[250px] w-full mt-4 flex items-center justify-center border border-white/5 bg-black/20 rounded-xl">
-        <p className="text-white/40 text-sm">No budget activity recorded for this event yet.</p>
+      <div className="h-[220px] w-full flex items-center justify-center border border-white/5 bg-black/20 rounded-xl mt-4">
+        <p className="text-white/40 text-sm">
+          No budget activity recorded for this event yet.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="h-[250px] w-full mt-4">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-          <XAxis 
-            dataKey="name" 
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }} 
-            dy={10}
-          />
-          <YAxis 
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 12 }}
-            tickFormatter={(value) => formatCurrencyCompact(value)}
-            width={80}
-          />
-          <Tooltip 
-            contentStyle={{ backgroundColor: '#1e2333', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
-            itemStyle={{ color: '#fff' }}
-            formatter={(value: any) => [formatCurrency(value), ""]}
-          />
-          <Line type="monotone" dataKey="planned" stroke="#94a3b8" strokeWidth={3} dot={{ r: 4, fill: '#1e2333', strokeWidth: 2 }} activeDot={{ r: 6 }} name="Planned" />
-          <Line type="monotone" dataKey="spent" stroke="#34d399" strokeWidth={3} dot={{ r: 4, fill: '#1e2333', strokeWidth: 2 }} activeDot={{ r: 6 }} name="Paid" />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="mt-4 flex flex-col gap-6">
+      {/* Donut + Progress Row */}
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        {/* Donut */}
+        <div className="relative w-[180px] h-[180px] shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={donutData}
+                cx="50%"
+                cy="50%"
+                innerRadius={62}
+                outerRadius={82}
+                startAngle={90}
+                endAngle={-270}
+                paddingAngle={totalSpent > 0 && remaining > 0 ? 3 : 0}
+                dataKey="value"
+                stroke="none"
+              >
+                {donutData.map((_, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={DONUT_COLORS[index % DONUT_COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#1e2333",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "8px",
+                  color: "#fff",
+                }}
+                formatter={(value: any) => [formatCurrency(value), ""]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+          {/* Center label */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span
+              className={`text-2xl font-bold ${isOverspent ? "text-red-400" : "text-white"}`}
+            >
+              {percent}%
+            </span>
+            <span className="text-white/40 text-xs mt-0.5">Payment Progress</span>
+          </div>
+        </div>
+
+        {/* Legend + Progress Bar */}
+        <div className="flex-1 w-full space-y-5">
+          {/* Legend */}
+          <div className="flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-emerald-400 shrink-0" />
+              <span className="text-sm text-white/60">Paid</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-[#1e293b] border border-white/10 shrink-0" />
+              <span className="text-sm text-white/60">Remaining</span>
+            </div>
+          </div>
+
+          {/* Progress bar label */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-white/40 uppercase tracking-widest">
+                Paid vs Remaining
+              </span>
+              {isOverspent && (
+                <span className="text-xs font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-md">
+                  Overspent
+                </span>
+              )}
+            </div>
+            {/* Track */}
+            <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${isOverspent ? "bg-red-400" : "bg-emerald-400"}`}
+                style={{ width: `${progressWidth}%` }}
+              />
+            </div>
+            {/* Amounts */}
+            <div className="flex justify-between mt-2">
+              <span className="text-xs text-emerald-400 font-medium">
+                {formatCurrency(totalSpent)} paid
+              </span>
+              <span className="text-xs text-white/40 font-medium">
+                {formatCurrency(remaining)} remaining
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 // 2. Guest Attendance Donut Chart
-const COLORS = ['#34d399', '#f87171', '#fbbf24']; // Attending (Emerald), Declined (Red), Pending (Amber)
+const GUEST_COLORS = ["#34d399", "#f87171", "#fbbf24"];
 
 export function GuestAttendanceDonut({ data }: { data: any[] }) {
   return (
@@ -67,12 +150,20 @@ export function GuestAttendanceDonut({ data }: { data: any[] }) {
             stroke="none"
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={GUEST_COLORS[index % GUEST_COLORS.length]}
+              />
             ))}
           </Pie>
-          <Tooltip 
-            contentStyle={{ backgroundColor: '#1e2333', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
-            itemStyle={{ color: '#fff' }}
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#1e2333",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px",
+              color: "#fff",
+            }}
+            itemStyle={{ color: "#fff" }}
           />
         </PieChart>
       </ResponsiveContainer>

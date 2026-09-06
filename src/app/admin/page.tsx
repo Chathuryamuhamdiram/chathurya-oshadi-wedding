@@ -44,7 +44,6 @@ export default async function AdminDashboardPage() {
 
   // 2. Financial Metrics (Budget, Expenses, Contributions)
   let totalPlanned = 0, totalSpent = 0, outstandingBalance = 0, availableFunds = 0;
-  let chartData: any[] = [];
   let recentExpenses: any[] = [];
 
   if (canViewBudget) {
@@ -77,36 +76,7 @@ export default async function AdminDashboardPage() {
       outstandingBalance += Math.max(itemPlanned - itemSpent, 0);
     });
 
-    const sortedMonths = Object.keys(timelineMap).sort();
-    
-    let cumulativePlanned = 0;
-    let cumulativeSpent = 0;
-    
-    chartData = sortedMonths.map(monthKey => {
-      cumulativePlanned += timelineMap[monthKey].planned;
-      cumulativeSpent += timelineMap[monthKey].spent;
-      
-      const date = new Date(monthKey + "-01T00:00:00Z");
-      const name = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      
-      return {
-        name,
-        planned: cumulativePlanned,
-        spent: cumulativeSpent
-      };
-    });
 
-    if (chartData.length === 1) {
-      const singleMonth = sortedMonths[0];
-      const date = new Date(singleMonth + "-01T00:00:00Z");
-      date.setMonth(date.getMonth() - 1);
-      const name = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      chartData.unshift({
-        name,
-        planned: 0,
-        spent: 0
-      });
-    }
 
     const contributions = await prisma.contribution.aggregate({
       where: {
@@ -281,25 +251,13 @@ export default async function AdminDashboardPage() {
         {/* Left Area (Col 9) */}
         <div className="lg:col-span-8 xl:col-span-9 space-y-6">
           
-          {/* Revenue Chart Box */}
+          {/* Budget Overview Box */}
           {canViewBudget && (
             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <h2 className="text-lg font-semibold text-white">Budget Overview</h2>
-                <div className="flex items-center gap-4 text-xs font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                    <span className="text-white/50">Planned</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                    <span className="text-white/50">Paid</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Budget Overview Header Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-2 p-4 rounded-xl bg-black/20 border border-white/5">
+              <h2 className="text-lg font-semibold text-white mb-4">Budget Overview</h2>
+
+              {/* 3-KPI Header */}
+              <div className="grid grid-cols-3 gap-4 mb-2 p-4 rounded-xl bg-black/20 border border-white/5">
                 <div>
                   <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Total Planned</p>
                   <p className="text-xl font-semibold text-white">{formatCurrency(totalPlanned)}</p>
@@ -310,20 +268,16 @@ export default async function AdminDashboardPage() {
                 </div>
                 <div>
                   <p className={`text-xs uppercase tracking-widest mb-1 ${isOverspent ? 'text-red-400/80' : 'text-white/40'}`}>
-                    {isOverspent ? "Overspent" : "Remaining"}
+                    {isOverspent ? 'Overspent' : 'Need to Pay'}
                   </p>
                   <p className={`text-xl font-semibold ${isOverspent ? 'text-red-400' : 'text-white'}`}>
-                    {formatCurrency(Math.abs(totalPlanned - totalSpent))}
+                    {formatCurrency(Math.max(totalPlanned - totalSpent, 0))}
                   </p>
                 </div>
-                <div>
-                  <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Outstanding Balance</p>
-                  <p className="text-xl font-semibold text-amber-400">{formatCurrency(outstandingBalance)}</p>
-                </div>
               </div>
-              
-              {/* Recharts Line Chart */}
-              <BudgetBreakdownChart data={chartData} />
+
+              {/* Donut + Progress Chart */}
+              <BudgetBreakdownChart totalPlanned={totalPlanned} totalSpent={totalSpent} />
             </div>
           )}
 

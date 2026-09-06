@@ -58,15 +58,16 @@ export default async function AdminDashboardPage() {
   let attending = 0, declined = 0, pending = 0;
 
   if (canViewGuests) {
-    const rawGuests = await prisma.guest.findMany({
+    const scopedGuests = await prisma.guest.findMany({
+      where: isAllEvents ? {} : {
+        eventGuests: {
+          some: { eventId: activeEventId }
+        }
+      },
       include: {
-        eventGuests: isAllEvents ? true : { where: { eventId: activeEventId } }
+        eventGuests: true
       }
     });
-
-    const scopedGuests = isAllEvents 
-      ? rawGuests 
-      : rawGuests.filter(g => g.eventGuests.some(eg => eg.eventId === activeEventId) || g.eventGuests.length === 0);
 
     scopedGuests.forEach(g => {
       const allowed = g.allowedGuestCount || 0;

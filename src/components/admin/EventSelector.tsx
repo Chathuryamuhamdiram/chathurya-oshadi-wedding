@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { setActiveEvent } from "@/app/admin/actions/eventContext";
 import { ChevronDown, Calendar, CheckCircle2 } from "lucide-react";
 import { ALL_EVENTS_VALUE } from "@/lib/event-constants";
@@ -40,6 +41,7 @@ export function EventSelector({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
   const activeEvent = events.find((e) => e.id === activeEventId);
@@ -60,6 +62,7 @@ export function EventSelector({
     setOpen(false);
     startTransition(async () => {
       await setActiveEvent(eventId);
+      router.refresh();
     });
   }
 

@@ -86,7 +86,7 @@ export default async function AdminDashboardPage() {
       _sum: { amount: true }
     });
     
-    availableFunds = Number(contributions._sum.amount || 0) - totalSpent;
+    availableFunds = Number(contributions._sum.amount || 0);
 
     recentExpenses = await prisma.expense.findMany({
       where: isAllEvents ? {} : { budgetItem: { eventId: activeEventId } },

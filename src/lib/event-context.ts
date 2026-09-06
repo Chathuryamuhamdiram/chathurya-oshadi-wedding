@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { WEDDING_EVENT_NAME, ALL_EVENTS_VALUE, ACTIVE_EVENT_COOKIE } from "./event-constants";
 
@@ -8,12 +9,15 @@ export { WEDDING_EVENT_NAME, ALL_EVENTS_VALUE, ACTIVE_EVENT_COOKIE };
  * Reads the active CeremonyEvent ID from the cookie.
  * Returns the eventId string, or "all" for all events.
  * Falls back to the Wedding event if the cookie is invalid/missing.
+ *
+ * Wrapped in React cache() — executes at most ONCE per server request
+ * regardless of how many components/pages call it.
  */
-export async function getActiveEventId(): Promise<string> {
+export const getActiveEventId = cache(async (): Promise<string> => {
   const cookieStore = await cookies();
   const stored = cookieStore.get(ACTIVE_EVENT_COOKIE)?.value;
 
-  // "all" is a valid explicit value
+  // "all" is a valid explicit value — no DB needed
   if (stored === ALL_EVENTS_VALUE) return ALL_EVENTS_VALUE;
 
   // If a specific ID is stored, verify it still exists and is active
@@ -40,7 +44,7 @@ export async function getActiveEventId(): Promise<string> {
     orderBy: { createdAt: "asc" },
   });
   return any?.id ?? ALL_EVENTS_VALUE;
-}
+});
 
 /**
  * Returns the Prisma `where` clause for filtering by event.

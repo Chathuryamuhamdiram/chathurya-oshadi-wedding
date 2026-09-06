@@ -93,6 +93,8 @@ model EventGuest {
   updatedAt DateTime @updatedAt
 
   @@unique([guestId, eventId])
+  @@index([eventId])
+  @@index([guestId])
 }
 
 model Guest {
@@ -118,6 +120,10 @@ model Guest {
   updatedAt                DateTime  @updatedAt
   logistics                GuestLogistics?
   eventGuests              EventGuest[]
+
+  @@index([rsvpStatus])
+  @@index([side])
+  @@index([invitationStatus])
 }
 
 model SeatingTable {
@@ -193,6 +199,11 @@ model BudgetItem {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   expenses          Expense[]
+
+  @@index([eventId])
+  @@index([categoryId])
+  @@index([vendorId])
+  @@index([paymentStatus])
 }
 
 model Expense {
@@ -207,6 +218,9 @@ model Expense {
   paymentMethod String?    // CASH, BANK_TRANSFER, CARD
   notes         String?
   createdAt     DateTime   @default(now())
+
+  @@index([budgetItemId])
+  @@index([expenseDate])
 }
 
 model Contribution {
@@ -223,6 +237,9 @@ model Contribution {
   status           String         @default("RECEIVED") // RECEIVED, PENDING, CANCELLED
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+
+  @@index([eventId])
+  @@index([status])
 }
 
 model Task {
@@ -252,6 +269,11 @@ model Task {
   // Self-referencing dependencies
   blockedBy        TaskDependency[] @relation("BlocksTask")
   blocks           TaskDependency[] @relation("BlockedByTask")
+
+  @@index([eventId])
+  @@index([status])
+  @@index([assignedUserId])
+  @@index([dueDate])
 }
 
 model TaskDependency {
@@ -295,6 +317,9 @@ model TaskReminder {
   status       String    @default("PENDING") // PENDING, SENT, CANCELLED
   sentAt       DateTime?
   createdAt    DateTime  @default(now())
+
+  @@index([taskId])
+  @@index([status, reminderAt])
 }
 
 model Venue {
@@ -325,6 +350,9 @@ model WeddingEvent {
   items       EventItem[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([eventId])
+  @@index([eventDate])
 }
 
 model EventItem {
@@ -360,6 +388,8 @@ model Notification {
   isRead    Boolean  @default(false)
   linkUrl   String?  // Optional link to click through (e.g. /admin/tasks/123)
   createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
 }
 
 model UserPreference {

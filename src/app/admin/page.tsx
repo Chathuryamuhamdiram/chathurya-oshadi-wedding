@@ -94,6 +94,18 @@ export default async function AdminDashboardPage() {
       };
     });
 
+    if (chartData.length === 1) {
+      const singleMonth = sortedMonths[0];
+      const date = new Date(singleMonth + "-01T00:00:00Z");
+      date.setMonth(date.getMonth() - 1);
+      const name = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      chartData.unshift({
+        name,
+        planned: 0,
+        spent: 0
+      });
+    }
+
     const contributions = await prisma.contribution.aggregate({
       where: {
         status: "RECEIVED",

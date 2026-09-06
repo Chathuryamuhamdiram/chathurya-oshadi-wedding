@@ -82,6 +82,9 @@ model EventGuest {
   liquorCount    Int?
   tableNumber    String?
   notes          String?
+  
+  send           Boolean       @default(false)
+  sendAt         DateTime?
 
   guest Guest         @relation(fields: [guestId], references: [id], onDelete: Cascade)
   event CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)

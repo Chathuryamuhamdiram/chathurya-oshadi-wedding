@@ -150,3 +150,42 @@ export async function deleteGuestAction(id: string) {
     return { success: false, error: "Failed to delete guest. Please check for dependencies." };
   }
 }
+
+export async function updateGuestSendStatus(guestId: string, eventId: string, send: boolean) {
+  try {
+    const { session, error } = await checkDeletePermission(PERMISSIONS.GUEST_EDIT); // checkDeletePermission just checks session and permission
+    if (error || !session) return { success: false, error: error || "Unauthorized" };
+
+    const eventGuest = await prisma.eventGuest.findUnique({
+      where: { guestId_eventId: { guestId, eventId } },
+      include: { guest: { select: { displayName: true } } }
+    });
+
+    if (!eventGuest) return { success: false, error: "EventGuest link not found" };
+
+    await prisma.eventGuest.update({
+      where: { id: eventGuest.id },
+      data: {
+        send,
+        sendAt: send ? new Date() : null,
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        userId: session.userId,
+        action: "UPDATE_SEND_STATUS",
+        entity: "EventGuest",
+        entityId: eventGuest.id,
+        oldValue: eventGuest.send ? "true" : "false",
+        newValue: send ? "true" : "false",
+      }
+    });
+
+    revalidatePath("/admin/guests");
+    return { success: true };
+  } catch (error) {
+    console.error("Update send status error:", error);
+    return { success: false, error: "Failed to update send status" };
+  }
+}

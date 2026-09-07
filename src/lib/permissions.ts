@@ -6,6 +6,7 @@ export const PERMISSIONS = {
   GUEST_CREATE: 'guest.create',
   GUEST_EDIT: 'guest.edit',
   GUEST_DELETE: 'guest.delete',
+  GUEST_IMPORT: 'guest.import',
 
   INVITATION_VIEW: 'invitation.view',
   INVITATION_MANAGE: 'invitation.manage',

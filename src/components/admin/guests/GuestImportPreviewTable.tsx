@@ -40,7 +40,7 @@ export function GuestImportPreviewTable({ rows, selectedRows, onToggleRow, filte
             <th className="px-4 py-3">Type</th>
             <th className="px-4 py-3">Phone</th>
             <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3 w-64">Notes / Changes</th>
+            <th className="px-4 py-3 w-64">Changes</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">

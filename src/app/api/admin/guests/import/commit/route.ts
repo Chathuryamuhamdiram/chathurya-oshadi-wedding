@@ -48,14 +48,12 @@ export async function POST(req: Request) {
                   allowedGuestCount: row.allowedGuestCount,
                   whatsappNumber: row.whatsappNumber,
                   email: row.email,
-                  primaryContactName: row.primaryContactName,
-                  notes: row.notes,
                   side: side,
                   invitationCode: nanoid(8).toUpperCase(),
                   rsvpStatus: "PENDING",
                   invitationStatus: "NOT_SENT",
                   confirmedGuestCount: 0,
-                  liquorCount: 0,
+                  liquorCount: row.liquorCount || 0,
                 }
               });
               guestId = newGuest.id;
@@ -88,8 +86,7 @@ export async function POST(req: Request) {
                 allowedGuestCount: row.allowedGuestCount,
                 whatsappNumber: row.whatsappNumber,
                 email: row.email,
-                primaryContactName: row.primaryContactName,
-                notes: row.notes,
+                liquorCount: row.liquorCount,
               }
             });
 

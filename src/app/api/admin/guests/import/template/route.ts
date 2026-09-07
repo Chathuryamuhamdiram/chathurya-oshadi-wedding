@@ -7,13 +7,12 @@ export async function GET() {
 
     // Sheet 1: Guests
     const guestHeaders = [
-      "Guest Name",
-      "Invitation Type",
-      "Allowed Guest Count",
+      "Display Name",
+      "Type",
+      "Allowed Seats",
+      "Liquor Count",
       "WhatsApp Number",
-      "Email",
-      "Primary Contact Name",
-      "Notes",
+      "Email Address",
     ];
 
     const guestData = [
@@ -22,19 +21,17 @@ export async function GET() {
         "John Doe",
         "INDIVIDUAL",
         1,
+        0,
         "0712345678",
         "john@example.com",
-        "John",
-        "University friend",
       ],
       [
         "Smith Family",
         "FAMILY",
         4,
+        2,
         "0771234567",
         "smith@example.com",
-        "Jane Smith",
-        "Close relatives",
       ],
     ];
 
@@ -42,13 +39,12 @@ export async function GET() {
 
     // Style the header row slightly (basic styling, full styling requires Pro)
     const colWidths = [
-      { wch: 25 }, // Guest Name
+      { wch: 25 }, // Display Name
       { wch: 15 }, // Type
-      { wch: 20 }, // Allowed Count
-      { wch: 15 }, // WhatsApp
-      { wch: 25 }, // Email
-      { wch: 20 }, // Primary Contact
-      { wch: 30 }, // Notes
+      { wch: 15 }, // Allowed Seats
+      { wch: 15 }, // Liquor Count
+      { wch: 20 }, // WhatsApp
+      { wch: 30 }, // Email Address
     ];
     wsGuests["!cols"] = colWidths;
 

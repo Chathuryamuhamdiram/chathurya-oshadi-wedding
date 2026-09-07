@@ -27,13 +27,12 @@ export type RowClassification =
 
 export type ImportRow = {
   index: number; // original row number in Excel
-  guestName: string;
-  invitationType: "INDIVIDUAL" | "FAMILY";
-  allowedGuestCount: number;
+  guestName: string; // Maps to Display Name
+  invitationType: "INDIVIDUAL" | "FAMILY"; // Maps to Type
+  allowedGuestCount: number; // Maps to Allowed Seats
+  liquorCount: number;
   whatsappNumber?: string | null;
   email?: string | null;
-  primaryContactName?: string | null;
-  notes?: string | null;
 };
 
 export type ProcessedRow = {
@@ -45,13 +44,12 @@ export type ProcessedRow = {
 
 // Zod schema for validating raw excel rows
 export const excelRowSchema = z.object({
-  "Guest Name": z.string().min(1, "Guest Name is required"),
-  "Invitation Type": z.enum(["INDIVIDUAL", "FAMILY"]).catch("INDIVIDUAL" as any),
-  "Allowed Guest Count": z.coerce.number().min(1, "Must be at least 1"),
+  "Display Name": z.string().min(1, "Display Name is required"),
+  "Type": z.enum(["INDIVIDUAL", "FAMILY"]).catch("INDIVIDUAL" as any),
+  "Allowed Seats": z.coerce.number().min(1, "Must be at least 1"),
+  "Liquor Count": z.coerce.number().catch(0),
   "WhatsApp Number": z.coerce.string().optional().nullable(),
-  "Email": z.string().email("Invalid email").optional().nullable().or(z.literal("")),
-  "Primary Contact Name": z.string().optional().nullable(),
-  "Notes": z.string().optional().nullable(),
+  "Email Address": z.string().email("Invalid email").optional().nullable().or(z.literal("")),
 });
 
 // --- Main Engine ---
@@ -72,13 +70,12 @@ export async function processGuestImport(
       
       const row: ImportRow = {
         index: idx + 2, // Accounting for header row (assuming 1-based index in UI)
-        guestName: parsed["Guest Name"],
-        invitationType: parsed["Invitation Type"] as any,
-        allowedGuestCount: parsed["Allowed Guest Count"],
+        guestName: parsed["Display Name"],
+        invitationType: parsed["Type"] as any,
+        allowedGuestCount: parsed["Allowed Seats"],
+        liquorCount: parsed["Liquor Count"],
         whatsappNumber: phone,
-        email: parsed["Email"],
-        primaryContactName: parsed["Primary Contact Name"],
-        notes: parsed["Notes"]
+        email: parsed["Email Address"],
       };
 
       if (normalizedPhone) {
@@ -169,10 +166,9 @@ export async function processGuestImport(
       match.displayName === row.guestName &&
       match.invitationType === row.invitationType &&
       match.allowedGuestCount === row.allowedGuestCount &&
+      match.liquorCount === row.liquorCount &&
       (match.whatsappNumber || "") === (row.whatsappNumber || "") &&
-      (match.email || "") === (row.email || "") &&
-      (match.primaryContactName || "") === (row.primaryContactName || "") &&
-      (match.notes || "") === (row.notes || "");
+      (match.email || "") === (row.email || "");
 
     if (isIdentical) {
       processedRows.push({ classification: "DUPLICATE", row, existingId: match.id, changes: "Identical to existing record." });
@@ -181,6 +177,7 @@ export async function processGuestImport(
       const changesList: string[] = [];
       if (match.displayName !== row.guestName) changesList.push(`Name: ${match.displayName} → ${row.guestName}`);
       if (match.allowedGuestCount !== row.allowedGuestCount) changesList.push(`Allowed: ${match.allowedGuestCount} → ${row.allowedGuestCount}`);
+      if (match.liquorCount !== row.liquorCount) changesList.push(`Liquor: ${match.liquorCount} → ${row.liquorCount}`);
       if (match.invitationType !== row.invitationType) changesList.push(`Type: ${match.invitationType} → ${row.invitationType}`);
       if ((match.whatsappNumber || "") !== (row.whatsappNumber || "")) changesList.push(`Phone: ${match.whatsappNumber || "none"} → ${row.whatsappNumber || "none"}`);
       

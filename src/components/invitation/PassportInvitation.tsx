@@ -392,7 +392,7 @@ export default function PassportInvitation({
                 <p className="mt-7 text-sm font-medium leading-6 tracking-[0.06em] text-[#24364a]">
                   KINDLY RSVP BEFORE
                   <br />
-                  08 SEPTEMBER 2026
+                  14 SEPTEMBER 2026
                 </p>
 
                 <div className="mt-7 space-y-5">

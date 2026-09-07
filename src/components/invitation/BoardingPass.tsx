@@ -134,7 +134,7 @@ export function BoardingPass({ guestName }: BoardingPassProps) {
 
              <div className="mb-6 w-full text-left">
                 <p className="text-[9px] uppercase tracking-[0.1em] text-[#1E293B] font-bold mb-1">Kindly RSVP Before</p>
-                <p className="text-[9px] uppercase tracking-[0.1em] text-[#1E293B] font-bold mb-4">08 August 2026</p>
+                <p className="text-[9px] uppercase tracking-[0.1em] text-[#1E293B] font-bold mb-4">14 September 2026</p>
 
                 <div className="space-y-3">
                    <div className="flex items-center gap-2">

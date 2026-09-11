@@ -140,7 +140,12 @@ export function GuestListClient({
     return result;
   }, [initialGuests, searchQuery, sideTab, rsvpFilter, sendFilter, sortBy, activeEventId, isAllEvents]);
 
-  const totalAllowed = filteredAndSortedGuests.reduce((sum, g) => sum + g.allowedGuestCount, 0);
+  const expectedTotalGuests = filteredAndSortedGuests.reduce((sum, g) => {
+    if (g.rsvpStatus === "NOT_ATTENDING") return sum;
+    if (g.rsvpStatus === "ATTENDING") return sum + g.confirmedGuestCount;
+    return sum + g.allowedGuestCount;
+  }, 0);
+
   const totalConfirmed = filteredAndSortedGuests.reduce((sum, g) => sum + g.confirmedGuestCount, 0);
   const totalLiquor = filteredAndSortedGuests.reduce((sum, g) => sum + g.liquorCount, 0);
 
@@ -164,7 +169,7 @@ export function GuestListClient({
           {[
             { 
               label: sideTab === "ALL" ? "Total Guests" : sideTab === "GROOM" ? "Groom Guests" : "Bride Guests", 
-              value: totalAllowed, 
+              value: expectedTotalGuests, 
               icon: sideTab === "ALL" ? "👥" : sideTab === "GROOM" ? "🤵" : "👰", 
               color: sideTab === "ALL" ? "from-violet-500/20 to-purple-500/10 border-violet-500/20" : sideTab === "GROOM" ? "from-blue-500/20 to-indigo-500/10 border-blue-500/20" : "from-pink-500/20 to-rose-500/10 border-pink-500/20" 
             },

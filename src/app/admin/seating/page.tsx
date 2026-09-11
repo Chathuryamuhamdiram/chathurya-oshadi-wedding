@@ -1,16 +1,24 @@
 import { prisma } from "@/lib/db";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 import { TableForm } from "./TableForm";
 import { AssignTableSelect } from "./AssignTableSelect";
 import { Users, AlertCircle, LayoutGrid, Info } from "lucide-react";
 
 export default async function AdminSeatingPage() {
+  await requirePermission(PERMISSIONS.SEATING_VIEW);
+  const activeEventId = await getActiveEventId();
+
   const tables = await prisma.seatingTable.findMany({
     include: { guests: true },
     orderBy: { createdAt: 'asc' }
   });
 
   const allGuests = await prisma.guest.findMany({
-    where: { rsvpStatus: "ATTENDING" },
+    where: { 
+      rsvpStatus: "ATTENDING"
+    },
     orderBy: { displayName: 'asc' }
   });
 

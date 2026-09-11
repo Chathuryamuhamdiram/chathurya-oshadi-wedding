@@ -29,6 +29,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { hasPermission } from "@/lib/permissions";
 
 const allNavGroups = [
   {
@@ -151,11 +152,11 @@ function AdminSidebar({
         if (role === "SUPER_ADMIN") return true;
         
         // Team management should be super admin only or require user.view
-        if (link.href === "/admin/team" && !permissions.includes("user.view") && role !== "SUPER_ADMIN") return false;
+        if (link.href === "/admin/team" && !hasPermission(role, permissions, "user.view")) return false;
 
         const requiredPermission = permissionMap[link.href];
         if (requiredPermission) {
-          return permissions.includes(requiredPermission);
+          return hasPermission(role, permissions, requiredPermission as any);
         }
         
         // Dashboard is accessible by default for ADMIN and VIEWER (but viewers only see what's allowed)

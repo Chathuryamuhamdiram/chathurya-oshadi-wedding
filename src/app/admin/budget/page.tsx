@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/db";
 import { BudgetContent } from "./BudgetContent";
 import { getActiveEventId, buildEventFilter, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminBudgetPage() {
+  await requirePermission(PERMISSIONS.BUDGET_VIEW);
   const activeEventId = await getActiveEventId();
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
   const itemsFilter = buildEventFilter(activeEventId);

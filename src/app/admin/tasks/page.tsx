@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { verifyJWT } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 import { TaskForm } from "./TaskForm";
 import { DeleteTaskButton } from "./DeleteTaskButton";
 import { CheckSquare, AlertCircle, Clock, Calendar as CalendarIcon, ArrowUp, ArrowDown } from "lucide-react";
@@ -12,6 +12,7 @@ type PageProps = {
 };
 
 export default async function AdminTasksPage(props: PageProps) {
+  const session = await requirePermission(PERMISSIONS.TASK_VIEW);
   const searchParams = await props.searchParams;
   const sort = searchParams.sort || 'dueDate';
   const order = searchParams.order === 'desc' ? 'desc' : 'asc';
@@ -28,16 +29,8 @@ export default async function AdminTasksPage(props: PageProps) {
     orderBy = [{ dueDate: 'asc' }, { priority: 'desc' }];
   }
   
-  const sessionCookie = (await cookies()).get("admin_session")?.value;
-  let userRole = "VIEWER";
-  let userId = "";
-  if (sessionCookie) {
-    const payload = await verifyJWT(sessionCookie);
-    if (payload) {
-      userRole = payload.role as string;
-      userId = payload.userId as string;
-    }
-  }
+  const userRole = session.role as string;
+  const userId = session.userId as string;
 
   const baseWhere: any = isAllEvents ? {} : { eventId: activeEventId };
   if (userRole === "FAMILY_MEMBER") {

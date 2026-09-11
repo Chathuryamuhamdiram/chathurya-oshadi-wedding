@@ -4,10 +4,13 @@ import { DeleteVendorButton } from "./DeleteVendorButton";
 import { Store, AlertCircle, Building2, Wallet } from "lucide-react";
 import Link from "next/link";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminVendorsPage() {
+  await requirePermission(PERMISSIONS.VENDOR_VIEW);
   const activeEventId = await getActiveEventId();
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
 

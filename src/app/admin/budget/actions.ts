@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { requirePermission } from "@/lib/auth";
+import { requirePermission, getAdminSession } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 import { ExpenseType } from "@prisma/client";
@@ -28,13 +28,21 @@ async function ensureBucketExists() {
 export async function saveBudgetCategory(formData: FormData) {
   try {
     await requirePermission(PERMISSIONS.BUDGET_EDIT);
+    const id = formData.get("id")?.toString();
     const name = formData.get("name") as string;
 
     if (!name) return { success: false, error: "Category name is required" };
 
-    await prisma.budgetCategory.create({
-      data: { name }
-    });
+    if (id) {
+      await prisma.budgetCategory.update({
+        where: { id },
+        data: { name }
+      });
+    } else {
+      await prisma.budgetCategory.create({
+        data: { name }
+      });
+    }
 
     revalidatePath("/admin/budget");
     return { success: true };
@@ -45,6 +53,7 @@ export async function saveBudgetCategory(formData: FormData) {
 
 export async function deleteBudgetCategory(id: string) {
   try {
+    await requirePermission(PERMISSIONS.BUDGET_DELETE);
     const { session, error } = await checkDeletePermission(null);
     if (error) return { success: false, error };
 
@@ -221,8 +230,9 @@ export async function saveBudgetItem(formData: FormData) {
 
 export async function saveExpense(formData: FormData) {
   try {
-    await requirePermission(PERMISSIONS.BUDGET_EDIT);
-    const budgetItemId = formData.get("budgetItemId") as string;
+    const id = formData.get("id")?.toString();
+    await requirePermission(id ? PERMISSIONS.EXPENSE_EDIT : PERMISSIONS.EXPENSE_CREATE);
+    const budgetItemId = formData.get("budgetItemId")?.toString();
     const amount = parseFloat(formData.get("amount") as string);
     const expenseName = formData.get("expenseName") as string;
     const expenseType = (formData.get("expenseType") as ExpenseType) || "OTHER";
@@ -237,15 +247,27 @@ export async function saveExpense(formData: FormData) {
 
     // Wrap in transaction to update parent item
     await prisma.$transaction(async (tx) => {
-      // Create expense record
-      const expense = await tx.expense.create({
-        data: {
-          budgetItemId,
-          expenseName,
-          amount,
-          expenseType
-        }
-      });
+      let expense;
+      if (id) {
+        expense = await tx.expense.update({
+          where: { id },
+          data: {
+            budgetItemId,
+            expenseName,
+            amount,
+            expenseType
+          }
+        });
+      } else {
+        expense = await tx.expense.create({
+          data: {
+            budgetItemId,
+            expenseName,
+            amount,
+            expenseType
+          }
+        });
+      }
 
       // Handle attachments
       if (validFiles.length > 0) {
@@ -308,6 +330,7 @@ export async function saveExpense(formData: FormData) {
 
 export async function deleteExpense(id: string) {
   try {
+    await requirePermission(PERMISSIONS.BUDGET_DELETE); // Usually expense delete maps to budget delete for financial rigor
     const { session, error } = await checkDeletePermission(null); // SUPER_ADMIN only
     if (error) return { success: false, error };
 
@@ -361,6 +384,7 @@ export async function deleteExpense(id: string) {
 
 export async function deleteBudgetItem(id: string) {
   try {
+    await requirePermission(PERMISSIONS.BUDGET_DELETE);
     const { session, error } = await checkDeletePermission(null); // SUPER_ADMIN only
     if (error) return { success: false, error };
 

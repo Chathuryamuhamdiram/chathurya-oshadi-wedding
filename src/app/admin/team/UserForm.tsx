@@ -5,19 +5,43 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveUserAction } from "./actions";
-import { Pencil } from "lucide-react";
+import { Pencil, Check } from "lucide-react";
+import { PERMISSION_MODULES, ADMIN_DEFAULT_PERMISSIONS } from "@/lib/permissions";
 
-export function UserForm({ existingUser }: { existingUser?: any }) {
+export function UserForm({ existingUser, isSuperAdmin = false }: { existingUser?: any, isSuperAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState(existingUser?.role || "FAMILY_MEMBER");
+  
+  // Initialize permissions
+  // If editing an existing user, load their existing allowed permissions
+  // If creating a new user, default to the ADMIN_DEFAULT_PERMISSIONS (these only show/apply if role is ADMIN)
+  const initialPermissions = existingUser 
+    ? new Set<string>(
+        existingUser.userPermissions?.filter((p: any) => p.allowed).map((p: any) => p.permission.code) || []
+      )
+    : new Set<string>(ADMIN_DEFAULT_PERMISSIONS);
+    
+  const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(initialPermissions);
+
+  const togglePermission = (code: string) => {
+    const newSet = new Set(selectedPermissions);
+    if (newSet.has(code)) newSet.delete(code);
+    else newSet.add(code);
+    setSelectedPermissions(newSet);
+  };
 
   async function onSubmit(formData: FormData) {
     setIsSubmitting(true);
     setError("");
     if (existingUser) {
       formData.append("id", existingUser.id);
+    }
+    
+    // If they are an ADMIN, append all selected permissions
+    if (role === "ADMIN") {
+      formData.append("permissions", JSON.stringify(Array.from(selectedPermissions)));
     }
     const res = await saveUserAction(formData);
     setIsSubmitting(false);
@@ -114,6 +138,39 @@ export function UserForm({ existingUser }: { existingUser?: any }) {
             </Select>
           </div>
 
+          {role === "ADMIN" && isSuperAdmin && (
+            <div className="space-y-3 pt-2">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40 block border-b border-white/10 pb-2">
+                Admin Permissions
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {PERMISSION_MODULES.map((module) => (
+                  <div key={module.name} className="space-y-2 bg-white/5 p-3 rounded-xl border border-white/5">
+                    <div className="text-xs font-semibold text-emerald-400">{module.name}</div>
+                    <div className="flex flex-wrap gap-2">
+                      {module.permissions.map((perm) => (
+                        <label 
+                          key={perm.code}
+                          className="flex items-center gap-1.5 cursor-pointer group"
+                        >
+                          <div className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${selectedPermissions.has(perm.code) ? 'bg-emerald-500 border-emerald-500' : 'border-white/20 bg-transparent group-hover:border-white/40'}`}>
+                            {selectedPermissions.has(perm.code) && <Check className="w-3 h-3 text-white" />}
+                          </div>
+                          <span className="text-[11px] text-white/70 group-hover:text-white transition-colors">{perm.label}</span>
+                          <input 
+                            type="checkbox" 
+                            className="hidden" 
+                            checked={selectedPermissions.has(perm.code)}
+                            onChange={() => togglePermission(perm.code)}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end pt-2 gap-3">
             <button

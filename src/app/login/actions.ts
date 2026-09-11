@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { signJWT } from "@/lib/auth";
+import { ADMIN_DEFAULT_PERMISSIONS } from "@/lib/permissions";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 
@@ -49,9 +50,15 @@ export async function loginAction(formData: FormData) {
     userPermissionsQuery.forEach(up => permissionMap.set(up.permission.code, up.allowed));
 
     const finalPermissions: string[] = [];
-    permissionMap.forEach((isAllowed, code) => {
-      if (isAllowed) finalPermissions.push(code);
-    });
+    
+    // If ADMIN has no explicit permissions (e.g. legacy/new user before saving permissions), apply defaults
+    if (user.role === "ADMIN" && permissionMap.size === 0) {
+      finalPermissions.push(...ADMIN_DEFAULT_PERMISSIONS);
+    } else {
+      permissionMap.forEach((isAllowed, code) => {
+        if (isAllowed) finalPermissions.push(code);
+      });
+    }
 
     // Create JWT
     const token = await signJWT({

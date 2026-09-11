@@ -1,8 +1,12 @@
 import { prisma } from "@/lib/db";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 import { LogisticsForm } from "./LogisticsForm";
 import { Plane, Building2, Car, Users, MapPin } from "lucide-react";
 
 export default async function AdminLogisticsPage() {
+  await requirePermission(PERMISSIONS.TRANSPORT_VIEW);
+
   const [allGuests, allLogistics] = await Promise.all([
     prisma.guest.findMany({
       orderBy: { displayName: 'asc' }

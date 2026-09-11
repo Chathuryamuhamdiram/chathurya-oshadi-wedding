@@ -1,14 +1,18 @@
 import { prisma } from "@/lib/db";
-import { getAdminSession } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 import { UserForm } from "./UserForm";
 import { DeleteUserButton } from "./DeleteUserButton";
 
 export default async function TeamDashboardPage() {
-  const session = await getAdminSession();
-  const isSuperAdmin = session?.role === "SUPER_ADMIN";
+  const session = await requirePermission(PERMISSIONS.USER_VIEW);
+  const isSuperAdmin = session.role === "SUPER_ADMIN";
 
   const users = await prisma.user.findMany({
-    include: { assignedTasks: true },
+    include: { 
+      assignedTasks: true,
+      userPermissions: { include: { permission: true } }
+    },
     orderBy: { fullName: 'asc' }
   });
 
@@ -20,7 +24,7 @@ export default async function TeamDashboardPage() {
           <h1 className="text-3xl font-serif text-white tracking-wide">Wedding Team</h1>
           <p className="text-white/40 text-sm font-sans mt-1">Manage family members and coordinators.</p>
         </div>
-        <UserForm />
+        <UserForm isSuperAdmin={isSuperAdmin} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -37,7 +41,7 @@ export default async function TeamDashboardPage() {
                 </div>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <UserForm existingUser={user} />
+                <UserForm existingUser={user} isSuperAdmin={isSuperAdmin} />
                 {isSuperAdmin && <DeleteUserButton user={{ id: user.id, fullName: user.fullName }} />}
               </div>
             </div>

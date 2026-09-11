@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/db";
 import { uploadGalleryImage, deleteGalleryImage, toggleGalleryImageStatus, updateGalleryImageOrder } from "./actions";
 import { revalidatePath } from "next/cache";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 import Image from "next/image";
 import { DeleteGalleryButton } from "./DeleteGalleryButton";
 
 export default async function AdminGalleryPage() {
+  await requirePermission(PERMISSIONS.GALLERY_MANAGE);
   const galleryImagesRaw = await prisma.galleryImage.findMany({
     orderBy: { sortOrder: "asc" },
     select: { id: true, altText: true, sortOrder: true, isActive: true, createdAt: true, updatedAt: true }

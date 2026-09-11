@@ -94,7 +94,7 @@ export async function saveUserAction(formData: FormData) {
       if (!parsed.password) throw new Error("Password is required for new users");
       const passwordHash = await bcrypt.hash(parsed.password, 10);
       
-      await prisma.user.create({
+      const createdUser = await prisma.user.create({
         data: {
           fullName: parsed.fullName,
           email: parsed.email,
@@ -102,6 +102,50 @@ export async function saveUserAction(formData: FormData) {
           phone: parsed.phone,
           role: parsed.role,
         }
+      });
+      parsed.id = createdUser.id; // Assign ID so permissions can be saved below
+    }
+
+    // Process granular permissions if role is ADMIN
+    if (parsed.role === "ADMIN") {
+      const permsString = formData.get("permissions") as string;
+      if (permsString && parsed.id) {
+        const selectedPerms = JSON.parse(permsString) as string[];
+        
+        // 1. Ensure all these permissions exist in the Permission table
+        for (const code of selectedPerms) {
+          await prisma.permission.upsert({
+            where: { code },
+            update: {},
+            create: { code, description: `Permission for ${code}` }
+          });
+        }
+
+        // 2. Clear existing user permissions
+        await prisma.userPermission.deleteMany({
+          where: { userId: parsed.id }
+        });
+
+        // 3. Insert new user permissions
+        // We need the IDs of the permission records to insert
+        const dbPerms = await prisma.permission.findMany({
+          where: { code: { in: selectedPerms } }
+        });
+
+        if (dbPerms.length > 0) {
+          await prisma.userPermission.createMany({
+            data: dbPerms.map(p => ({
+              userId: parsed.id!,
+              permissionId: p.id,
+              allowed: true
+            }))
+          });
+        }
+      }
+    } else if (parsed.id) {
+      // If role is changed from ADMIN to something else, clear granular permissions
+      await prisma.userPermission.deleteMany({
+        where: { userId: parsed.id }
       });
     }
 

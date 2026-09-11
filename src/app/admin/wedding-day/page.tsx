@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/db";
 import { LiveClock } from "./LiveClock";
 import { Phone, Calendar as CalendarIcon, CheckSquare, AlertTriangle, ArrowRight } from "lucide-react";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export default async function AdminWeddingDayPage() {
+  await requirePermission(PERMISSIONS.WEDDING_DAY_VIEW);
   const now = new Date();
   
   // 1. Fetch Events, Vendors, and Pending Tasks

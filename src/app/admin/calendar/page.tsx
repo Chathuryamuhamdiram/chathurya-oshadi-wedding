@@ -2,7 +2,9 @@ import { prisma } from "@/lib/db";
 import { EventForm } from "../events/EventForm";
 import { Calendar as CalendarIcon, Clock, CheckSquare, Building2, DollarSign, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { getActiveEventId, buildEventFilter, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 
 type TimelineItem = {
   id: string;
@@ -16,6 +18,7 @@ type TimelineItem = {
 };
 
 export default async function AdminCalendarPage() {
+  await requirePermission(PERMISSIONS.CALENDAR_VIEW);
   const activeEventId = await getActiveEventId();
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
 

@@ -2,10 +2,14 @@ import { prisma } from "@/lib/db";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { GuestbookActionButtons } from "./GuestbookActionButtons";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export const dynamic = 'force-dynamic';
 
 export default async function GuestbookPage() {
+  await requirePermission(PERMISSIONS.GUESTBOOK_VIEW);
+
   const messages = await prisma.guestbookEntry.findMany({
     orderBy: { createdAt: "desc" }
   });

@@ -4,8 +4,11 @@ import { VenueForm } from "./VenueForm";
 import { EventItemList } from "./EventItemList";
 import { DeleteEventButton } from "./DeleteEventButton";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export default async function EventsDashboardPage() {
+  await requirePermission(PERMISSIONS.CALENDAR_VIEW);
   const activeEventId = await getActiveEventId();
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
 

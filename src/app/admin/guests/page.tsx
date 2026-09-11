@@ -3,23 +3,19 @@ import { GuestForm } from "./GuestForm";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 import { GuestListClient } from "@/components/admin/guests/GuestListClient";
 import { cookies } from "next/headers";
-import { verifyJWT } from "@/lib/auth";
+import { requirePermission } from "@/lib/auth";
+import { PERMISSIONS, hasPermission } from "@/lib/permissions";
 import { GuestExcelImporter } from "@/components/admin/guests/GuestExcelImporter";
 import { FileSpreadsheet } from "lucide-react";
 
 export default async function AdminGuestsPage() {
-  const sessionCookie = (await cookies()).get("admin_session")?.value;
-  let canEditGuests = false;
-  let canImportGuests = false;
-  if (sessionCookie) {
-    const payload = await verifyJWT(sessionCookie);
-    if (payload) {
-      const permissions = (payload.permissions as string[]) || [];
-      const role = payload.role as string;
-      canEditGuests = permissions.includes("guest.edit") || role === "SUPER_ADMIN";
-      canImportGuests = permissions.includes("guest.import") || role === "SUPER_ADMIN";
-    }
-  }
+  const session = await requirePermission(PERMISSIONS.GUEST_VIEW);
+  
+  const permissions = session.permissions || [];
+  const role = session.role as string;
+  
+  const canEditGuests = hasPermission(role, permissions, PERMISSIONS.GUEST_EDIT);
+  const canImportGuests = hasPermission(role, permissions, PERMISSIONS.GUEST_IMPORT);
 
   const activeEventId = await getActiveEventId();
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;

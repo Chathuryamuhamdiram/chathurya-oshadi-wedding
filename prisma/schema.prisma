@@ -217,10 +217,26 @@ model Expense {
   paidByUserId  String?
   paymentMethod String?    // CASH, BANK_TRANSFER, CARD
   notes         String?
+  attachments   ExpenseAttachment[]
   createdAt     DateTime   @default(now())
 
   @@index([budgetItemId])
   @@index([expenseDate])
+}
+
+model ExpenseAttachment {
+  id               String   @id @default(uuid())
+  expenseId        String
+  expense          Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  fileName         String
+  originalFileName String
+  mimeType         String
+  fileSize         Int
+  storagePath      String
+  uploadedBy       String?
+  uploadedAt       DateTime @default(now())
+
+  @@index([expenseId])
 }
 
 model Contribution {

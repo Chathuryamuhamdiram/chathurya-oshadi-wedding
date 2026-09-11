@@ -16,7 +16,9 @@ export default async function AdminBudgetPage() {
         where: isAllEvents ? {} : { eventId: activeEventId },
         include: { 
           vendor: true, 
-          expenses: true,
+          expenses: {
+            include: { attachments: true }
+          },
           event: { select: { id: true, name: true, eventType: true } }
         },
         orderBy: { createdAt: 'asc' }
@@ -49,7 +51,11 @@ export default async function AdminBudgetPage() {
       paidAmount: Number(item.paidAmount),
       expenses: item.expenses.map(e => ({
         ...e,
-        amount: Number(e.amount)
+        amount: Number(e.amount),
+        attachments: e.attachments.map((a: any) => ({
+          ...a,
+          uploadedAt: a.uploadedAt.toISOString()
+        }))
       })),
       vendor: item.vendor ? {
         ...item.vendor,

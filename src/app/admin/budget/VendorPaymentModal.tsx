@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveExpense } from "./actions";
 import { useSearchParams, useRouter } from "next/navigation";
+import { FileUpload } from "@/components/admin/FileUpload";
 
 export function VendorPaymentModal({ vendors = [], categories = [] }: { vendors: any[], categories: any[] }) {
   const router = useRouter();
@@ -126,7 +127,12 @@ export function VendorPaymentModal({ vendors = [], categories = [] }: { vendors:
             <Input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="space-y-1.5 pt-2 border-t border-white/5">
+            <h4 className="text-sm font-medium text-white/80 font-serif">Payment Evidence</h4>
+            <FileUpload name="evidenceFiles" maxFiles={5} maxSizeMB={5} />
+          </div>
+
+          <div className="flex justify-end pt-4">
             <button type="submit" disabled={isSubmitting || !selectedBudgetItemId} className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white text-sm font-medium transition-colors">
               {isSubmitting ? "Saving..." : "Record Payment"}
             </button>

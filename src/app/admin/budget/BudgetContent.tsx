@@ -236,6 +236,15 @@ export function BudgetContent({
                                     Incl. Advance: {Number(item.expenses.find((e: any) => e.expenseType === 'ADVANCE').amount).toLocaleString()}
                                   </div>
                                 )}
+                                {item.expenses && (() => {
+                                  const totalAttachments = item.expenses.reduce((sum: number, e: any) => sum + (e.attachments?.length || 0), 0);
+                                  return totalAttachments > 0 ? (
+                                    <div className="text-[10px] text-blue-400/80 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 mt-1.5 w-fit" title={`${totalAttachments} evidence files attached to payments`}>
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                      {totalAttachments}
+                                    </div>
+                                  ) : null;
+                                })()}
                               </td>
                               <td className="px-6 py-4 text-amber-400/80 font-mono">
                                 {balance > 0 ? balance.toLocaleString() : "0"}

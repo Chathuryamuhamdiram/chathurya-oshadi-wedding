@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveExpense } from "./actions";
 import { DollarSign } from "lucide-react";
 import { DeleteExpenseButton } from "./DeleteExpenseButton";
+import { FileUpload } from "@/components/admin/FileUpload";
+import { EvidenceViewer } from "@/components/admin/EvidenceViewer";
 
 export function ExpenseForm({ 
   budgetItemId, 
@@ -15,7 +17,7 @@ export function ExpenseForm({
 }: { 
   budgetItemId: string; 
   itemName: string;
-  expenses?: { id: string; expenseName: string; amount: number; expenseDate: Date; expenseType?: string }[];
+  expenses?: { id: string; expenseName: string; amount: number; expenseDate: Date; expenseType?: string; attachments?: any[] }[];
 }) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +60,9 @@ export function ExpenseForm({
                     )}
                   </div>
                   <div className="text-white/40 text-xs">{new Date(e.expenseDate).toLocaleDateString()}</div>
+                  {e.attachments && e.attachments.length > 0 && (
+                    <EvidenceViewer attachments={e.attachments} expenseId={e.id} />
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="font-mono text-emerald-400 font-medium">{e.amount.toLocaleString()}</div>
@@ -94,8 +99,13 @@ export function ExpenseForm({
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-sans uppercase tracking-widest text-white/40">Amount Paid</label>
+            <label className="text-xs font-sans uppercase tracking-widest text-white/40">Amount Paid (LKR)</label>
             <Input name="amount" type="number" min="0.01" step="0.01" required placeholder="0.00" className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl" />
+          </div>
+
+          <div className="space-y-1.5 pt-2 border-t border-white/5">
+            <h4 className="text-sm font-medium text-white/80 font-serif">Payment Evidence (Optional)</h4>
+            <FileUpload name="evidenceFiles" maxFiles={5} maxSizeMB={5} />
           </div>
 
           <div className="flex justify-end pt-2">

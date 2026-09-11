@@ -7,12 +7,29 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 import { ExpenseType } from "@prisma/client";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { supabaseAdmin } from "@/lib/supabase";
+import { randomUUID } from "crypto";
+
+async function ensureBucketExists() {
+  const { data: buckets, error } = await supabaseAdmin.storage.listBuckets();
+  if (error) console.error("Error listing buckets:", error);
+
+  const bucketExists = buckets?.some(b => b.name === 'payment-evidence');
+  if (!bucketExists) {
+    const { error: createError } = await supabaseAdmin.storage.createBucket('payment-evidence', {
+      public: true, // Making it public to view easily, can be restricted if needed
+      allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+      fileSizeLimit: 5242880 // 5MB
+    });
+    if (createError) console.error("Error creating bucket:", createError);
+  }
+}
 
 export async function saveBudgetCategory(formData: FormData) {
   try {
     await requirePermission(PERMISSIONS.BUDGET_EDIT);
     const name = formData.get("name") as string;
-    
+
     if (!name) return { success: false, error: "Category name is required" };
 
     await prisma.budgetCategory.create({
@@ -43,7 +60,7 @@ export async function deleteBudgetCategory(id: string) {
 
     await prisma.budgetCategory.delete({ where: { id } });
     await createDeleteAuditLog(session!.userId, "BudgetCategory", id, { name: category.name }, "DELETE");
-    
+
     revalidatePath("/admin/budget");
     revalidatePath("/admin");
     return { success: true };
@@ -64,7 +81,7 @@ export async function saveBudgetItem(formData: FormData) {
     const advancePaidStr = formData.get("advancePaid") as string;
     const advancePaid = advancePaidStr ? parseFloat(advancePaidStr) : 0;
     const advancePaymentDateStr = formData.get("advancePaymentDate") as string;
-    
+
     let eventId = formData.get("eventId") as string | null;
 
     if (!id && !eventId) {
@@ -130,18 +147,59 @@ export async function saveBudgetItem(formData: FormData) {
           await tx.expense.delete({ where: { id: existingAdvance.id } });
         }
 
+        // Handle advance attachments
+        const files = formData.getAll("evidenceFiles") as File[];
+        const validFiles = files.filter(f => f.size > 0 && f.name !== 'undefined');
+
+        if (validFiles.length > 0 && budgetItemId) {
+          await ensureBucketExists();
+          // We need the ID of the expense we just created/updated
+          const currentAdvance = await tx.expense.findFirst({
+            where: { budgetItemId, expenseType: "ADVANCE" }
+          });
+
+          if (currentAdvance) {
+            for (const file of validFiles) {
+              const fileExt = file.name.split('.').pop();
+              const fileName = `payment_${currentAdvance.id}_${randomUUID()}.${fileExt}`;
+
+              const { error: uploadError } = await supabaseAdmin.storage
+                .from('payment-evidence')
+                .upload(fileName, file, { contentType: file.type });
+
+              if (!uploadError) {
+                const { data: { publicUrl } } = supabaseAdmin.storage.from('payment-evidence').getPublicUrl(fileName);
+
+                await tx.expenseAttachment.create({
+                  data: {
+                    expenseId: currentAdvance.id,
+                    fileName,
+                    originalFileName: file.name,
+                    mimeType: file.type,
+                    fileSize: file.size,
+                    storagePath: publicUrl,
+                    // uploadedBy can be added if we have user context
+                  }
+                });
+              } else {
+                console.error("Upload error:", uploadError);
+              }
+            }
+          }
+        }
+
         // Recalculate Budget Item
-        const item = await tx.budgetItem.findUnique({ 
+        const item = await tx.budgetItem.findUnique({
           where: { id: budgetItemId },
           include: { expenses: true }
         });
-        
+
         if (item) {
           const totalPaid = item.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
           let status = "NOT_STARTED";
           if (totalPaid >= Number(item.estimatedCost) && Number(item.estimatedCost) > 0) status = "FULLY_PAID";
           else if (totalPaid > 0) status = "PARTIALLY_PAID";
-          
+
           await tx.budgetItem.update({
             where: { id: budgetItemId },
             data: {
@@ -168,15 +226,19 @@ export async function saveExpense(formData: FormData) {
     const amount = parseFloat(formData.get("amount") as string);
     const expenseName = formData.get("expenseName") as string;
     const expenseType = (formData.get("expenseType") as ExpenseType) || "OTHER";
-    
+
     if (!budgetItemId || !amount || !expenseName) {
       return { success: false, error: "Required fields missing" };
     }
 
+    // Prepare files
+    const files = formData.getAll("evidenceFiles") as File[];
+    const validFiles = files.filter(f => f.size > 0 && f.name !== 'undefined');
+
     // Wrap in transaction to update parent item
     await prisma.$transaction(async (tx) => {
       // Create expense record
-      await tx.expense.create({
+      const expense = await tx.expense.create({
         data: {
           budgetItemId,
           expenseName,
@@ -185,18 +247,46 @@ export async function saveExpense(formData: FormData) {
         }
       });
 
+      // Handle attachments
+      if (validFiles.length > 0) {
+        await ensureBucketExists();
+        for (const file of validFiles) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `payment_${expense.id}_${randomUUID()}.${fileExt}`;
+
+          const { error: uploadError } = await supabaseAdmin.storage
+            .from('payment-evidence')
+            .upload(fileName, file, { contentType: file.type });
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabaseAdmin.storage.from('payment-evidence').getPublicUrl(fileName);
+
+            await tx.expenseAttachment.create({
+              data: {
+                expenseId: expense.id,
+                fileName,
+                originalFileName: file.name,
+                mimeType: file.type,
+                fileSize: file.size,
+                storagePath: publicUrl,
+              }
+            });
+          }
+        }
+      }
+
       // Recalculate parent item
-      const item = await tx.budgetItem.findUnique({ 
+      const item = await tx.budgetItem.findUnique({
         where: { id: budgetItemId },
         include: { expenses: true }
       });
-      
+
       if (item) {
         const totalPaid = item.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
         let status = "NOT_STARTED";
         if (totalPaid >= Number(item.estimatedCost) && Number(item.estimatedCost) > 0) status = "FULLY_PAID";
         else if (totalPaid > 0) status = "PARTIALLY_PAID";
-        
+
         await tx.budgetItem.update({
           where: { id: budgetItemId },
           data: {
@@ -222,26 +312,33 @@ export async function deleteExpense(id: string) {
     if (error) return { success: false, error };
 
     const expense = await prisma.expense.findUnique({
-      where: { id }
+      where: { id },
+      include: { attachments: true }
     });
     if (!expense) return { success: false, error: "Expense not found" };
+
+    // Delete attachments from storage
+    if (expense.attachments.length > 0) {
+      const fileNames = expense.attachments.map(a => a.fileName);
+      await supabaseAdmin.storage.from('payment-evidence').remove(fileNames);
+    }
 
     // Wrap in transaction to update parent item
     await prisma.$transaction(async (tx) => {
       await tx.expense.delete({ where: { id } });
 
       // Recalculate parent item
-      const item = await tx.budgetItem.findUnique({ 
+      const item = await tx.budgetItem.findUnique({
         where: { id: expense.budgetItemId },
         include: { expenses: true }
       });
-      
+
       if (item) {
         const totalPaid = item.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
         let status = "NOT_STARTED";
         if (totalPaid >= Number(item.estimatedCost) && Number(item.estimatedCost) > 0) status = "FULLY_PAID";
         else if (totalPaid > 0) status = "PARTIALLY_PAID";
-        
+
         await tx.budgetItem.update({
           where: { id: expense.budgetItemId },
           data: {
@@ -255,7 +352,7 @@ export async function deleteExpense(id: string) {
     await createDeleteAuditLog(session!.userId, "Expense", id, { expenseName: expense.expenseName, amount: Number(expense.amount) }, "DELETE");
     revalidatePath("/admin/budget");
     revalidatePath("/admin/vendors");
-    revalidatePath("/admin"); 
+    revalidatePath("/admin");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -279,7 +376,7 @@ export async function deleteBudgetItem(id: string) {
 
     await prisma.budgetItem.delete({ where: { id } });
     await createDeleteAuditLog(session!.userId, "BudgetItem", id, { title: item.title, estimatedCost: Number(item.estimatedCost) }, "DELETE");
-    
+
     revalidatePath("/admin/budget");
     revalidatePath("/admin/vendors");
     revalidatePath("/admin");
@@ -353,6 +450,43 @@ export async function deleteContribution(id: string) {
 
     await prisma.contribution.delete({ where: { id } });
     await createDeleteAuditLog(session!.userId, "Contribution", id, { contributorName: contribution.contributorName, amount: Number(contribution.amount) }, "DELETE");
+
+    revalidatePath("/admin/budget");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteExpenseAttachment(attachmentId: string) {
+  try {
+    const { session, error } = await checkDeletePermission(null);
+    if (error) return { success: false, error };
+
+    const attachment = await prisma.expenseAttachment.findUnique({
+      where: { id: attachmentId },
+      include: { expense: true }
+    });
+
+    if (!attachment) return { success: false, error: "Attachment not found" };
+
+    // Delete from Supabase storage
+    const { error: removeError } = await supabaseAdmin.storage
+      .from('payment-evidence')
+      .remove([attachment.fileName]);
+
+    if (removeError) {
+      console.error("Error removing file from storage:", removeError);
+    }
+
+    await prisma.expenseAttachment.delete({
+      where: { id: attachmentId }
+    });
+
+    await createDeleteAuditLog(session!.userId, "ExpenseAttachment", attachmentId, {
+      expenseId: attachment.expenseId,
+      fileName: attachment.originalFileName
+    }, "DELETE");
 
     revalidatePath("/admin/budget");
     return { success: true };

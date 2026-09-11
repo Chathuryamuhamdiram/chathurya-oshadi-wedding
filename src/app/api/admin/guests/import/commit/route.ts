@@ -29,9 +29,9 @@ export async function POST(req: Request) {
     let failed = 0;
     let conflicts = 0;
 
-    // Use a transaction for the entire import batch
-    await prisma.$transaction(async (tx) => {
-      for (const op of operations) {
+    // Do not use a single transaction for the entire loop, because if one row fails,
+    // Prisma immediately aborts the transaction, preventing subsequent rows and the audit log from saving.
+    for (const op of operations) {
         try {
           const { classification, row, existingId } = op;
 
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
             
             if (!guestId) {
               // Create completely new Guest
-              const newGuest = await tx.guest.create({
+              const newGuest = await prisma.guest.create({
                 data: {
                   displayName: row.guestName,
                   invitationType: row.invitationType,
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
             }
 
             // Link to the Event
-            await tx.eventGuest.upsert({
+            await prisma.eventGuest.upsert({
               where: { guestId_eventId: { guestId, eventId } },
               create: { guestId, eventId, rsvpStatus: "PENDING" },
               update: {} // If it somehow already existed, do nothing
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
           } 
           else if (classification === "UPDATE" && existingId) {
             // Re-validate RSVP safety
-            const existing = await tx.guest.findUnique({ where: { id: existingId } });
+            const existing = await prisma.guest.findUnique({ where: { id: existingId } });
             if (existing && existing.confirmedGuestCount > row.allowedGuestCount) {
               conflicts++;
               failed++;
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
             }
 
             // Update Guest
-            await tx.guest.update({
+            await prisma.guest.update({
               where: { id: existingId },
               data: {
                 displayName: row.guestName,
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       }
       
       // Create Audit Log
-      await tx.auditLog.create({
+      await prisma.auditLog.create({
         data: {
           action: "GUEST_EXCEL_IMPORT",
           entity: "Guest",
@@ -119,7 +119,6 @@ export async function POST(req: Request) {
           }),
         }
       });
-    });
 
     return NextResponse.json({ 
       success: true, 

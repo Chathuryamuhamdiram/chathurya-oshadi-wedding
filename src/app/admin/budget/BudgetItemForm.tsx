@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveBudgetItem } from "./actions";
 import { Plus, Edit2, Info } from "lucide-react";
+import { FileUpload } from "@/components/admin/FileUpload";
 
 export function BudgetItemForm({ categories, vendors = [], existingItem, trigger, activeEventId }: { categories: any[], vendors?: any[], existingItem?: any, trigger?: React.ReactNode, activeEventId?: string | null }) {
   const [open, setOpen] = useState(false);
@@ -159,6 +160,11 @@ export function BudgetItemForm({ categories, vendors = [], existingItem, trigger
                   style={{ colorScheme: 'dark' }} 
                 />
               </div>
+            </div>
+            
+            <div className="mt-4 space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Advance Payment Evidence (Optional)</label>
+              <FileUpload name="evidenceFiles" maxFiles={5} maxSizeMB={5} />
             </div>
           </div>
 

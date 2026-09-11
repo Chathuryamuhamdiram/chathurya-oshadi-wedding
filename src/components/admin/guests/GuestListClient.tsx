@@ -143,9 +143,6 @@ export function GuestListClient({
   const totalAllowed = filteredAndSortedGuests.reduce((sum, g) => sum + g.allowedGuestCount, 0);
   const totalConfirmed = filteredAndSortedGuests.reduce((sum, g) => sum + g.confirmedGuestCount, 0);
   const totalLiquor = filteredAndSortedGuests.reduce((sum, g) => sum + g.liquorCount, 0);
-  
-  const brideGuests = filteredAndSortedGuests.filter(g => g.side === "BRIDE").reduce((sum, g) => sum + g.allowedGuestCount, 0);
-  const groomGuests = filteredAndSortedGuests.filter(g => g.side === "GROOM").reduce((sum, g) => sum + g.allowedGuestCount, 0);
 
   // Send KPI
   let totalSent = 0;
@@ -163,11 +160,14 @@ export function GuestListClient({
       
       {/* Optional Send Summary KPI (only if single event mode) */}
       {!isAllEvents && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Total Invitations", value: filteredAndSortedGuests.length, icon: "✦", color: "from-violet-500/20 to-purple-500/10 border-violet-500/20" },
-            { label: "Bride Side Guests", value: brideGuests, icon: "👰", color: "from-pink-500/20 to-rose-500/10 border-pink-500/20" },
-            { label: "Groom Side Guests", value: groomGuests, icon: "🤵", color: "from-blue-500/20 to-indigo-500/10 border-blue-500/20" },
+            { 
+              label: sideTab === "ALL" ? "Total Guests" : sideTab === "GROOM" ? "Groom Guests" : "Bride Guests", 
+              value: totalAllowed, 
+              icon: sideTab === "ALL" ? "👥" : sideTab === "GROOM" ? "🤵" : "👰", 
+              color: sideTab === "ALL" ? "from-violet-500/20 to-purple-500/10 border-violet-500/20" : sideTab === "GROOM" ? "from-blue-500/20 to-indigo-500/10 border-blue-500/20" : "from-pink-500/20 to-rose-500/10 border-pink-500/20" 
+            },
             { label: "Confirmed Guests", value: totalConfirmed, icon: "◉", color: "from-emerald-500/20 to-teal-500/10 border-emerald-500/20" },
             { label: "Liquor Count", value: totalLiquor, icon: "◈", color: "from-amber-500/20 to-orange-500/10 border-amber-500/20" },
             { label: "Invitations Sent", value: `${totalSent} / ${filteredAndSortedGuests.length}`, icon: "✉", color: "from-cyan-500/20 to-sky-500/10 border-cyan-500/20" },

@@ -13,6 +13,7 @@ export function BudgetItemForm({ categories, vendors = [], existingItem, trigger
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [selectedVendorId, setSelectedVendorId] = useState<string>(existingItem?.vendorId || "none");
+  const [categoryId, setCategoryId] = useState<string>(existingItem?.categoryId || "");
   const [estimatedCost, setEstimatedCost] = useState<string>(existingItem?.estimatedCost ? String(existingItem.estimatedCost) : "");
 
   const isEdit = !!existingItem;
@@ -108,7 +109,7 @@ export function BudgetItemForm({ categories, vendors = [], existingItem, trigger
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Category</label>
-              <Select name="categoryId" defaultValue={existingItem?.categoryId} required>
+              <Select name="categoryId" value={categoryId} onValueChange={setCategoryId} required>
                 <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
                   <SelectValue placeholder="Select..." />
                 </SelectTrigger>

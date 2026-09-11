@@ -92,8 +92,8 @@ export function RSVPSection({
         </div>
       )}
 
-      {/* Family invitation hint */}
-      {isFamily && (
+      {/* Multiple guests hint */}
+      {allowedGuestCount > 1 && (
         <div className="border border-[#c9a84c]/15 rounded-xl bg-white/5 p-3 mb-5 flex items-center gap-3">
           <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#c9a84c]/60 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -103,9 +103,9 @@ export function RSVPSection({
           </svg>
           <div>
             <p className="text-xs text-white/70 font-sans">
-              Family invitation · Up to <span className="text-[#c9a84c] font-bold">{allowedGuestCount}</span> guests
+              {isFamily ? "Family invitation" : "Plus one included"} · Up to <span className="text-[#c9a84c] font-bold">{allowedGuestCount}</span> guests
             </p>
-            <p className="text-[10px] text-white/40 font-sans">Please select how many members of your family will attend</p>
+            <p className="text-[10px] text-white/40 font-sans">Please select how many guests will attend</p>
           </div>
         </div>
       )}
@@ -169,8 +169,8 @@ export function RSVPSection({
           </div>
         </div>
 
-        {/* Guest count — only shown when attending AND family */}
-        {attendance === "ATTENDING" && isFamily && (
+        {/* Guest count — only shown when attending AND allowedGuestCount > 1 */}
+        {attendance === "ATTENDING" && allowedGuestCount > 1 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -208,7 +208,7 @@ export function RSVPSection({
             transition={{ duration: 0.3, delay: 0.05 }}
           >
             <p className="text-[10px] uppercase tracking-widest text-[#c9a84c]/60 font-sans mb-2">
-              Number of Guests Requiring Liquor
+              {allowedGuestCount === 1 ? "Will you require liquor?" : "Number of Guests Requiring Liquor"}
             </p>
             <select
               value={liquorCount}
@@ -217,7 +217,10 @@ export function RSVPSection({
             >
               {liquorOptions.map((n) => (
                 <option key={n} value={n} className="bg-[#0a0e1f]">
-                  {n} {n === 1 ? "Guest" : "Guests"} {n === confirmedGuestCount ? "(Maximum)" : ""}
+                  {allowedGuestCount === 1
+                    ? (n === 0 ? "No" : "Yes")
+                    : `${n} ${n === 1 ? "Guest" : "Guests"} ${n === confirmedGuestCount ? "(Maximum)" : ""}`
+                  }
                 </option>
               ))}
             </select>

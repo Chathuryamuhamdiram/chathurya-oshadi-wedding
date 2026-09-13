@@ -10,15 +10,23 @@ export function CategoryForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  async function onSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setIsSubmitting(true);
     setError("");
-    const res = await saveBudgetCategory(formData);
-    setIsSubmitting(false);
-    if (res.success) {
-      setOpen(false);
-    } else {
-      setError(res.error || "Failed to save category");
+    
+    try {
+      const res = await saveBudgetCategory(formData);
+      if (res.success) {
+        setOpen(false);
+      } else {
+        setError(res.error || "Failed to save category");
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -31,7 +39,7 @@ export function CategoryForm() {
         <DialogHeader>
           <DialogTitle className="font-serif text-xl tracking-wide">Add Budget Category</DialogTitle>
         </DialogHeader>
-        <form action={onSubmit} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           {error && <div className="text-sm text-red-400">{error}</div>}
           <div className="space-y-1.5">
             <label className="text-xs font-sans uppercase tracking-widest text-white/40">Category Name</label>

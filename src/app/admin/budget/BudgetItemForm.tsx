@@ -21,18 +21,26 @@ export function BudgetItemForm({ categories, vendors = [], existingItem, trigger
   // Find the advance expense if it exists
   const advanceExpense = existingItem?.expenses?.find((e: any) => e.expenseType === "ADVANCE");
 
-  async function onSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setIsSubmitting(true);
     setError("");
     if (isEdit && existingItem.id) {
       formData.append("id", existingItem.id);
     }
-    const res = await saveBudgetItem(formData);
-    setIsSubmitting(false);
-    if (res.success) {
-      setOpen(false);
-    } else {
-      setError(res.error || "Failed to save item");
+    
+    try {
+      const res = await saveBudgetItem(formData);
+      if (res.success) {
+        setOpen(false);
+      } else {
+        setError(res.error || "Failed to save item");
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -53,7 +61,7 @@ export function BudgetItemForm({ categories, vendors = [], existingItem, trigger
         <DialogHeader>
           <DialogTitle className="font-serif text-xl tracking-wide">{isEdit ? "Edit Budget Item" : "Add Budget Item"}</DialogTitle>
         </DialogHeader>
-        <form action={onSubmit} className="space-y-5 mt-2">
+        <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           {activeEventId && <input type="hidden" name="eventId" value={activeEventId} />}
           {error && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 p-3 rounded-lg">{error}</div>}
           

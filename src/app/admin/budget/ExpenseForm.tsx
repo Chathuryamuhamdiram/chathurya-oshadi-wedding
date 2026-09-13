@@ -23,16 +23,24 @@ export function ExpenseForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  async function onSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
     setIsSubmitting(true);
     setError("");
     formData.set("budgetItemId", budgetItemId);
-    const res = await saveExpense(formData);
-    setIsSubmitting(false);
-    if (res.success) {
-      setOpen(false);
-    } else {
-      setError(res.error || "Failed to log payment");
+    
+    try {
+      const res = await saveExpense(formData);
+      if (res.success) {
+        setOpen(false);
+      } else {
+        setError(res.error || "Failed to log payment");
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -73,7 +81,7 @@ export function ExpenseForm({
           </div>
         )}
 
-        <form action={onSubmit} className="space-y-4 mt-2 border-t border-white/10 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2 border-t border-white/10 pt-4">
           {error && <div className="text-sm text-red-400">{error}</div>}
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

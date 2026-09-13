@@ -28,14 +28,17 @@ export function ContributionForm({ contribution, trigger, activeEventId }: Contr
       formData.append("id", contribution.id);
     }
 
-    const result = await saveContribution(formData);
-    
-    setIsSubmitting(false);
-    
-    if (result.success) {
-      setIsOpen(false);
-    } else {
-      setError(result.error || "Failed to save contribution");
+    try {
+      const result = await saveContribution(formData);
+      if (result.success) {
+        setIsOpen(false);
+      } else {
+        setError(result.error || "Failed to save contribution");
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 

@@ -165,17 +165,16 @@ export function GuestListClient({
       
       {/* Optional Send Summary KPI (only if single event mode) */}
       {!isAllEvents && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
             { 
-              label: sideTab === "ALL" ? "Total Guests" : sideTab === "GROOM" ? "Groom Guests" : "Bride Guests", 
+              label: sideTab === "ALL" ? "Total Guest Count" : sideTab === "GROOM" ? "Groom Guest Count" : "Bride Guest Count", 
               value: expectedTotalGuests, 
               icon: sideTab === "ALL" ? "👥" : sideTab === "GROOM" ? "🤵" : "👰", 
               color: sideTab === "ALL" ? "from-violet-500/20 to-purple-500/10 border-violet-500/20" : sideTab === "GROOM" ? "from-blue-500/20 to-indigo-500/10 border-blue-500/20" : "from-pink-500/20 to-rose-500/10 border-pink-500/20" 
             },
             { label: "Confirmed Guests", value: totalConfirmed, icon: "◉", color: "from-emerald-500/20 to-teal-500/10 border-emerald-500/20" },
-            { label: "Liquor Count", value: totalLiquor, icon: "◈", color: "from-amber-500/20 to-orange-500/10 border-amber-500/20" },
-            { label: "Invitations Sent", value: `${totalSent} / ${filteredAndSortedGuests.length}`, icon: "✉", color: "from-cyan-500/20 to-sky-500/10 border-cyan-500/20" },
+            { label: "Liquor Count", value: totalLiquor, icon: "◈", color: "from-amber-500/20 to-orange-500/10 border-amber-500/20" }
           ].map((card) => (
             <div
               key={card.label}
@@ -329,9 +328,9 @@ export function GuestListClient({
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-white/80 font-medium">{guest.confirmedGuestCount}</span>
-                          <span className="text-white/20">/</span>
-                          <span className="text-white/40">{guest.allowedGuestCount}</span>
+                          <span className="text-white/80 font-medium">
+                            {guest.rsvpStatus === "ATTENDING" ? guest.confirmedGuestCount : guest.rsvpStatus === "NOT_ATTENDING" ? 0 : guest.allowedGuestCount}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

@@ -16,6 +16,9 @@ export default async function AdminGuestsPage() {
   
   const canEditGuests = hasPermission(role, permissions, PERMISSIONS.GUEST_EDIT);
   const canImportGuests = hasPermission(role, permissions, PERMISSIONS.GUEST_IMPORT);
+  const canExportGuests = hasPermission(role, permissions, PERMISSIONS.GUEST_EXPORT);
+  const canViewLiquor = hasPermission(role, permissions, PERMISSIONS.GUEST_VIEW) || role === "SUPER_ADMIN";
+  const canViewCodes = role === "SUPER_ADMIN";
 
   const activeEventId = await getActiveEventId();
   const isAllEvents = activeEventId === ALL_EVENTS_VALUE;
@@ -81,7 +84,11 @@ export default async function AdminGuestsPage() {
         initialGuests={guests} 
         activeEventId={activeEventId} 
         isAllEvents={isAllEvents} 
-        canEditGuests={canEditGuests} 
+        canEditGuests={canEditGuests}
+        canExportGuests={canExportGuests}
+        canViewLiquor={canViewLiquor}
+        canViewCodes={canViewCodes}
+        eventName={activeEvent ? activeEvent.name : "All Events"}
       />
     </div>
   );

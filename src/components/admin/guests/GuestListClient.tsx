@@ -7,6 +7,7 @@ import { WhatsAppShareModal } from "@/app/admin/guests/WhatsAppShareModal";
 import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
 import { Search } from "lucide-react";
+import { GuestExportModal } from "./GuestExportModal";
 
 function getRsvpColor(status: string) {
   switch (status) {
@@ -32,11 +33,19 @@ export function GuestListClient({
   activeEventId,
   isAllEvents,
   canEditGuests,
+  canExportGuests,
+  canViewLiquor,
+  canViewCodes,
+  eventName,
 }: {
   initialGuests: any[];
   activeEventId: string;
   isAllEvents: boolean;
   canEditGuests: boolean;
+  canExportGuests?: boolean;
+  canViewLiquor?: boolean;
+  canViewCodes?: boolean;
+  eventName?: string;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sideTab, setSideTab] = useState<"ALL" | "GROOM" | "BRIDE">("ALL");
@@ -272,6 +281,24 @@ export function GuestListClient({
               <option value="LIQUOR_HIGH_LOW">Liquor Count High to Low</option>
             </select>
           </div>
+          {canExportGuests && (
+            <div className="ml-auto xl:ml-2">
+              <GuestExportModal 
+                activeEventId={activeEventId}
+                isAllEvents={isAllEvents}
+                searchQuery={searchQuery}
+                sideTab={sideTab}
+                rsvpFilter={rsvpFilter}
+                sendFilter={sendFilter}
+                sortBy={sortBy}
+                totalMatching={filteredAndSortedGuests.length}
+                totalCapacity={expectedTotalGuests}
+                eventName={eventName || "All Events"}
+                canViewLiquor={!!canViewLiquor}
+                canViewCodes={!!canViewCodes}
+              />
+            </div>
+          )}
         </div>
       </div>
 

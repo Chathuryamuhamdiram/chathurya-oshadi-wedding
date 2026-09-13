@@ -7,6 +7,7 @@ export const PERMISSIONS = {
   GUEST_EDIT: 'guest.edit',
   GUEST_DELETE: 'guest.delete',
   GUEST_IMPORT: 'guest.import',
+  GUEST_EXPORT: 'guest.export',
 
   INVITATION_VIEW: 'invitation.view',
   INVITATION_MANAGE: 'invitation.manage',
@@ -89,6 +90,7 @@ export const ADMIN_DEFAULT_PERMISSIONS: string[] = [
   PERMISSIONS.GUEST_CREATE,
   PERMISSIONS.GUEST_EDIT,
   PERMISSIONS.GUEST_IMPORT,
+  PERMISSIONS.GUEST_EXPORT,
   PERMISSIONS.INVITATION_VIEW,
   PERMISSIONS.INVITATION_MANAGE,
   PERMISSIONS.RSVP_VIEW,
@@ -131,6 +133,7 @@ export const PERMISSION_MODULES = [
       { code: PERMISSIONS.GUEST_EDIT, label: "Edit" },
       { code: PERMISSIONS.GUEST_DELETE, label: "Delete" },
       { code: PERMISSIONS.GUEST_IMPORT, label: "Import" },
+      { code: PERMISSIONS.GUEST_EXPORT, label: "Export" },
     ]
   },
   {

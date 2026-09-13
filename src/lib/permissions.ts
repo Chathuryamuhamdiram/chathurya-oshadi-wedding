@@ -79,6 +79,12 @@ export const PERMISSIONS = {
 
   GALLERY_MANAGE: 'gallery.manage',
   GALLERY_DELETE: 'gallery.delete',
+
+  MENU_VIEW: 'menu.view',
+  MENU_CREATE: 'menu.create',
+  MENU_EDIT: 'menu.edit',
+  MENU_DELETE: 'menu.delete',
+  MENU_EXPORT: 'menu.export',
 } as const;
 
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -121,6 +127,10 @@ export const ADMIN_DEFAULT_PERMISSIONS: string[] = [
   PERMISSIONS.GUESTBOOK_VIEW,
   PERMISSIONS.GUESTBOOK_MANAGE,
   PERMISSIONS.GALLERY_MANAGE,
+  PERMISSIONS.MENU_VIEW,
+  PERMISSIONS.MENU_CREATE,
+  PERMISSIONS.MENU_EDIT,
+  PERMISSIONS.MENU_EXPORT,
 ];
 
 // For the UI to render the permission matrix logically grouped
@@ -212,6 +222,16 @@ export const PERMISSION_MODULES = [
       { code: PERMISSIONS.SETTINGS_VIEW, label: "View Settings" },
       { code: PERMISSIONS.SETTINGS_MANAGE, label: "Manage Settings" },
       { code: PERMISSIONS.AUDIT_VIEW, label: "View Audit Logs" },
+    ]
+  },
+  {
+    name: "Food Menu",
+    permissions: [
+      { code: PERMISSIONS.MENU_VIEW, label: "View" },
+      { code: PERMISSIONS.MENU_CREATE, label: "Create" },
+      { code: PERMISSIONS.MENU_EDIT, label: "Edit" },
+      { code: PERMISSIONS.MENU_DELETE, label: "Delete" },
+      { code: PERMISSIONS.MENU_EXPORT, label: "Export" },
     ]
   }
 ];

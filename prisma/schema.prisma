@@ -67,6 +67,7 @@ model CeremonyEvent {
   guestLinks    EventGuest[]
   itineraryEvents WeddingEvent[]
   fundBalanceSnapshots FundBalanceSnapshot[]
+  foodMenus     FoodMenu[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -176,9 +177,11 @@ model Vendor {
   status          VendorStatus @default(POTENTIAL)
   notes           String?
   isArchived      Boolean      @default(false)
-  items       BudgetItem[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  items           BudgetItem[]
+  foodMenus       FoodMenu[]
+  foodMenuItems   FoodMenuItem[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 model BudgetItem {
@@ -506,4 +509,71 @@ model SiteAsset {
   url       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Food Menu Models ───────────────────────────────────────────────────────
+
+model FoodMenu {
+  id          String   @id @default(uuid())
+  eventId     String?
+  event       CeremonyEvent? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title       String
+  venue       String?
+  vendorId    String?
+  vendor      Vendor?  @relation(fields: [vendorId], references: [id])
+  status      String   @default("DRAFT") // DRAFT, CONFIRMED, CANCELLED
+  notes       String?
+  sections    FoodMenuSection[]
+  attachments FoodMenuAttachment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([vendorId])
+}
+
+model FoodMenuSection {
+  id          String         @id @default(uuid())
+  menuId      String
+  menu        FoodMenu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  title       String
+  sortOrder   Int            @default(0)
+  items       FoodMenuItem[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([menuId])
+}
+
+model FoodMenuItem {
+  id          String          @id @default(uuid())
+  sectionId   String
+  section     FoodMenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  cost        Decimal?        @db.Decimal(10, 2)
+  costType    String?         // PER_ITEM, PER_PERSON, PACKAGE, FIXED
+  vendorId    String?
+  vendor      Vendor?         @relation(fields: [vendorId], references: [id])
+  status      String          @default("PLANNED") // PLANNED, CONFIRMED, REMOVED
+  sortOrder   Int             @default(0)
+  isVegetarian Boolean        @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([sectionId])
+  @@index([vendorId])
+}
+
+model FoodMenuAttachment {
+  id               String   @id @default(uuid())
+  menuId           String
+  menu             FoodMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  fileName         String
+  fileUrl          String
+  fileType         String?
+  uploadedBy       String
+  createdAt        DateTime @default(now())
+
+  @@index([menuId])
 }

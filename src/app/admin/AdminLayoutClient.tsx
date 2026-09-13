@@ -43,7 +43,8 @@ const allNavGroups = [
     links: [
       { href: "/admin/guests", label: "Guests & RSVPs", icon: Users },
       { href: "/admin/events", label: "Itinerary & Events", icon: MapPin },
-      { href: "/admin/seating", label: "Seating & Meals", icon: Utensils },
+      { href: "/admin/food-menu", label: "Food Menu", icon: Utensils },
+      { href: "/admin/seating", label: "Seating", icon: Utensils },
       { href: "/admin/logistics", label: "Logistics", icon: Truck },
     ]
   },
@@ -133,6 +134,7 @@ function AdminSidebar({
   const permissionMap: Record<string, string> = {
     "/admin/guests": "guest.view",
     "/admin/events": "calendar.view", 
+    "/admin/food-menu": "menu.view",
     "/admin/seating": "seating.view",
     "/admin/logistics": "transport.view",
     "/admin/budget": "budget.view",

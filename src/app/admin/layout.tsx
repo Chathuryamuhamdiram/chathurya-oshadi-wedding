@@ -21,11 +21,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const permissions = (payload.permissions as string[]) || [];
 
   // Fetch all active ceremony events for the event selector
-  const ceremonyEvents = await prisma.ceremonyEvent.findMany({
+  const ceremonyEventsRaw = await prisma.ceremonyEvent.findMany({
     where: { isActive: true },
     select: { id: true, name: true, eventType: true },
     orderBy: { createdAt: "asc" },
   });
+
+  const ceremonyEvents = ceremonyEventsRaw.map(e => ({
+    id: e.id,
+    name: e.name,
+    eventType: e.eventType
+  }));
 
   const activeEventId = await getActiveEventId();
 

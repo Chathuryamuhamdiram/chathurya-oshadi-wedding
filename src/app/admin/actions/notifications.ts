@@ -12,15 +12,21 @@ export async function getUnreadNotificationsAction(userId: string) {
       },
     });
 
-    const notifications = await prisma.notification.findMany({
+    const notificationsRaw = await prisma.notification.findMany({
       where: {
         userId,
       },
       orderBy: {
         createdAt: "desc",
       },
-      take: 20, // Only fetch the latest 20
+      take: 20,
     });
+
+    const notifications = notificationsRaw.map(n => ({
+      ...n,
+      createdAt: n.createdAt.toISOString(),
+      updatedAt: n.updatedAt.toISOString(),
+    }));
 
     return { count, notifications };
   } catch (error) {

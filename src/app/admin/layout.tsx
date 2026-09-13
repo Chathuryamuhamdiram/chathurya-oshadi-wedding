@@ -12,10 +12,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/login");
   }
 
-  const payload = await getAdminSession() || { role: 'SUPER_ADMIN', permissions: [] };
-  
+  const payload = await verifyJWT(sessionCookie);
+
   if (!payload) {
-    // redirect("/login");
+    redirect("/login");
   }
 
   const permissions = (payload.permissions as string[]) || [];

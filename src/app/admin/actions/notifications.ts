@@ -25,7 +25,6 @@ export async function getUnreadNotificationsAction(userId: string) {
     const notifications = notificationsRaw.map(n => ({
       ...n,
       createdAt: n.createdAt.toISOString(),
-      updatedAt: n.updatedAt.toISOString(),
     }));
 
     return { count, notifications };

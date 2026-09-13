@@ -199,27 +199,29 @@ export function GuestListClient({
       )}
 
       {/* Toolbar */}
-      <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-4 md:p-5 flex flex-col md:grid md:grid-cols-[1fr_auto] gap-4 md:gap-y-4 md:gap-x-4">
         
-        {/* Left Side: Search & Tabs */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4">
-          <div className="relative">
+        {/* ROW 1 Left: Search & Tabs */}
+        <div className="flex flex-col md:flex-row md:items-center gap-4 w-full order-1">
+          {/* Search */}
+          <div className="relative w-full md:w-[260px] lg:w-[320px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
               type="text"
               placeholder="Search Guests..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/20 w-full md:w-64"
+              className="pl-9 pr-4 py-2 bg-black/20 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/20 w-full h-11 md:h-10"
             />
           </div>
 
-          <div className="flex items-center p-1 bg-black/20 rounded-lg border border-white/5 overflow-x-auto">
+          {/* Guest Side Tabs */}
+          <div className="flex items-center p-1 bg-black/20 rounded-lg border border-white/5 overflow-x-auto w-full md:w-auto h-11 md:h-10">
             {["ALL", "GROOM", "BRIDE"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setSideTab(tab as any)}
-                className={`px-4 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
+                className={`flex-1 md:flex-none px-4 h-full text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
                   sideTab === tab
                     ? "bg-white/10 text-white shadow-sm"
                     : "text-white/40 hover:text-white/80"
@@ -231,42 +233,68 @@ export function GuestListClient({
           </div>
         </div>
 
-        {/* Right Side: Dropdown Filters */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40 uppercase tracking-widest">RSVP:</span>
-            <select
-              value={rsvpFilter}
-              onChange={(e) => setRsvpFilter(e.target.value)}
-              className="bg-black/20 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
-            >
-              <option value="ALL">All</option>
-              <option value="PENDING">Pending</option>
-              <option value="ATTENDING">Confirmed</option>
-              <option value="NOT_ATTENDING">Declined</option>
-              <option value="NOT_SURE">Not Sure</option>
-            </select>
+        {/* ROW 1 Right / Mobile Bottom: Download PDF */}
+        {canExportGuests && (
+          <div className="w-full md:w-auto order-3 md:order-none mt-2 md:mt-0 flex md:items-center md:justify-end">
+            <GuestExportModal 
+              activeEventId={activeEventId}
+              isAllEvents={isAllEvents}
+              searchQuery={searchQuery}
+              sideTab={sideTab}
+              rsvpFilter={rsvpFilter}
+              sendFilter={sendFilter}
+              sortBy={sortBy}
+              totalMatching={filteredAndSortedGuests.length}
+              totalCapacity={expectedTotalGuests}
+              eventName={eventName || "All Events"}
+              canViewLiquor={!!canViewLiquor}
+              canViewCodes={!!canViewCodes}
+              className="w-full md:w-auto h-11 md:h-10"
+            />
+          </div>
+        )}
+
+        {/* ROW 2: Secondary Filters */}
+        <div className="flex flex-col md:flex-row md:items-end gap-4 w-full order-2 md:order-none md:col-span-2">
+          <div className="grid grid-cols-2 md:flex md:items-center gap-4 w-full md:w-auto">
+            {/* RSVP */}
+            <div className="flex flex-col gap-1.5 w-full md:w-[120px]">
+              <label className="text-[10px] font-medium text-white/40 uppercase tracking-wider">RSVP</label>
+              <select
+                value={rsvpFilter}
+                onChange={(e) => setRsvpFilter(e.target.value)}
+                className="bg-black/20 border border-white/10 text-white text-sm rounded-lg px-3 py-2 h-11 md:h-10 focus:outline-none focus:border-white/30 appearance-none cursor-pointer w-full"
+              >
+                <option value="ALL">All</option>
+                <option value="PENDING">Pending</option>
+                <option value="ATTENDING">Confirmed</option>
+                <option value="NOT_ATTENDING">Declined</option>
+                <option value="NOT_SURE">Not Sure</option>
+              </select>
+            </div>
+
+            {/* Send */}
+            <div className="flex flex-col gap-1.5 w-full md:w-[120px]">
+              <label className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Send Status</label>
+              <select
+                value={sendFilter}
+                onChange={(e) => setSendFilter(e.target.value)}
+                className="bg-black/20 border border-white/10 text-white text-sm rounded-lg px-3 py-2 h-11 md:h-10 focus:outline-none focus:border-white/30 appearance-none cursor-pointer w-full"
+              >
+                <option value="ALL">All</option>
+                <option value="SENT">Sent</option>
+                <option value="NOT_SENT">Not Sent</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40 uppercase tracking-widest">Send:</span>
-            <select
-              value={sendFilter}
-              onChange={(e) => setSendFilter(e.target.value)}
-              className="bg-black/20 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
-            >
-              <option value="ALL">All</option>
-              <option value="SENT">Sent</option>
-              <option value="NOT_SENT">Not Sent</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/40 uppercase tracking-widest">Sort:</span>
+          {/* Sort */}
+          <div className="flex flex-col gap-1.5 w-full md:w-[180px]">
+            <label className="text-[10px] font-medium text-white/40 uppercase tracking-wider">Sort</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-black/20 border border-white/10 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-white/30 appearance-none cursor-pointer"
+              className="bg-black/20 border border-white/10 text-white text-sm rounded-lg px-3 py-2 h-11 md:h-10 focus:outline-none focus:border-white/30 appearance-none cursor-pointer w-full"
             >
               <option value="RECENTLY_ADDED">Recently Added</option>
               <option value="NAME_AZ">Guest Name A–Z</option>
@@ -281,23 +309,21 @@ export function GuestListClient({
               <option value="LIQUOR_HIGH_LOW">Liquor Count High to Low</option>
             </select>
           </div>
-          {canExportGuests && (
-            <div className="ml-auto xl:ml-2">
-              <GuestExportModal 
-                activeEventId={activeEventId}
-                isAllEvents={isAllEvents}
-                searchQuery={searchQuery}
-                sideTab={sideTab}
-                rsvpFilter={rsvpFilter}
-                sendFilter={sendFilter}
-                sortBy={sortBy}
-                totalMatching={filteredAndSortedGuests.length}
-                totalCapacity={expectedTotalGuests}
-                eventName={eventName || "All Events"}
-                canViewLiquor={!!canViewLiquor}
-                canViewCodes={!!canViewCodes}
-              />
-            </div>
+
+          {/* Reset Filters */}
+          {(searchQuery !== "" || sideTab !== "ALL" || rsvpFilter !== "ALL" || sendFilter !== "ALL" || sortBy !== "RECENTLY_ADDED") && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSideTab("ALL");
+                setRsvpFilter("ALL");
+                setSendFilter("ALL");
+                setSortBy("RECENTLY_ADDED");
+              }}
+              className="mt-2 md:mt-0 md:ml-auto text-xs font-medium text-white/40 hover:text-white/80 transition-colors h-11 md:h-10 flex items-center justify-center w-full md:w-auto md:px-2"
+            >
+              RESET FILTERS
+            </button>
           )}
         </div>
       </div>

@@ -17,6 +17,7 @@ type ExportModalProps = {
   eventName: string;
   canViewLiquor: boolean;
   canViewCodes: boolean;
+  className?: string;
 };
 
 export function GuestExportModal({
@@ -32,6 +33,7 @@ export function GuestExportModal({
   eventName,
   canViewLiquor,
   canViewCodes,
+  className = "",
 }: ExportModalProps) {
   const [open, setOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -103,7 +105,7 @@ export function GuestExportModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-medium px-4 py-3 rounded-lg transition-colors whitespace-nowrap">
+      <DialogTrigger className={`flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-medium px-4 py-3 rounded-lg transition-colors whitespace-nowrap ${className}`}>
         <Download className="w-4 h-4" />
         DOWNLOAD PDF
       </DialogTrigger>

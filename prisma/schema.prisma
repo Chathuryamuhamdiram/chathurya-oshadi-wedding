@@ -24,6 +24,7 @@ model User {
   notifications    Notification[]
   preferences      UserPreference?
   userPermissions  UserPermission[]
+  fundBalanceSnapshots FundBalanceSnapshot[]
 }
 
 // ─── Multi-Event Enums ──────────────────────────────────────────────────────
@@ -65,6 +66,7 @@ model CeremonyEvent {
   contributions Contribution[]
   guestLinks    EventGuest[]
   itineraryEvents WeddingEvent[]
+  fundBalanceSnapshots FundBalanceSnapshot[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -256,6 +258,21 @@ model Contribution {
 
   @@index([eventId])
   @@index([status])
+}
+
+model FundBalanceSnapshot {
+  id            String         @id @default(uuid())
+  eventId       String?
+  event         CeremonyEvent? @relation(fields: [eventId], references: [id])
+  amount        Decimal        @db.Decimal(10, 2)
+  effectiveDate DateTime
+  note          String?
+  updatedById   String?
+  updatedBy     User?          @relation(fields: [updatedById], references: [id])
+  createdAt     DateTime       @default(now())
+
+  @@index([eventId])
+  @@index([updatedById])
 }
 
 model Task {

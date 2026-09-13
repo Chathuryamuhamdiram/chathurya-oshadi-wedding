@@ -12,6 +12,8 @@ import { ContributionForm } from "./ContributionForm";
 import { VendorPaymentModal } from "./VendorPaymentModal";
 import { useSearchParams, useRouter } from "next/navigation";
 
+import { AvailableFundsForm } from "./AvailableFundsForm";
+
 export function BudgetContent({ 
   categories, 
   contributions,
@@ -19,9 +21,13 @@ export function BudgetContent({
   plannedBudget,
   totalContributions,
   totalExpenses,
-  availableBalance,
-  fundingGap,
-  fundingProgress,
+  recordedNetFunds,
+  remainingToPay,
+  currentMoneyOnHand,
+  lastUpdated,
+  snapshots,
+  cashVariance,
+  fundingShortfall,
   activeEventId = "all",
   activeEventName = "All Events",
   isAllEvents = false
@@ -100,66 +106,115 @@ export function BudgetContent({
       {activeTab === "overview" && (
         <div className="space-y-6">
           {/* Summary Stat Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-5 flex flex-col justify-between h-[130px] relative overflow-hidden group">
               <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Planned Budget</span>
-              <div className="text-2xl lg:text-3xl font-semibold text-white mt-auto truncate" title={`LKR ${plannedBudget.toLocaleString()}`}>
+              <div className="text-xl lg:text-2xl font-semibold text-white mt-auto truncate" title={`LKR ${plannedBudget.toLocaleString()}`}>
                 LKR {plannedBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
             
-            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Total Contributions</span>
-              <div className="text-2xl lg:text-3xl font-semibold text-emerald-400 mt-auto truncate" title={`LKR ${totalContributions.toLocaleString()}`}>
-                LKR {totalContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-
-            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Total Expenses</span>
-              <div className="text-2xl lg:text-3xl font-semibold text-rose-400 mt-auto truncate" title={`LKR ${totalExpenses.toLocaleString()}`}>
+            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-5 flex flex-col justify-between h-[130px] relative overflow-hidden group">
+              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Paid Expenses</span>
+              <div className="text-xl lg:text-2xl font-semibold text-rose-400 mt-auto truncate" title={`LKR ${totalExpenses.toLocaleString()}`}>
                 LKR {totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className={`bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-between h-[140px] relative overflow-hidden group ${availableBalance < 0 ? 'ring-1 ring-rose-500/50' : ''}`}>
-              <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none ${availableBalance < 0 ? 'bg-rose-500/10' : 'bg-[#BA9B5D]/10'}`} />
-              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Available Balance</span>
-              <div className={`text-2xl lg:text-3xl font-semibold mt-auto truncate ${availableBalance < 0 ? 'text-rose-400' : 'text-[#BA9B5D]'}`} title={`LKR ${availableBalance.toLocaleString()}`}>
-                {availableBalance < 0 ? "-" : ""}LKR {Math.abs(availableBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-5 flex flex-col justify-between h-[130px] relative overflow-hidden group">
+              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Remaining To Pay</span>
+              <div className="text-xl lg:text-2xl font-semibold text-amber-400 mt-auto truncate" title={`LKR ${remainingToPay.toLocaleString()}`}>
+                LKR {remainingToPay.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+
+            <div className="bg-[#1e2333] border border-[#BA9B5D]/40 rounded-2xl p-5 flex flex-col justify-between h-[130px] relative overflow-hidden group shadow-[0_0_20px_rgba(186,155,93,0.1)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#BA9B5D]/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+              <span className="text-[#BA9B5D] text-xs font-medium tracking-widest uppercase">Current Money On Hand</span>
+              <div className="text-xl lg:text-2xl font-semibold text-white mt-auto truncate" title={`LKR ${currentMoneyOnHand.toLocaleString()}`}>
+                LKR {currentMoneyOnHand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+
+            <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-5 flex flex-col justify-between h-[130px] relative overflow-hidden group">
+              <span className="text-white/50 text-xs font-medium tracking-widest uppercase">Total Contributions</span>
+              <div className="text-xl lg:text-2xl font-semibold text-emerald-400 mt-auto truncate" title={`LKR ${totalContributions.toLocaleString()}`}>
+                LKR {totalContributions.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
           </div>
 
-          {/* Progress / Funding Gap */}
+          {/* Deep Dive Widgets */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-medium">Funding Progress</h3>
-                  <span className="text-[#BA9B5D] font-mono text-xl">{fundingProgress.toFixed(1)}%</span>
+             {/* Funding Status Widget */}
+             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-white font-medium mb-1">Funding Shortfall</h3>
+                    <p className="text-white/40 text-xs">Do we have enough cash to cover remaining payments?</p>
+                  </div>
                 </div>
-                <div className="w-full bg-black/40 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-amber-600 to-[#BA9B5D] h-full rounded-full" 
-                    style={{ width: `${fundingProgress}%` }}
-                  />
+                
+                <div className="flex-1 flex flex-col justify-center gap-6">
+                  <div className="flex justify-between items-center px-4 py-3 bg-white/5 rounded-xl">
+                    <span className="text-sm text-white/70">Remaining To Pay</span>
+                    <span className="text-sm font-mono text-white">LKR {remainingToPay.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center px-4 py-3 bg-white/5 rounded-xl">
+                    <span className="text-sm text-white/70">Current Money on Hand</span>
+                    <span className="text-sm font-mono text-white">LKR {currentMoneyOnHand.toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="border-t border-white/10 pt-4 mt-2">
+                    {fundingShortfall > 0 ? (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-rose-400">Shortfall</span>
+                        <span className="text-xl font-bold font-mono text-rose-400">LKR {fundingShortfall.toLocaleString()}</span>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-emerald-400">Funds Sufficient</span>
+                        <span className="text-xl font-bold font-mono text-emerald-400">+ LKR {Math.abs(fundingShortfall).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <p className="text-white/40 text-xs mt-3">
-                  LKR {totalContributions.toLocaleString()} contributed out of LKR {plannedBudget.toLocaleString()} planned.
-                </p>
              </div>
              
-             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col justify-center">
-                <div className="flex items-center justify-between">
+             {/* Variance & Updates Widget */}
+             <div className="bg-[#1e2333] border border-white/5 rounded-2xl p-6 flex flex-col">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-white font-medium mb-1">Funding Gap</h3>
-                    <p className="text-white/40 text-xs">Amount still needed to reach planned budget.</p>
+                    <h3 className="text-white font-medium mb-1">Recorded Net Funds vs Actual Cash</h3>
+                    <p className="text-white/40 text-xs">Compare recorded transactions against your actual available cash.</p>
                   </div>
-                  <div className="text-2xl font-semibold text-white/90">
-                    {fundingGap > 0 ? `LKR ${fundingGap.toLocaleString()}` : "Fully Funded!"}
+                </div>
+                
+                <div className="flex-1 flex flex-col justify-center gap-6">
+                  <div className="flex justify-between items-center px-4 py-3 bg-white/5 rounded-xl">
+                    <div>
+                      <span className="text-sm text-white/70 block">Recorded Net Funds</span>
+                      <span className="text-[10px] text-white/30">Total Contributions - Total Expenses</span>
+                    </div>
+                    <span className="text-sm font-mono text-white">LKR {recordedNetFunds.toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="border-t border-white/10 pt-4 mt-2 flex justify-between items-center">
+                    <span className="text-sm font-medium text-white/80">Cash Variance</span>
+                    <span className={`text-xl font-bold font-mono ${cashVariance >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {cashVariance >= 0 ? '+' : '-'} LKR {Math.abs(cashVariance).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 border border-[#BA9B5D]/20 bg-[#BA9B5D]/5 rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-xs text-[#BA9B5D] uppercase tracking-widest font-semibold">Money On Hand</span>
+                      {lastUpdated && (
+                        <span className="text-[10px] text-white/40">Last updated: {new Date(lastUpdated).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                    <div className="text-2xl font-mono text-white mb-2">LKR {currentMoneyOnHand.toLocaleString()}</div>
+                    <AvailableFundsForm currentAmount={currentMoneyOnHand} lastUpdated={lastUpdated} snapshots={snapshots} />
                   </div>
                 </div>
              </div>

@@ -160,9 +160,30 @@ export default async function AdminBudgetPage() {
       .filter(c => c.status === "RECEIVED")
       .reduce((sum, c) => sum + c.amount, 0);
 
-    const availableBalance = totalContributions - totalExpenses;
-    const fundingGap = plannedBudget - totalContributions;
-    const fundingProgress = plannedBudget > 0 ? Math.min(100, Math.max(0, (totalContributions / plannedBudget) * 100)) : 0;
+    const recordedNetFunds = totalContributions - totalExpenses;
+    const remainingToPay = plannedBudget - totalExpenses;
+
+    // Fetch fund snapshots
+    const snapshotsRaw = await prisma.fundBalanceSnapshot.findMany({
+      where: isAllEvents ? {} : { eventId: activeEventId },
+      orderBy: { createdAt: 'desc' },
+      include: { updatedBy: { select: { fullName: true } } }
+    });
+
+    const snapshots = snapshotsRaw.map(s => ({
+      id: s.id,
+      amount: Number(s.amount),
+      effectiveDate: s.effectiveDate.toISOString(),
+      note: s.note,
+      updatedBy: s.updatedBy ? { fullName: s.updatedBy.fullName } : null,
+      createdAt: s.createdAt.toISOString()
+    }));
+
+    const currentMoneyOnHand = snapshots.length > 0 ? snapshots[0].amount : 0;
+    const lastUpdated = snapshots.length > 0 ? snapshots[0].effectiveDate : null;
+
+    const cashVariance = currentMoneyOnHand - recordedNetFunds;
+    const fundingShortfall = remainingToPay - currentMoneyOnHand;
 
     return (
       <BudgetContent 
@@ -172,9 +193,13 @@ export default async function AdminBudgetPage() {
         plannedBudget={plannedBudget}
         totalContributions={totalContributions}
         totalExpenses={totalExpenses}
-        availableBalance={availableBalance}
-        fundingGap={fundingGap}
-        fundingProgress={fundingProgress}
+        recordedNetFunds={recordedNetFunds}
+        remainingToPay={remainingToPay}
+        currentMoneyOnHand={currentMoneyOnHand}
+        lastUpdated={lastUpdated}
+        snapshots={snapshots}
+        cashVariance={cashVariance}
+        fundingShortfall={fundingShortfall}
         activeEventId={activeEventId}
         activeEventName={isAllEvents ? "All Events" : (activeEvent?.name ?? "")}
         isAllEvents={isAllEvents}

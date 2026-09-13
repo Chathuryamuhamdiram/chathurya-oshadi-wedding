@@ -518,3 +518,67 @@ export async function deleteExpenseAttachment(attachmentId: string) {
     return { success: false, error: error.message };
   }
 }
+
+export async function saveAvailableFunds(formData: FormData) {
+  try {
+    const payload = await getAdminSession();
+    if (!payload || !payload.userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+    
+    await requirePermission(PERMISSIONS.BUDGET_EDIT);
+    
+    const amountStr = formData.get("amount") as string;
+    const amount = parseFloat(amountStr);
+    const effectiveDateStr = formData.get("effectiveDate") as string;
+    const note = formData.get("note") as string | null;
+    
+    let eventId = formData.get("eventId") as string | null;
+
+    if (isNaN(amount) || amount < 0) {
+      return { success: false, error: "Valid amount greater than or equal to 0 is required" };
+    }
+
+    if (!eventId) {
+      eventId = await getActiveEventId();
+      if (eventId === ALL_EVENTS_VALUE) {
+        // Find wedding as fallback
+        const wedding = await prisma.ceremonyEvent.findFirst({ where: { eventType: "WEDDING", isActive: true } });
+        if (wedding) eventId = wedding.id;
+      }
+    }
+
+    const data: any = {
+      amount,
+      effectiveDate: effectiveDateStr ? new Date(effectiveDateStr) : new Date(),
+      note,
+      updatedById: payload.userId,
+    };
+
+    if (eventId && eventId !== ALL_EVENTS_VALUE) {
+      data.eventId = eventId;
+    }
+
+    // Save snapshot
+    const snapshot = await prisma.fundBalanceSnapshot.create({
+      data
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        userId: payload.userId,
+        action: "UPDATE_AVAILABLE_FUNDS",
+        entity: "FundBalanceSnapshot",
+        entityId: snapshot.id,
+        newValue: JSON.stringify({ newAmount: Number(amount), note })
+      }
+    });
+
+    revalidatePath("/admin/budget");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

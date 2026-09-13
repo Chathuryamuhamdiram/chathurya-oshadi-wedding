@@ -44,84 +44,93 @@ export default async function AdminBudgetPage() {
     });
   }
 
-  // Serialize Decimals for Client Component
-  const categories = categoriesRaw.map(c => ({
-    ...c,
-    items: c.items.map(item => ({
-      ...item,
-      estimatedCost: Number(item.estimatedCost),
-      actualCost: Number(item.actualCost),
-      paidAmount: Number(item.paidAmount),
-      expenses: item.expenses.map(e => ({
-        ...e,
-        amount: Number(e.amount),
-        attachments: e.attachments.map((a: any) => ({
-          ...a,
-          uploadedAt: a.uploadedAt.toISOString()
-        }))
-      })),
-      vendor: item.vendor ? {
-        ...item.vendor,
-        quotationAmount: Number(item.vendor.quotationAmount),
-        finalAmount: Number(item.vendor.finalAmount),
-        advancePaid: Number(item.vendor.advancePaid)
-      } : null
-    }))
-  }));
+  try {
+    // Serialize Decimals for Client Component
+    const categories = categoriesRaw.map(c => ({
+      ...c,
+      items: c.items.map(item => ({
+        ...item,
+        estimatedCost: Number(item.estimatedCost),
+        actualCost: Number(item.actualCost),
+        paidAmount: Number(item.paidAmount),
+        expenses: item.expenses.map(e => ({
+          ...e,
+          amount: Number(e.amount),
+          attachments: e.attachments.map((a: any) => ({
+            ...a,
+            uploadedAt: a.uploadedAt.toISOString()
+          }))
+        })),
+        vendor: item.vendor ? {
+          ...item.vendor,
+          quotationAmount: Number(item.vendor.quotationAmount),
+          finalAmount: Number(item.vendor.finalAmount),
+          advancePaid: Number(item.vendor.advancePaid)
+        } : null
+      }))
+    }));
 
-  const contributions = contributionsRaw.map(c => ({
-    ...c,
-    amount: Number(c.amount)
-  }));
+    const contributions = contributionsRaw.map(c => ({
+      ...c,
+      amount: Number(c.amount)
+    }));
 
-  const vendorsRaw = await prisma.vendor.findMany({
-    where: { isArchived: false, status: { not: "CANCELLED" } },
-    orderBy: { vendorName: 'asc' }
-  });
-
-  const vendors = vendorsRaw.map(v => ({
-    id: v.id,
-    vendorName: v.vendorName,
-    serviceCategory: v.serviceCategory,
-    quotationAmount: Number(v.quotationAmount),
-    finalAmount: Number(v.finalAmount),
-    advancePaid: Number(v.advancePaid)
-  }));
-
-  // Calculate totals
-  let plannedBudget = 0;
-  let totalExpenses = 0;
-  
-  categories.forEach(cat => {
-    cat.items.forEach(item => {
-      plannedBudget += item.estimatedCost;
-      totalExpenses += item.paidAmount;
+    const vendorsRaw = await prisma.vendor.findMany({
+      where: { isArchived: false, status: { not: "CANCELLED" } },
+      orderBy: { vendorName: 'asc' }
     });
-  });
 
-  const totalContributions = contributions
-    .filter(c => c.status === "RECEIVED")
-    .reduce((sum, c) => sum + c.amount, 0);
+    const vendors = vendorsRaw.map(v => ({
+      id: v.id,
+      vendorName: v.vendorName,
+      serviceCategory: v.serviceCategory,
+      quotationAmount: Number(v.quotationAmount),
+      finalAmount: Number(v.finalAmount),
+      advancePaid: Number(v.advancePaid)
+    }));
 
-  const availableBalance = totalContributions - totalExpenses;
-  const fundingGap = plannedBudget - totalContributions;
-  const fundingProgress = plannedBudget > 0 ? Math.min(100, Math.max(0, (totalContributions / plannedBudget) * 100)) : 0;
+    // Calculate totals
+    let plannedBudget = 0;
+    let totalExpenses = 0;
+    
+    categories.forEach(cat => {
+      cat.items.forEach(item => {
+        plannedBudget += item.estimatedCost;
+        totalExpenses += item.paidAmount;
+      });
+    });
 
-  return (
-    <BudgetContent 
-      categories={categories}
-      contributions={contributions}
-      vendors={vendors}
-      plannedBudget={plannedBudget}
-      totalContributions={totalContributions}
-      totalExpenses={totalExpenses}
-      availableBalance={availableBalance}
-      fundingGap={fundingGap}
-      fundingProgress={fundingProgress}
-      activeEventId={activeEventId}
-      activeEventName={isAllEvents ? "All Events" : (activeEvent?.name ?? "")}
-      isAllEvents={isAllEvents}
-    />
-  );
+    const totalContributions = contributions
+      .filter(c => c.status === "RECEIVED")
+      .reduce((sum, c) => sum + c.amount, 0);
+
+    const availableBalance = totalContributions - totalExpenses;
+    const fundingGap = plannedBudget - totalContributions;
+    const fundingProgress = plannedBudget > 0 ? Math.min(100, Math.max(0, (totalContributions / plannedBudget) * 100)) : 0;
+
+    return (
+      <BudgetContent 
+        categories={categories}
+        contributions={contributions}
+        vendors={vendors}
+        plannedBudget={plannedBudget}
+        totalContributions={totalContributions}
+        totalExpenses={totalExpenses}
+        availableBalance={availableBalance}
+        fundingGap={fundingGap}
+        fundingProgress={fundingProgress}
+        activeEventId={activeEventId}
+        activeEventName={isAllEvents ? "All Events" : (activeEvent?.name ?? "")}
+        isAllEvents={isAllEvents}
+      />
+    );
+  } catch (error: any) {
+    return (
+      <div className="p-8 text-white">
+        <h1 className="text-2xl font-bold text-red-500 mb-4">Error Rendering Budget Page</h1>
+        <p className="font-mono text-sm bg-black/50 p-4 rounded-xl whitespace-pre-wrap">{error.stack || error.message || String(error)}</p>
+      </div>
+    );
+  }
 }
 

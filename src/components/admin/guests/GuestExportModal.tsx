@@ -103,11 +103,9 @@ export function GuestExportModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button className="flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-medium px-4 py-3 rounded-lg transition-colors whitespace-nowrap">
-          <Download className="w-4 h-4" />
-          DOWNLOAD PDF
-        </button>
+      <DialogTrigger className="flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-medium px-4 py-3 rounded-lg transition-colors whitespace-nowrap">
+        <Download className="w-4 h-4" />
+        DOWNLOAD PDF
       </DialogTrigger>
       <DialogContent className="bg-[#1e2333] border-white/10 text-white sm:max-w-[500px]">
         <DialogHeader>

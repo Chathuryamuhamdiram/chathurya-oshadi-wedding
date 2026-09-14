@@ -106,44 +106,38 @@ export function WeddingPassportIntro({ onComplete }: WeddingPassportIntroProps) 
           </div>
         </div>
 
-        {/* Interactive CTA: BEGIN OUR JOURNEY */}
+        {/* Interactive CTA: OPEN WEDDING PASSPORT */}
         <div 
-          className="mt-6 md:mt-10 flex justify-center z-40 pointer-events-auto"
+          className="mt-4 md:mt-6 flex flex-col items-center justify-center z-40 pointer-events-auto"
           style={{
             opacity: state === "ready" ? 1 : 0,
             pointerEvents: state === "ready" ? "auto" : "none",
             transition: "opacity 300ms ease"
           }}
         >
+          {/* Helper Text */}
+          <p className="text-white/50 text-[11px] md:text-xs mb-3 font-sans tracking-wide">
+            Tap the passport or button to continue
+          </p>
+
           <button
             onClick={handleOpenPassport}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            aria-label="Begin our wedding journey"
-            className="group flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 outline-none bg-transparent border-none p-4"
-            style={{ transform: isHovered ? "scale(1.02)" : "scale(1)" }}
+            aria-label="Open wedding passport"
+            disabled={state !== "ready"}
+            className={`group relative flex items-center justify-center gap-2 outline-none transition-all duration-500 ease-out border border-[#D7B56D]/60 hover:border-[#D7B56D] bg-[#10233B]/40 hover:bg-[#10233B]/80 rounded-full px-6 md:px-8 py-3 md:py-3.5 shadow-[0_0_15px_rgba(215,181,109,0)] hover:shadow-[0_0_20px_rgba(215,181,109,0.2)] ${isHovered ? "scale-105" : "scale-100"}`}
+            style={{ minHeight: "44px" }}
           >
-            {/* Top ornament */}
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-              <div className={`w-12 h-3 md:w-16 md:h-4 mix-blend-screen transition-all duration-300 ${isHovered ? "opacity-100 brightness-110" : "opacity-70"}`}>
-                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" alt="" className="object-contain w-full h-full" aria-hidden="true" />
-              </div>
-              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-            </div>
-            
-            <span className={`font-serif text-[#D7B56D] text-[11px] md:text-xs tracking-[0.3em] uppercase transition-all duration-300 ${isHovered ? "brightness-125 drop-shadow-[0_0_8px_rgba(215,181,109,0.4)]" : ""}`}>
-              Begin Our Journey
+            {/* Initial glow for attention */}
+            <div className="absolute inset-0 rounded-full bg-[#D7B56D]/20 animate-pulse pointer-events-none" style={{ animationIterationCount: 3, animationDuration: "2s" }} />
+
+            <span className="font-serif text-[#E1BE72] text-[12px] md:text-[13px] tracking-[0.2em] font-medium uppercase relative z-10 transition-colors group-hover:text-white">
+              OPEN WEDDING PASSPORT
             </span>
-            
-            {/* Bottom ornament */}
-            <div className="flex items-center gap-3 mt-3">
-              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-              <div className={`w-12 h-3 md:w-16 md:h-4 mix-blend-screen transition-all duration-300 rotate-180 ${isHovered ? "opacity-100 brightness-110" : "opacity-70"}`}>
-                <img src="/Front_Passport/ChatGPT Image Aug 31, 2026, 08_02_54 PM (7).png" alt="" className="object-contain w-full h-full" aria-hidden="true" />
-              </div>
-              <div className={`w-8 h-[1px] bg-[#D7B56D] transition-all duration-300 ${isHovered ? "w-12 opacity-100" : "opacity-60"}`} />
-            </div>
+            <span className="relative z-10 text-[#E1BE72] font-serif text-[16px] leading-none mb-[2px] transition-colors group-hover:text-white animate-[pulseRight_2s_ease-in-out_infinite]">
+              →
+            </span>
           </button>
         </div>
       </div>

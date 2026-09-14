@@ -130,3 +130,12 @@
     scroll-behavior: smooth;
   }
 }
+
+@keyframes pulseRight {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+}

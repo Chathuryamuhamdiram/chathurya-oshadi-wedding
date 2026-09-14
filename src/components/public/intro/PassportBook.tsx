@@ -22,7 +22,15 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
   );
 
   return (
-    <div className="relative w-full h-full shadow-[15px_15px_40px_rgba(0,0,0,0.6)] rounded-r-[8px] bg-[#F8F2E8]" style={{ perspective: "1400px", transformStyle: "preserve-3d" }}>
+    <div 
+      className={`relative w-full h-full shadow-[15px_15px_40px_rgba(0,0,0,0.6)] rounded-r-[8px] bg-[#F8F2E8] transition-all duration-300 ${
+        isClosed 
+          ? "cursor-pointer hover:-translate-y-1 hover:scale-[1.01] hover:shadow-[0_15px_40px_rgba(215,181,109,0.25),15px_15px_40px_rgba(0,0,0,0.6)]" 
+          : ""
+      }`} 
+      onClick={isClosed ? onOpen : undefined}
+      style={{ perspective: "1400px", transformStyle: "preserve-3d" }}
+    >
       
       {/* ---------------------------------
           RIGHT PAGE (Backdrop of the book)
@@ -109,8 +117,17 @@ export function PassportBook({ state, onOpen }: PassportBookProps) {
         
         {/* --- FRONT COVER (Navy) --- */}
         <div 
-          className="absolute inset-0 bg-[#0A111C] rounded-r-[8px] flex flex-col items-center overflow-hidden cursor-pointer"
+          className={`absolute inset-0 bg-[#0A111C] rounded-r-[8px] flex flex-col items-center overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-[#D7B56D] ${isClosed ? "cursor-pointer" : ""}`}
           onClick={isClosed ? onOpen : undefined}
+          onKeyDown={(e) => {
+            if (isClosed && (e.key === "Enter" || e.key === " ")) {
+              e.preventDefault();
+              onOpen();
+            }
+          }}
+          tabIndex={isClosed ? 0 : -1}
+          role="button"
+          aria-label="Open wedding passport"
           style={{ 
             backfaceVisibility: "hidden", 
             WebkitBackfaceVisibility: "hidden",

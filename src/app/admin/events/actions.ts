@@ -175,6 +175,42 @@ export async function saveEventItemAction(eventId: string, name: string, quantit
   }
 }
 
+export async function bulkSaveEventItemsAction(eventId: string, items: { name: string, quantity: string, existingId?: string, isDuplicate?: boolean }[]) {
+  try {
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
+    
+    const event = await prisma.weddingEvent.findUnique({ where: { id: eventId } });
+    if (!event) throw new Error("Event not found");
+
+    for (const item of items) {
+      if (!item.name || item.name.trim() === "") continue;
+      
+      if (item.isDuplicate && item.existingId) {
+        // Replace existing quantity
+        await prisma.eventItem.update({
+          where: { id: item.existingId },
+          data: { quantity: item.quantity.trim() || "1" }
+        });
+      } else {
+        // Create new
+        await prisma.eventItem.create({
+          data: {
+            eventId,
+            name: item.name.trim(),
+            quantity: item.quantity.trim() || "1",
+            status: "PENDING"
+          }
+        });
+      }
+    }
+
+    revalidatePath("/admin/events");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to bulk import items" };
+  }
+}
+
 export async function updateEventItemQuantityAction(id: string, quantity: string) {
   try {
     await requirePermission(PERMISSIONS.CALENDAR_MANAGE);

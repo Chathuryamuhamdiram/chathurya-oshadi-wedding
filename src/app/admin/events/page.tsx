@@ -3,6 +3,7 @@ import { EventForm } from "./EventForm";
 import { VenueForm } from "./VenueForm";
 import { EventItemList } from "./EventItemList";
 import { DeleteEventButton } from "./DeleteEventButton";
+import { ChecklistBulkPaste } from "./ChecklistBulkPaste";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -49,9 +50,14 @@ export default async function EventsDashboardPage() {
           </div>
           <p className="text-white/40 text-sm font-sans mt-1">Manage venues and the wedding day schedule.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <VenueForm />
           <EventForm venues={venues} activeEventId={isAllEvents ? null : activeEventId} />
+          <ChecklistBulkPaste 
+            defaultEventId={isAllEvents ? null : activeEventId}
+            defaultEventName={isAllEvents ? undefined : activeEvent?.name}
+            events={events.map(e => ({ id: e.id, title: e.title, items: e.items }))}
+          />
         </div>
       </div>
 

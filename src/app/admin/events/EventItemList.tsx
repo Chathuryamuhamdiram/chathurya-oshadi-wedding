@@ -7,6 +7,8 @@ import { DeleteEventButton } from "./DeleteEventButton";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { ChecklistBulkPaste } from "./ChecklistBulkPaste";
+import { ClipboardPaste } from "lucide-react";
 
 export function EventItemList({ 
   eventId, 
@@ -182,6 +184,16 @@ export function EventItemList({
                 >
                   <Plus className="w-5 h-5" />
                 </button>
+                <ChecklistBulkPaste 
+                  defaultEventId={eventId}
+                  defaultEventName={eventTitle}
+                  events={[{ id: eventId, title: eventTitle, items: initialItems }]}
+                  trigger={
+                    <button type="button" title="Bulk Paste" className="px-4 py-2.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 transition-colors sm:w-auto flex justify-center items-center">
+                      <ClipboardPaste className="w-5 h-5" />
+                    </button>
+                  }
+                />
               </div>
             </form>
           </div>

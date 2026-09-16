@@ -225,3 +225,84 @@ export async function reorderItems(sectionId: string, itemIds: string[]) {
   revalidatePath("/admin/food-menu");
   return { success: true };
 }
+
+export async function bulkSaveFoodMenuSections(menuId: string, sections: { title: string, isDuplicate?: boolean }[]) {
+  const session = await requirePermission(PERMISSIONS.MENU_EDIT);
+
+  // Filter out duplicates (they were skipped)
+  const newSections = sections.filter(s => !s.isDuplicate);
+
+  if (newSections.length === 0) {
+    return { success: true };
+  }
+
+  const existingSectionsCount = await prisma.foodMenuSection.count({
+    where: { menuId }
+  });
+
+  const createdSections = await prisma.$transaction(
+    newSections.map((section, index) => 
+      prisma.foodMenuSection.create({
+        data: {
+          menuId,
+          title: section.title,
+          sortOrder: existingSectionsCount + index
+        }
+      })
+    )
+  );
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session.userId,
+      action: "BULK_CREATE_MENU_SECTIONS",
+      entity: "FoodMenuSection",
+      entityId: menuId,
+      newValue: JSON.stringify({ count: createdSections.length })
+    }
+  });
+
+  revalidatePath("/admin/food-menu");
+  return { success: true };
+}
+
+export async function bulkSaveFoodMenuItems(sectionId: string, items: { name: string, isDuplicate?: boolean }[]) {
+  const session = await requirePermission(PERMISSIONS.MENU_EDIT);
+
+  // Filter out duplicates
+  const newItems = items.filter(i => !i.isDuplicate);
+
+  if (newItems.length === 0) {
+    return { success: true };
+  }
+
+  const existingItemsCount = await prisma.foodMenuItem.count({
+    where: { sectionId }
+  });
+
+  const createdItems = await prisma.$transaction(
+    newItems.map((item, index) => 
+      prisma.foodMenuItem.create({
+        data: {
+          sectionId,
+          name: item.name,
+          status: "PLANNED",
+          sortOrder: existingItemsCount + index
+        }
+      })
+    )
+  );
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session.userId,
+      action: "BULK_CREATE_MENU_ITEMS",
+      entity: "FoodMenuItem",
+      entityId: sectionId,
+      newValue: JSON.stringify({ count: createdItems.length })
+    }
+  });
+
+  revalidatePath("/admin/food-menu");
+  return { success: true };
+}

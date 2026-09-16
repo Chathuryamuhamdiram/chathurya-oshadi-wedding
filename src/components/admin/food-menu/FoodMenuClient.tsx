@@ -1,12 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Edit2, Trash2, GripVertical, FileDown, UtensilsCrossed } from "lucide-react";
 import { createOrUpdateMenu, addSection, updateSection, deleteSection, addItem, updateItem, deleteItem, reorderSections, reorderItems } from "@/app/admin/food-menu/actions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import MenuExportModal from "./MenuExportModal";
+import { FoodMenuBulkSectionImport } from "./FoodMenuBulkSectionImport";
+import { FoodMenuBulkItemImport } from "./FoodMenuBulkItemImport";
 
-// We'll keep the client simple, using native HTML5 drag and drop if possible, or basic up/down arrows for reordering.
+const InlineAddItemForm = ({ sectionId, onAdd, onCancel }: { sectionId: string, onAdd: (name: string) => Promise<void>, onCancel: () => void }) => {
+  const [name, setName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || isSubmitting) return;
+    setIsSubmitting(true);
+    await onAdd(name);
+    setName("");
+    setIsSubmitting(false);
+    inputRef.current?.focus();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+      <input 
+        ref={inputRef}
+        autoFocus
+        value={name}
+        onChange={e => setName(e.target.value)}
+        placeholder="Enter item name..."
+        disabled={isSubmitting}
+        className="flex-1 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50"
+      />
+      <button type="submit" disabled={isSubmitting || !name.trim()} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg disabled:opacity-50">Add</button>
+      <button type="button" onClick={onCancel} className="px-3 py-2 text-white/50 hover:text-white text-sm">Cancel</button>
+    </form>
+  )
+}
 
 export default function FoodMenuClient({
   activeEventId,
@@ -24,9 +56,9 @@ export default function FoodMenuClient({
   
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
-  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  
+  const [inlineAddSectionId, setInlineAddSectionId] = useState<string | null>(null);
 
-  // If All Events is selected, we prompt the user to select a specific event
   if (isAllEvents) {
     return (
       <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/[0.1] rounded-2xl">
@@ -68,23 +100,20 @@ export default function FoodMenuClient({
     setIsSectionDialogOpen(false);
   };
 
-  const handleSaveItem = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleInlineAddItem = async (sectionId: string, name: string) => {
+    const data = { name };
+    await addItem(sectionId, data);
+  };
+
+  const handleSaveItemEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!editingItem) return;
     const formData = new FormData(e.currentTarget);
     const data = {
       name: formData.get("name"),
-      description: formData.get("description"),
-      cost: formData.get("cost"),
-      costType: formData.get("costType"),
-      vendorId: formData.get("vendorId"),
-      status: formData.get("status")
+      status: editingItem.status // keep existing
     };
-    
-    if (editingItem) {
-      await updateItem(editingItem.id, data);
-    } else {
-      await addItem(activeSectionId!, data);
-    }
+    await updateItem(editingItem.id, data);
     setIsItemDialogOpen(false);
   };
 
@@ -237,16 +266,22 @@ export default function FoodMenuClient({
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-serif text-white/90">Menu Sections</h2>
               {canEdit && (
-                <button
-                  onClick={() => {
-                    setEditingSection(null);
-                    setIsSectionDialogOpen(true);
-                  }}
-                  className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  ADD SECTION
-                </button>
+                <div className="flex items-center gap-3">
+                  <FoodMenuBulkSectionImport 
+                    menuId={menu.id}
+                    existingSections={menu.sections.map((s: any) => ({ id: s.id, title: s.title }))}
+                  />
+                  <button
+                    onClick={() => {
+                      setEditingSection(null);
+                      setIsSectionDialogOpen(true);
+                    }}
+                    className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    ADD SECTION
+                  </button>
+                </div>
               )}
             </div>
 
@@ -291,41 +326,26 @@ export default function FoodMenuClient({
 
                 {/* Section Items */}
                 <div className="p-6">
-                  {section.items.length === 0 ? (
+                  {section.items.length === 0 && inlineAddSectionId !== section.id ? (
                     <p className="text-sm text-white/40 italic">No items added to this section.</p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {section.items.map((item: any, iIdx: number) => (
-                        <div key={item.id} className="flex items-start justify-between gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors group">
-                          <div className="flex items-start gap-4">
+                        <div key={item.id} className="flex items-center justify-between gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                          <div className="flex items-center gap-4">
                             {canEdit && (
-                              <div className="flex flex-col gap-1 mt-1 opacity-20 group-hover:opacity-100 transition-opacity">
+                              <div className="flex flex-col gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
                                 <button onClick={() => moveItem(section, iIdx, 'up')} disabled={iIdx === 0} className="disabled:opacity-20">▲</button>
                                 <button onClick={() => moveItem(section, iIdx, 'down')} disabled={iIdx === section.items.length - 1} className="disabled:opacity-20">▼</button>
                               </div>
                             )}
-                            <div>
-                              <div className="flex items-center gap-3">
-                                <span className="font-medium text-white/90">{item.name}</span>
-                                {item.status === 'CONFIRMED' && <span className="w-2 h-2 rounded-full bg-emerald-500" title="Confirmed" />}
-                              </div>
-                              {item.description && (
-                                <p className="text-sm text-white/50 mt-1">{item.description}</p>
-                              )}
-                              {(item.cost || item.vendorId) && (
-                                <div className="flex items-center gap-3 mt-2 text-[11px] text-white/40 uppercase tracking-wider">
-                                  {item.cost && <span>{item.costType === 'PER_PERSON' ? 'Per Person: ' : 'Cost: '}LKR {item.cost.toString()}</span>}
-                                  {item.vendor && <span>Vendor: {item.vendor.vendorName}</span>}
-                                </div>
-                              )}
-                            </div>
+                            <span className="font-medium text-white/90 text-sm">{item.name}</span>
                           </div>
                           
                           {canEdit && (
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                               <button
                                 onClick={() => {
-                                  setActiveSectionId(section.id);
                                   setEditingItem(item);
                                   setIsItemDialogOpen(true);
                                 }}
@@ -347,17 +367,32 @@ export default function FoodMenuClient({
                   )}
 
                   {canEdit && (
-                    <button
-                      onClick={() => {
-                        setActiveSectionId(section.id);
-                        setEditingItem(null);
-                        setIsItemDialogOpen(true);
-                      }}
-                      className="mt-4 flex items-center gap-2 text-sm text-white/40 hover:text-white/80 transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add Item
-                    </button>
+                    <div className="mt-4 border-t border-white/5 pt-4">
+                      {inlineAddSectionId === section.id ? (
+                        <InlineAddItemForm 
+                          sectionId={section.id} 
+                          onAdd={async (name) => {
+                            await handleInlineAddItem(section.id, name);
+                          }}
+                          onCancel={() => setInlineAddSectionId(null)} 
+                        />
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setInlineAddSectionId(section.id)}
+                            className="flex items-center gap-2 text-sm text-white/40 hover:text-white/80 transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Item
+                          </button>
+                          <FoodMenuBulkItemImport 
+                            sectionId={section.id}
+                            sectionTitle={section.title}
+                            existingItems={section.items.map((i: any) => ({ id: i.id, name: i.name }))}
+                          />
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -429,47 +464,20 @@ export default function FoodMenuClient({
         </DialogContent>
       </Dialog>
 
-      {/* Item Dialog */}
+      {/* Item Dialog (Edit only, name only) */}
       <Dialog open={isItemDialogOpen} onOpenChange={setIsItemDialogOpen}>
         <DialogContent className="bg-[#1e2333] border border-white/10 text-white sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editingItem ? "Edit Item" : "Add Item"}</DialogTitle>
+            <DialogTitle>Edit Item</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSaveItem} className="space-y-4 pt-4">
+          <form onSubmit={handleSaveItemEdit} className="space-y-4 pt-4">
             <div>
               <label className="block text-xs font-medium text-white/60 mb-1.5">Item Name *</label>
-              <input name="name" defaultValue={editingItem?.name || ""} placeholder="e.g. Chicken Biryani" required className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">Description (Optional)</label>
-              <input name="description" defaultValue={editingItem?.description || ""} placeholder="e.g. Fragrant basmati rice with spiced chicken" className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5">Cost</label>
-                <input name="cost" type="number" step="0.01" defaultValue={editingItem?.cost || ""} placeholder="e.g. 45000" className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5">Cost Type</label>
-                <select name="costType" defaultValue={editingItem?.costType || "PER_ITEM"} className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30 appearance-none">
-                  <option value="PER_ITEM">Per Item</option>
-                  <option value="PER_PERSON">Per Person</option>
-                  <option value="PACKAGE">Package</option>
-                  <option value="FIXED">Fixed</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">Status</label>
-              <select name="status" defaultValue={editingItem?.status || "PLANNED"} className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30 appearance-none">
-                <option value="PLANNED">Planned</option>
-                <option value="CONFIRMED">Confirmed</option>
-                <option value="REMOVED">Removed</option>
-              </select>
+              <input name="name" defaultValue={editingItem?.name || ""} required className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500/50" />
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
               <button type="button" onClick={() => setIsItemDialogOpen(false)} className="px-4 py-2 text-sm text-white/60 hover:text-white">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors">Save Item</button>
+              <button type="submit" className="px-4 py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">Save Item</button>
             </div>
           </form>
         </DialogContent>

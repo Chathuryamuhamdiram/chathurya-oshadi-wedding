@@ -3,37 +3,21 @@
 import { useState } from "react";
 import { Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ALL_EVENTS_VALUE } from "@/lib/event-constants";
 
 export default function MenuExportModal({ 
   activeEventId,
   isAllEvents,
   menuTitle,
-  eventName,
-  canViewCosts
+  eventName
 }: any) {
   const [open, setOpen] = useState(false);
-  const [includeDescriptions, setIncludeDescriptions] = useState(true);
-  const [includeSectionHeadings, setIncludeSectionHeadings] = useState(true);
-  const [includeVenue, setIncludeVenue] = useState(true);
-  const [includeCaterer, setIncludeCaterer] = useState(true);
-  const [includeCosts, setIncludeCosts] = useState(false);
-  const [includeInternalNotes, setIncludeInternalNotes] = useState(false);
-  const [includeItemStatus, setIncludeItemStatus] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
       const params = new URLSearchParams({
-        eventId: activeEventId,
-        includeDescriptions: includeDescriptions.toString(),
-        includeSectionHeadings: includeSectionHeadings.toString(),
-        includeVenue: includeVenue.toString(),
-        includeCaterer: includeCaterer.toString(),
-        includeCosts: includeCosts.toString(),
-        includeInternalNotes: includeInternalNotes.toString(),
-        includeItemStatus: includeItemStatus.toString(),
+        eventId: activeEventId
       });
       
       const response = await fetch(`/api/admin/food-menu/export-pdf?${params}`);
@@ -79,7 +63,7 @@ export default function MenuExportModal({
         </DialogHeader>
 
         <div className="space-y-4 pt-4">
-          <div className="bg-black/20 rounded-xl p-4 border border-white/5 mb-6">
+          <div className="bg-black/20 rounded-xl p-4 border border-white/5">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs text-white/50 uppercase tracking-wider font-semibold">Event</span>
               <span className="text-sm font-medium text-emerald-400">{eventName}</span>
@@ -89,73 +73,10 @@ export default function MenuExportModal({
               <span className="text-sm font-medium">{menuTitle}</span>
             </div>
           </div>
-
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-white/40 mb-3">Include in PDF</p>
-            
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative flex items-center justify-center">
-                <input type="checkbox" checked={includeDescriptions} onChange={(e) => setIncludeDescriptions(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-              </div>
-              <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Descriptions</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative flex items-center justify-center">
-                <input type="checkbox" checked={includeSectionHeadings} onChange={(e) => setIncludeSectionHeadings(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-              </div>
-              <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Section Headings</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative flex items-center justify-center">
-                <input type="checkbox" checked={includeVenue} onChange={(e) => setIncludeVenue(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-              </div>
-              <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Venue</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative flex items-center justify-center">
-                <input type="checkbox" checked={includeCaterer} onChange={(e) => setIncludeCaterer(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-              </div>
-              <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Caterer</span>
-            </label>
-
-            {canViewCosts && (
-              <>
-                <div className="h-px bg-white/10 my-3" />
-                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400/70 mb-3">Internal Fields</p>
-
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative flex items-center justify-center">
-                    <input type="checkbox" checked={includeCosts} onChange={(e) => setIncludeCosts(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                    <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-                  </div>
-                  <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Costs</span>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative flex items-center justify-center">
-                    <input type="checkbox" checked={includeInternalNotes} onChange={(e) => setIncludeInternalNotes(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                    <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-                  </div>
-                  <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Internal Notes</span>
-                </label>
-
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className="relative flex items-center justify-center">
-                    <input type="checkbox" checked={includeItemStatus} onChange={(e) => setIncludeItemStatus(e.target.checked)} className="peer appearance-none w-5 h-5 border-2 border-white/20 rounded-md checked:bg-emerald-500 checked:border-emerald-500 transition-colors" />
-                    <div className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none text-white">✓</div>
-                  </div>
-                  <span className="text-sm text-white/80 group-hover:text-white transition-colors">Include Item Status</span>
-                </label>
-              </>
-            )}
-          </div>
+          
+          <p className="text-sm text-white/70">
+            This will generate a clean, print-ready PDF containing your event's food menu sections and items.
+          </p>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-6">

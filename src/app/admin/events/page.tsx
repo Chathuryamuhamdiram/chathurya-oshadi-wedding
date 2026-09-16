@@ -54,8 +54,8 @@ export default async function EventsDashboardPage() {
           <VenueForm />
           <EventForm venues={venues} activeEventId={isAllEvents ? null : activeEventId} />
           <ChecklistBulkPaste 
-            defaultEventId={isAllEvents ? null : activeEventId}
-            defaultEventName={isAllEvents ? undefined : activeEvent?.name}
+            defaultEventId={null}
+            defaultEventName={undefined}
             events={events.map(e => ({ id: e.id, title: e.title, items: e.items }))}
           />
         </div>

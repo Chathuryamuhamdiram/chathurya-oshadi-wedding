@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ClipboardPaste, AlertCircle, ArrowRight, Save, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { parseFoodMenuText, normalizeFoodName, ParsedFoodItem } from "@/lib/admin/food-menu-parser";
-import { bulkSaveFoodMenuItems } from "./actions";
+import { bulkSaveFoodMenuItems } from "@/app/admin/food-menu/actions";
 
 type FoodMenuBulkItemImportProps = {
   sectionId: string;

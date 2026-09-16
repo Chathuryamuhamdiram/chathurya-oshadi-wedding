@@ -53,13 +53,23 @@ export function parseChecklistText(rawText: string): ParsedChecklistItem[] {
     // Split by ` / ` (with spaces) covers cases like "දෙවන දින ඇඳුම් / මුදු 02 / කර මාලය"
     let splitParts = line.split(/\s+\/\s+/);
     
-    // If no " / " found, let's try just `/` but ensure we don't split fractions.
+    // Fallback: if no " / " found, check if there's a '/' that is not surrounded by digits
     if (splitParts.length === 1 && line.includes('/')) {
-      // Split by `/` that doesn't have a digit immediately before AND after it
-      // Javascript regex engine supports lookbehinds in V8
-      const regex = /(?<!\d)\/(?!\d)/;
-      if (regex.test(line)) {
-        splitParts = line.split(regex);
+      // Manual check without lookbehinds for Safari compatibility
+      let safeToSplit = false;
+      const slashIndex = line.indexOf('/');
+      if (slashIndex > 0 && slashIndex < line.length - 1) {
+        const prev = line[slashIndex - 1];
+        const next = line[slashIndex + 1];
+        if (!/\d/.test(prev) || !/\d/.test(next)) {
+          safeToSplit = true;
+        }
+      } else {
+        safeToSplit = true;
+      }
+      
+      if (safeToSplit) {
+        splitParts = line.split('/');
       }
     }
 

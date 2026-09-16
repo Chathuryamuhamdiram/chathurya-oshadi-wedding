@@ -46,30 +46,39 @@ export function ChecklistBulkPaste({
   const selectedEvent = events.find(e => e.id === selectedEventId);
 
   const handlePreview = () => {
-    if (!rawText.trim() || !selectedEvent) return;
-    
-    const items = parseChecklistText(rawText);
-    
-    // Duplicate detection
-    const existingItems = selectedEvent.items || [];
-    
-    const processed = items.map(item => {
-      const normalizedName = normalizeItemName(item.name);
-      const match = existingItems.find(e => normalizeItemName(e.name) === normalizedName);
-      
-      if (match) {
-        return {
-          ...item,
-          isDuplicate: true,
-          existingId: match.id,
-          originalName: match.name // the name currently in DB
-        };
+    try {
+      if (!rawText.trim()) return;
+      if (!selectedEvent) {
+        alert("Error: No event selected for import.");
+        return;
       }
-      return item;
-    });
+      
+      const items = parseChecklistText(rawText);
+      
+      // Duplicate detection
+      const existingItems = selectedEvent.items || [];
+      
+      const processed = items.map(item => {
+        const normalizedName = normalizeItemName(item.name);
+        const match = existingItems.find(e => normalizeItemName(e.name) === normalizedName);
+        
+        if (match) {
+          return {
+            ...item,
+            isDuplicate: true,
+            existingId: match.id,
+            originalName: match.name // the name currently in DB
+          };
+        }
+        return item;
+      });
 
-    setParsedItems(processed);
-    setMode("PREVIEW");
+      setParsedItems(processed);
+      setMode("PREVIEW");
+    } catch (error: any) {
+      console.error("Parse error", error);
+      alert("Failed to parse checklist: " + error.message);
+    }
   };
 
   const handleUpdateParsedItem = (id: string, updates: Partial<ParsedChecklistItem>) => {

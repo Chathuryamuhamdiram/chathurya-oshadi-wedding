@@ -3,13 +3,19 @@ import { LiveClock } from "./LiveClock";
 import { Phone, Calendar as CalendarIcon, CheckSquare, AlertTriangle, ArrowRight } from "lucide-react";
 import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
+import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
 
 export default async function AdminWeddingDayPage() {
   await requirePermission(PERMISSIONS.WEDDING_DAY_VIEW);
   const now = new Date();
   
+  const activeEventId = await getActiveEventId();
+  const activeEvent = activeEventId !== ALL_EVENTS_VALUE 
+    ? await prisma.ceremonyEvent.findUnique({ where: { id: activeEventId } }) 
+    : null;
+
   // 1. Fetch Events, Vendors, and Pending Tasks
-  const [events, vendors, tasks] = await Promise.all([
+  const [events, vendors, tasks, planItems] = await Promise.all([
     prisma.weddingEvent.findMany({ 
       where: { eventDate: { not: null } },
       orderBy: [
@@ -32,16 +38,21 @@ export default async function AdminWeddingDayPage() {
         priority: { in: ["HIGH", "CRITICAL"] }
       },
       orderBy: { priority: 'asc' } // CRITICAL, HIGH
+    }),
+    prisma.eventPlanItem.findMany({
+      where: activeEvent ? { eventId: activeEvent.id } : undefined,
+      orderBy: { sortOrder: 'asc' }
     })
   ]);
 
-  // Determine "Up Next" event (the first event in the future)
-  // For demo purposes, we will just take the first event if none are technically in the future today
+  // Determine "Up Next" event (the first event in the future) for the top banner
   let upcomingEvents = events.filter(e => e.eventDate && e.eventDate >= new Date(now.setHours(0,0,0,0)));
-  if (upcomingEvents.length === 0) upcomingEvents = events; // fallback to all events if none today
+  if (upcomingEvents.length === 0) upcomingEvents = events; 
   
   const upNext = upcomingEvents[0];
-  const laterEvents = upcomingEvents.slice(1, 5); // next 4
+  
+  // Use Event Plan items as the source of truth for Run of Show
+  const laterEvents = planItems;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-20">
@@ -86,17 +97,21 @@ export default async function AdminWeddingDayPage() {
       {/* Run of Show */}
       {laterEvents.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-white/50 uppercase tracking-widest px-2">Run of Show</h3>
-          <div className="bg-[#1e2333] border border-white/5 rounded-2xl overflow-hidden">
+          <h3 className="text-sm font-semibold text-white/50 uppercase tracking-widest px-2">Run of Show (Event Plan)</h3>
+          <div className="bg-[#1e2333] border border-white/5 rounded-2xl overflow-hidden relative">
+            <div className="absolute left-[70px] top-6 bottom-6 w-px bg-white/10" />
             {laterEvents.map((evt, idx) => (
-              <div key={evt.id} className={`flex items-center gap-4 p-4 ${idx !== laterEvents.length - 1 ? 'border-b border-white/5' : ''}`}>
-                <div className="w-16 text-center shrink-0">
-                  <div className="text-sm font-mono text-white/80">{evt.startTime || '--:--'}</div>
+              <div key={evt.id} className="group flex items-start gap-4 sm:gap-6 py-4 px-4 transition-all hover:bg-white/5 relative z-10">
+                <div className="w-[50px] shrink-0 flex flex-col items-end gap-1">
+                  <div className="text-white/80 font-mono text-sm mt-0.5">
+                    {evt.plannedTime || <span className="text-white/30">—</span>}
+                  </div>
                 </div>
-                <div className="w-1 h-8 rounded-full bg-white/10 shrink-0" />
-                <div>
-                  <div className="text-white font-medium">{evt.title}</div>
-                  {evt.description && <div className="text-xs text-white/40 truncate max-w-[200px] sm:max-w-[400px]">{evt.description}</div>}
+                <div className="shrink-0 relative flex items-center justify-center w-5 h-5 mt-1 -ml-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-[#1e2333]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white font-medium break-words leading-relaxed">{evt.activity}</div>
                 </div>
               </div>
             ))}

@@ -9,9 +9,10 @@ interface TimePickerProps {
   name?: string;
   defaultValue?: string | null;
   className?: string;
+  onChange?: (e: { target: { value: string } }) => void;
 }
 
-export function TimePicker({ name, defaultValue, className }: TimePickerProps) {
+export function TimePicker({ name, defaultValue, className, onChange }: TimePickerProps) {
   const [open, setOpen] = useState(false);
   
   // The value kept in the hidden input for formData (HH:mm in 24h format)
@@ -66,12 +67,15 @@ export function TimePicker({ name, defaultValue, className }: TimePickerProps) {
     const hStr = h.toString().padStart(2, "0");
     const mStr = tempMinute.padStart(2, "0");
     
-    setValue(`${hStr}:${mStr}`);
+    const val = `${hStr}:${mStr}`;
+    setValue(val);
+    onChange?.({ target: { value: val } });
     setOpen(false);
   };
 
   const handlePreset = (time24: string) => {
     setValue(time24);
+    onChange?.({ target: { value: time24 } });
     setOpen(false);
   };
 

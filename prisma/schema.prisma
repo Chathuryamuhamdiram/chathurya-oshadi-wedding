@@ -68,6 +68,7 @@ model CeremonyEvent {
   itineraryEvents WeddingEvent[]
   fundBalanceSnapshots FundBalanceSnapshot[]
   foodMenus     FoodMenu[]
+  eventPlanItems EventPlanItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -576,4 +577,15 @@ model FoodMenuAttachment {
   createdAt        DateTime @default(now())
 
   @@index([menuId])
+}
+
+model EventPlanItem {
+  id          String        @id @default(uuid())
+  eventId     String
+  event       CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  activity    String
+  plannedTime String?
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }

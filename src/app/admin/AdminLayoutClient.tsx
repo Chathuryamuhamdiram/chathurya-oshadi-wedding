@@ -23,6 +23,7 @@ import {
   Utensils,
   FileText,
   Sparkles,
+  ListTodo,
   MapPin,
   Globe,
   Image as ImageIcon,
@@ -42,6 +43,7 @@ const allNavGroups = [
     title: "Planning",
     links: [
       { href: "/admin/guests", label: "Guests & RSVPs", icon: Users },
+      { href: "/admin/event-plan", label: "Event Plan", icon: ListTodo },
       { href: "/admin/events", label: "Itinerary & Events", icon: MapPin },
       { href: "/admin/food-menu", label: "Food Menu", icon: Utensils },
       { href: "/admin/seating", label: "Seating", icon: Utensils },

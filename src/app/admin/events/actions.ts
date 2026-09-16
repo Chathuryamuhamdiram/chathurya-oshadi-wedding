@@ -156,7 +156,7 @@ export async function saveEventAction(formData: FormData) {
   }
 }
 
-export async function saveEventItemAction(eventId: string, name: string, quantity: number) {
+export async function saveEventItemAction(eventId: string, name: string, quantity: string) {
   try {
     await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
     if (!name || name.trim() === "") throw new Error("Item name is required");
@@ -164,7 +164,7 @@ export async function saveEventItemAction(eventId: string, name: string, quantit
       data: {
         eventId,
         name: name.trim(),
-        quantity,
+        quantity: quantity.trim() || "1",
         status: "PENDING"
       }
     });
@@ -172,6 +172,20 @@ export async function saveEventItemAction(eventId: string, name: string, quantit
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
+  }
+}
+
+export async function updateEventItemQuantityAction(id: string, quantity: string) {
+  try {
+    await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
+    await prisma.eventItem.update({
+      where: { id },
+      data: { quantity: quantity.trim() || "1" }
+    });
+    revalidatePath("/admin/events");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: "Failed to update item quantity" };
   }
 }
 

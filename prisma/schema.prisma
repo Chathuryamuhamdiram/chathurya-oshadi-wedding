@@ -396,7 +396,7 @@ model EventItem {
   eventId   String
   event     WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name      String
-  quantity  Int          @default(1)
+  quantity  String       @default("1")
   status    String       @default("PENDING") // PENDING, BOUGHT
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Check, Trash2, Download, ListTodo } from "lucide-react";
-import { saveEventItemAction, toggleEventItemStatusAction, deleteEventItemAction } from "./actions";
+import { saveEventItemAction, toggleEventItemStatusAction, deleteEventItemAction, updateEventItemQuantityAction } from "./actions";
 import { DeleteEventButton } from "./DeleteEventButton";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -15,11 +15,13 @@ export function EventItemList({
 }: { 
   eventId: string;
   eventTitle: string;
-  initialItems: { id: string; name: string; quantity: number; status: string }[];
+  initialItems: { id: string; name: string; quantity: string; status: string }[];
 }) {
   const [newItemName, setNewItemName] = useState("");
-  const [newItemQuantity, setNewItemQuantity] = useState(1);
+  const [newItemQuantity, setNewItemQuantity] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQuantity, setEditQuantity] = useState("");
 
   async function handleAddItem(e: React.FormEvent) {
     e.preventDefault();
@@ -29,7 +31,7 @@ export function EventItemList({
     const res = await saveEventItemAction(eventId, newItemName, newItemQuantity);
     if (res.success) {
       setNewItemName("");
-      setNewItemQuantity(1);
+      setNewItemQuantity("");
     } else {
       alert(res.error || "Failed to add item");
     }
@@ -43,6 +45,16 @@ export function EventItemList({
     }
   }
 
+  async function handleUpdateQuantity(id: string) {
+    if (!editQuantity.trim()) return;
+    const res = await updateEventItemQuantityAction(id, editQuantity);
+    if (res.success) {
+      setEditingId(null);
+    } else {
+      alert(res.error || "Failed to update quantity");
+    }
+  }
+
   function downloadPDF() {
     const doc = new jsPDF();
 
@@ -53,7 +65,7 @@ export function EventItemList({
     // Table
     const tableData = initialItems.map(item => [
       item.name, 
-      item.quantity.toString(),
+      item.quantity,
       item.status === "BOUGHT" ? "Yes" : "Pending"
     ]);
 
@@ -100,12 +112,39 @@ export function EventItemList({
                         <Check className="w-3.5 h-3.5" />
                       </button>
                       <span className={`text-sm font-sans transition-colors truncate ${isBought ? "text-white/40 line-through" : "text-white/90 group-hover:text-white"}`}>
-                        {item.name} <span className="text-white/40 ml-2 text-xs">x{item.quantity}</span>
+                        {item.name}
                       </span>
                     </label>
                     
-                    <div className="opacity-100 sm:opacity-0 group-hover:opacity-100 p-2 ml-2 shrink-0">
-                      <DeleteEventButton type="item" id={item.id} title={item.name} />
+                    <div className="flex items-center gap-1 shrink-0 ml-3">
+                      {editingId === item.id ? (
+                        <input
+                          type="text"
+                          value={editQuantity}
+                          onChange={(e) => setEditQuantity(e.target.value)}
+                          onBlur={() => handleUpdateQuantity(item.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleUpdateQuantity(item.id);
+                            if (e.key === 'Escape') setEditingId(null);
+                          }}
+                          autoFocus
+                          maxLength={20}
+                          className="w-20 bg-white/10 border border-white/20 rounded px-2 py-1 text-xs text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none"
+                        />
+                      ) : (
+                        <span 
+                          onClick={() => {
+                            setEditingId(item.id);
+                            setEditQuantity(item.quantity);
+                          }}
+                          className={`text-sm cursor-text px-2 py-1 rounded hover:bg-white/5 transition-colors ${isBought ? "text-white/40" : "text-white/70"}`}
+                        >
+                          {item.quantity}
+                        </span>
+                      )}
+                      <div className="opacity-100 sm:opacity-0 group-hover:opacity-100 p-2 shrink-0">
+                        <DeleteEventButton type="item" id={item.id} title={item.name} />
+                      </div>
                     </div>
                   </div>
                 );
@@ -128,12 +167,13 @@ export function EventItemList({
               />
               <div className="flex gap-2 w-full sm:w-auto shrink-0">
                 <input
-                  type="number"
-                  min="1"
+                  type="text"
                   value={newItemQuantity}
-                  onChange={e => setNewItemQuantity(parseInt(e.target.value) || 1)}
+                  onChange={e => setNewItemQuantity(e.target.value)}
                   disabled={isSubmitting}
-                  className="flex-1 sm:w-20 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-center text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
+                  placeholder="Quantity..."
+                  maxLength={20}
+                  className="flex-1 sm:w-28 bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-center text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none transition-colors"
                 />
                 <button
                   type="submit"

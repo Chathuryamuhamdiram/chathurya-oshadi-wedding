@@ -41,7 +41,7 @@ export function parseChecklistText(rawText: string): ParsedChecklistItem[] {
       const quantityPart = dashMatch[2].trim();
       
       items.push({
-        id: crypto.randomUUID(),
+        id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
         name: namePart,
         quantity: quantityPart
       });
@@ -80,7 +80,7 @@ export function parseChecklistText(rawText: string): ParsedChecklistItem[] {
         // Ensure namePart isn't empty and doesn't end with a dimension bracket
         if (namePart.length > 0 && !namePart.endsWith(')')) {
            items.push({
-             id: crypto.randomUUID(),
+             id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
              name: namePart,
              quantity: quantityPart
            });
@@ -90,7 +90,7 @@ export function parseChecklistText(rawText: string): ParsedChecklistItem[] {
 
       // No trailing quantity detected (or it was part of a bracket)
       items.push({
-        id: crypto.randomUUID(),
+        id: Math.random().toString(36).substring(2, 9) + Date.now().toString(36),
         name: part,
         quantity: ""
       });

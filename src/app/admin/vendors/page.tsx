@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { VendorForm } from "./VendorForm";
+import { VendorContactActions } from "./VendorContactActions";
 import { DeleteVendorButton } from "./DeleteVendorButton";
 import { Store, AlertCircle, Building2, Wallet } from "lucide-react";
 import Link from "next/link";
@@ -177,9 +178,33 @@ export default async function AdminVendorsPage() {
                         {vendor.serviceCategory || "General"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="text-white/80">{vendor.contactName || "No contact name"}</div>
-                      <div className="text-white/40 text-xs mt-0.5">{vendor.email || vendor.phone || "-"}</div>
+                    <td className="px-6 py-4 align-top">
+                      <div className="text-white/80 font-medium mb-2">{vendor.contactName || "No contact name"}</div>
+                      {vendor.email && <div className="text-white/40 text-xs mb-3">{vendor.email}</div>}
+                      
+                      <div className="space-y-3">
+                        {vendor.phone && (
+                          <VendorContactActions
+                            phoneNumber={vendor.phone}
+                            vendorName={vendor.vendorName}
+                            contactName={vendor.contactName}
+                            label="Primary"
+                            eventName={isAllEvents ? null : activeEvent?.name}
+                          />
+                        )}
+                        {vendor.whatsappNumber && (
+                          <VendorContactActions
+                            phoneNumber={vendor.whatsappNumber}
+                            vendorName={vendor.vendorName}
+                            contactName={vendor.contactName}
+                            label="Secondary"
+                            eventName={isAllEvents ? null : activeEvent?.name}
+                          />
+                        )}
+                        {!vendor.phone && !vendor.whatsappNumber && (
+                          <div className="text-white/30 text-xs">-</div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-white/80 font-mono">

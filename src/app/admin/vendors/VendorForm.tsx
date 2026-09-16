@@ -82,6 +82,17 @@ export function VendorForm({ existingVendor }: { existingVendor?: any }) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Primary Contact Number *</label>
+              <Input name="phone" type="tel" defaultValue={existingVendor?.phone || ""} required placeholder="071 234 5678" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Secondary Contact Number</label>
+              <Input name="whatsappNumber" type="tel" defaultValue={existingVendor?.whatsappNumber || ""} placeholder="077 123 4567" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Quoted Amount</label>
               <Input name="quotationAmount" type="number" min="0" step="0.01" defaultValue={existingVendor?.quotationAmount || ""} placeholder="0.00" className="bg-white/5 border-white/10 focus:border-blue-500/50 rounded-xl" />
             </div>

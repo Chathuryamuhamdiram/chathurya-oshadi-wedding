@@ -14,6 +14,7 @@ export async function saveVendor(formData: FormData) {
     const vendorName = formData.get("vendorName") as string;
     const contactName = formData.get("contactName") as string;
     const phone = formData.get("phone") as string;
+    const whatsappNumber = formData.get("whatsappNumber") as string;
     const email = formData.get("email") as string;
     const serviceCategory = formData.get("serviceCategory") as string;
     const quotationAmount = parseFloat(formData.get("quotationAmount") as string || "0");
@@ -23,11 +24,13 @@ export async function saveVendor(formData: FormData) {
     const status = (formData.get("status") as VendorStatus) || "POTENTIAL";
 
     if (!vendorName) return { success: false, error: "Vendor name is required" };
+    if (!phone) return { success: false, error: "Primary Contact Number is required" };
 
     const data: any = {
       vendorName,
       contactName: contactName || null,
-      phone: phone || null,
+      phone: phone.trim() || null,
+      whatsappNumber: whatsappNumber ? whatsappNumber.trim() : null,
       email: email || null,
       serviceCategory: serviceCategory || null,
       quotationAmount,

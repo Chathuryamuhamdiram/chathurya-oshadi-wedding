@@ -87,33 +87,31 @@ export async function bulkSaveEventPlanItems(eventId: string, items: ParsedEvent
     
     let currentSortOrder = existing.length > 0 ? existing[0].sortOrder + 10 : 10;
 
-    await prisma.$transaction(async (tx) => {
-      for (const item of items) {
-        if (item.status === "DUPLICATE") {
-          // If duplicate was marked as Add Anyway, it will have status "NEW" set by UI
-          continue; // SKIP
-        }
-        
-        if (item.status === "SAME TIME" && item.existingId) {
-          // UPDATE EXISTING
-          await tx.eventPlanItem.update({
-            where: { id: item.existingId },
-            data: { plannedTime: item.plannedTime || null }
-          });
-        } else {
-          // NEW (or Add Anyway)
-          await tx.eventPlanItem.create({
-            data: {
-              eventId,
-              activity: item.activity.trim(),
-              plannedTime: item.plannedTime || null,
-              sortOrder: currentSortOrder,
-            }
-          });
-          currentSortOrder += 10;
-        }
+    for (const item of items) {
+      if (item.status === "DUPLICATE") {
+        // If duplicate was marked as Add Anyway, it will have status "NEW" set by UI
+        continue; // SKIP
       }
-    });
+      
+      if (item.status === "SAME TIME" && item.existingId) {
+        // UPDATE EXISTING
+        await prisma.eventPlanItem.update({
+          where: { id: item.existingId },
+          data: { plannedTime: item.plannedTime || null }
+        });
+      } else {
+        // NEW (or Add Anyway)
+        await prisma.eventPlanItem.create({
+          data: {
+            eventId,
+            activity: item.activity.trim(),
+            plannedTime: item.plannedTime || null,
+            sortOrder: currentSortOrder,
+          }
+        });
+        currentSortOrder += 10;
+      }
+    }
 
     revalidatePath("/admin/event-plan");
     revalidatePath("/admin/wedding-day");

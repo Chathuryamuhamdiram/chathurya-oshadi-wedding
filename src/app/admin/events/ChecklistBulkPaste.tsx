@@ -66,6 +66,7 @@ export function ChecklistBulkPaste({
           return {
             ...item,
             isDuplicate: true,
+            duplicateAction: 'SKIP',
             existingId: match.id,
             originalName: match.name // the name currently in DB
           };
@@ -93,17 +94,33 @@ export function ChecklistBulkPaste({
     if (!selectedEventId || parsedItems.length === 0) return;
     setIsSubmitting(true);
     
-    // Only import items that aren't marked to skip
-    // We can assume items in parsedItems array are the ones to import.
-    // If a duplicate is kept in the array, we replace its quantity.
-    // If it was skipped, it should have been removed from the array.
+    // Filter out items that are marked to SKIP
+    const itemsToImport = parsedItems.filter(i => !(i.isDuplicate && i.duplicateAction === 'SKIP'));
     
-    const res = await bulkSaveEventItemsAction(selectedEventId, parsedItems.map(i => ({
-      name: i.name,
-      quantity: i.quantity,
-      existingId: i.existingId,
-      isDuplicate: i.isDuplicate
-    })));
+    if (itemsToImport.length === 0) {
+      setOpen(false);
+      return;
+    }
+    
+    const payload = itemsToImport.map(i => {
+      let isDup = i.isDuplicate;
+      let exId = i.existingId;
+      
+      // If user chose ADD_NEW for a duplicate, treat it as entirely new
+      if (i.isDuplicate && i.duplicateAction === 'ADD_NEW') {
+        isDup = false;
+        exId = undefined;
+      }
+      
+      return {
+        name: i.name,
+        quantity: i.quantity,
+        existingId: exId,
+        isDuplicate: isDup
+      };
+    });
+
+    const res = await bulkSaveEventItemsAction(selectedEventId, payload);
 
     if (res.success) {
       setOpen(false);
@@ -255,24 +272,30 @@ export function ChecklistBulkPaste({
                     </div>
 
                     {item.isDuplicate && (
-                      <div className="flex flex-wrap gap-2 mt-1">
-                        <button 
+                      <div className="flex bg-black/40 rounded overflow-hidden border border-white/5 w-full mt-1">
+                        <button
                           type="button"
-                          onClick={() => handleRemoveParsedItem(item.id)}
-                          className="px-2 py-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs transition-colors"
+                          onClick={() => handleUpdateParsedItem(item.id, { duplicateAction: 'SKIP' })}
+                          className={`flex-1 px-2 py-1.5 text-[11px] font-medium tracking-wide transition-colors ${item.duplicateAction === 'SKIP' ? 'bg-amber-500/20 text-amber-400' : 'text-white/40 hover:bg-white/5'}`}
                         >
-                          Skip
+                          SKIP
                         </button>
-                        <button 
+                        <div className="w-[1px] bg-white/5" />
+                        <button
                           type="button"
-                          onClick={() => handleUpdateParsedItem(item.id, { isDuplicate: false })}
-                          className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs transition-colors"
+                          onClick={() => handleUpdateParsedItem(item.id, { duplicateAction: 'UPDATE' })}
+                          className={`flex-1 px-2 py-1.5 text-[11px] font-medium tracking-wide transition-colors ${item.duplicateAction === 'UPDATE' ? 'bg-amber-500/20 text-amber-400' : 'text-white/40 hover:bg-white/5'}`}
                         >
-                          Add Anyway
+                          UPDATE EXISTING
                         </button>
-                        <div className="text-xs text-white/30 px-1 py-1 italic">
-                          (Or keep to Replace Qty)
-                        </div>
+                        <div className="w-[1px] bg-white/5" />
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateParsedItem(item.id, { duplicateAction: 'ADD_NEW' })}
+                          className={`flex-1 px-2 py-1.5 text-[11px] font-medium tracking-wide transition-colors ${item.duplicateAction === 'ADD_NEW' ? 'bg-amber-500/20 text-amber-400' : 'text-white/40 hover:bg-white/5'}`}
+                        >
+                          ADD ANYWAY
+                        </button>
                       </div>
                     )}
                   </div>
@@ -301,7 +324,7 @@ export function ChecklistBulkPaste({
                   disabled={parsedItems.length === 0 || isSubmitting}
                   className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50 transition-colors flex items-center gap-2 text-sm shadow-lg shadow-emerald-500/20"
                 >
-                  <Save className="w-4 h-4" /> Import {parsedItems.length} Items
+                  <Save className="w-4 h-4" /> Import {parsedItems.filter(i => !(i.isDuplicate && i.duplicateAction === 'SKIP')).length} Items
                 </button>
               </div>
             </div>

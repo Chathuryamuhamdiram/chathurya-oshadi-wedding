@@ -3,6 +3,7 @@ export interface ParsedChecklistItem {
   name: string;
   quantity: string;
   isDuplicate?: boolean;
+  duplicateAction?: 'SKIP' | 'UPDATE' | 'ADD_NEW';
   existingId?: string;
   originalName?: string; // used for preview
 }

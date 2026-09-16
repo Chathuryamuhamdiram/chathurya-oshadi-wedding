@@ -66,7 +66,7 @@ export function ChecklistBulkPaste({
           return {
             ...item,
             isDuplicate: true,
-            duplicateAction: 'SKIP',
+            duplicateAction: 'SKIP' as const,
             existingId: match.id,
             originalName: match.name // the name currently in DB
           };

@@ -1,3 +1,5 @@
+import { normalizeListItemText } from "@/lib/utils";
+
 export type ParsedEventPlanItem = {
   activity: string;
   plannedTime: string | null;
@@ -50,10 +52,8 @@ export function parseEventPlanText(text: string): ParsedEventPlanItem[] {
   const items: ParsedEventPlanItem[] = [];
 
   for (const line of lines) {
-    let raw = line.trim();
-    
-    // Remove leading numbers (e.g. "1. ", "01 ", "2) ")
-    raw = raw.replace(/^\d+[\.\)]?\s*/, "");
+    let raw = normalizeListItemText(line);
+    if (!raw) continue;
 
     // Look for separators: - – —
     const parts = raw.split(/\s*[-–—]\s*/);

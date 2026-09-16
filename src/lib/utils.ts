@@ -27,3 +27,29 @@ export function formatCurrencyCompact(amount: number | string | any) {
   }
   return `LKR ${value}`;
 }
+
+/**
+ * Shared utility to clean up list items (removes Markdown pipes, leading list numbers, etc.)
+ * Preserves Sinhala and meaningful numbers.
+ */
+export function normalizeListItemText(rawText: string): string {
+  let cleaned = rawText.trim();
+  
+  // 1. Remove Markdown table row artifacts: | 1 | Activity | 8:10 | -> 1 | Activity | 8:10
+  cleaned = cleaned.replace(/^\|\s*/, "").replace(/\s*\|$/, "");
+  
+  // 2. Remove leading order numbers typically found in pasted lists
+  // e.g. "1. ", "01. ", "1) ", "01) ", "1 | ", "1 - "
+  cleaned = cleaned.replace(/^\d+\s*[\.\)|\-]\s+/, "");
+  
+  // 3. Remove bullet prefixes e.g., "-", "*", "•"
+  cleaned = cleaned.replace(/^[-*•]\s*/, "");
+
+  // 4. Replace remaining internal column separators ` | ` with ` - ` so standard parsers can split it
+  cleaned = cleaned.replace(/\s+\|\s+/g, " - ");
+  
+  // 5. Collapse duplicate spaces
+  cleaned = cleaned.replace(/\s{2,}/g, " ");
+
+  return cleaned.trim();
+}

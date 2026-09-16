@@ -98,21 +98,42 @@ export default async function AdminWeddingDayPage() {
       {laterEvents.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-white/50 uppercase tracking-widest px-2">Run of Show (Event Plan)</h3>
-          <div className="bg-[#1e2333] border border-white/5 rounded-2xl overflow-hidden relative">
-            <div className="absolute left-[70px] top-6 bottom-6 w-px bg-white/10" />
-            {laterEvents.map((evt, idx) => (
-              <div key={evt.id} className="group flex items-start gap-4 sm:gap-6 py-4 px-4 transition-all hover:bg-white/5 relative z-10">
-                <div className="w-[50px] shrink-0 flex flex-col items-end gap-1">
-                  <div className="text-white/80 font-mono text-sm mt-0.5">
-                    {evt.plannedTime || <span className="text-white/30">—</span>}
+          <div className="bg-[#1e2333] border border-white/5 rounded-2xl overflow-hidden p-4 sm:p-6 relative">
+            {laterEvents.map((evt, index) => (
+              <div key={evt.id} className="group relative flex items-start sm:items-center py-3 px-2 sm:px-4 rounded-xl hover:bg-white/5 transition-colors gap-3 sm:gap-6">
+                
+                {/* Background vertical line (except on last item) */}
+                {index !== laterEvents.length - 1 && (
+                  <div className="absolute left-[39px] sm:left-[67px] top-10 bottom-[-12px] w-px bg-white/10 hidden sm:block" />
+                )}
+
+                {/* Zone 1: Order Number & Timeline Dot */}
+                <div className="flex items-center gap-3 sm:gap-4 shrink-0 z-10 w-[40px] sm:w-[60px] ml-2 sm:ml-0">
+                  <span className="text-white/40 font-mono text-sm sm:text-base font-medium">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div className="w-2 h-2 rounded-full bg-indigo-500/80 ring-4 ring-[#1e2333] hidden sm:block" />
+                </div>
+
+                {/* Zone 2 & 3 wrapper for mobile stacking */}
+                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-6">
+                  
+                  {/* Zone 2: Activity Name */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/90 font-medium text-[15px] sm:text-base break-words leading-snug">
+                      {evt.activity}
+                    </div>
                   </div>
+
+                  {/* Zone 3: Time */}
+                  <div className="shrink-0 flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
+                    <div className="text-white/60 font-mono text-[13px] sm:text-sm bg-black/20 px-3 py-1.5 rounded-md min-w-[90px] text-center border border-white/5">
+                      {evt.plannedTime || "—"}
+                    </div>
+                  </div>
+
                 </div>
-                <div className="shrink-0 relative flex items-center justify-center w-5 h-5 mt-1 -ml-1">
-                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-[#1e2333]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-white font-medium break-words leading-relaxed">{evt.activity}</div>
-                </div>
+
               </div>
             ))}
           </div>

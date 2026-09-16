@@ -110,127 +110,152 @@ export function EventPlanClient({ items: initialItems, eventId, eventName, isAll
         </div>
       )}
 
-      <div className="bg-[#1e2333] border border-white/10 rounded-2xl overflow-hidden p-6 relative">
-        <div className="absolute left-[84px] sm:left-[112px] top-6 bottom-6 w-px bg-white/10" />
+      <div className="bg-[#1e2333] border border-white/10 rounded-2xl overflow-hidden p-4 sm:p-6 relative">
+        {items.map((item, index) => (
+          <div key={item.id} className="group relative flex items-start sm:items-center py-3 px-2 sm:px-4 rounded-xl hover:bg-white/5 transition-colors gap-3 sm:gap-6">
+            
+            {/* Background vertical line (except on last item) */}
+            {index !== items.length - 1 && (
+              <div className="absolute left-[39px] sm:left-[67px] top-10 bottom-[-12px] w-px bg-white/10 hidden sm:block" />
+            )}
 
-        <div className="space-y-2 relative z-10">
-          {items.map((item, index) => (
-            <div key={item.id} className="group flex items-start gap-4 sm:gap-6 py-2 transition-all">
+            {/* Hover Actions (Far Left / Mobile top) */}
+            {!isAllEvents && (
+              <div className="absolute left-2 sm:-left-4 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex flex-col sm:flex-row items-center gap-1 z-20 top-2 sm:top-auto">
+                <button onClick={() => handleMove(index, -1)} disabled={index === 0} className="p-1 text-white/30 hover:text-white disabled:opacity-20 transition-colors" title="Move Up">
+                  <ArrowUp className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleMove(index, 1)} disabled={index === items.length - 1} className="p-1 text-white/30 hover:text-white disabled:opacity-20 transition-colors" title="Move Down">
+                  <ArrowDown className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Zone 1: Order Number & Timeline Dot */}
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0 z-10 w-[40px] sm:w-[60px] ml-6 sm:ml-0">
+              <span className="text-white/40 font-mono text-sm sm:text-base font-medium">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <div className="w-2 h-2 rounded-full bg-indigo-500/80 ring-4 ring-[#1e2333] hidden sm:block" />
+            </div>
+
+            {/* Zone 2 & 3 wrapper for mobile stacking */}
+            <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-6">
               
-              {/* Actions & Time Column */}
-              <div className="w-[80px] sm:w-[120px] shrink-0 flex flex-col items-end gap-1">
+              {/* Zone 2: Activity Name */}
+              <div className="flex-1 min-w-0">
                 {editingId === item.id ? (
-                   <TimePicker 
-                      name="time" 
-                      defaultValue={formTime}
-                      onChange={(e) => setFormTime(e.target.value)} 
-                   />
+                  <Input 
+                    value={formActivity} 
+                    onChange={(e) => setFormActivity(e.target.value)} 
+                    className="bg-black/20 border-white/10 h-9 text-base w-full"
+                    autoFocus
+                  />
                 ) : (
-                  <div className="text-white/80 font-mono text-sm sm:text-base mt-1">
-                    {item.plannedTime || <span className="text-white/30">—</span>}
+                  <div className="text-white/90 font-medium text-[15px] sm:text-base break-words leading-snug">
+                    {item.activity}
                   </div>
                 )}
               </div>
 
-              {/* Node Indicator */}
-              <div className="shrink-0 relative flex items-center justify-center w-6 h-6 mt-1">
-                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-[#1e2333]" />
-                <div className="absolute top-1/2 right-full w-4 h-px bg-white/10" />
-              </div>
-
-              {/* Content Column */}
-              <div className="flex-1 min-w-0 flex items-start justify-between gap-4 mt-0.5">
+              {/* Zone 3: Time & Actions */}
+              <div className="shrink-0 flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
+                
+                {/* Time Display */}
                 {editingId === item.id ? (
-                  <div className="flex-1 flex gap-2">
-                    <Input 
-                      value={formActivity} 
-                      onChange={(e) => setFormActivity(e.target.value)} 
-                      className="bg-white/5 border-white/10 h-8"
-                      autoFocus
-                    />
-                    <Button size="sm" onClick={() => handleSave(item.id)} className="h-8 shrink-0">Save</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-8 shrink-0">Cancel</Button>
-                  </div>
+                   <div className="w-[120px]">
+                     <TimePicker 
+                        name="time" 
+                        defaultValue={formTime}
+                        onChange={(e) => setFormTime(e.target.value)} 
+                     />
+                   </div>
                 ) : (
-                  <>
-                    <div className="text-white/90 font-medium break-words leading-relaxed">{item.activity}</div>
-                    
-                    {/* Controls */}
-                    {!isAllEvents && (
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <button onClick={() => startEdit(item)} className="p-1.5 text-white/40 hover:text-white rounded hover:bg-white/5 transition-colors" title="Edit">
-                          <Edit2 className="w-3.5 h-3.5" />
+                  <div className="text-white/60 font-mono text-[13px] sm:text-sm bg-black/20 px-3 py-1.5 rounded-md min-w-[90px] text-center border border-white/5">
+                    {item.plannedTime || "—"}
+                  </div>
+                )}
+
+                {/* Edit/Save Actions */}
+                {!isAllEvents && (
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    {editingId === item.id ? (
+                      <>
+                        <Button size="sm" onClick={() => handleSave(item.id)} className="h-8">Save</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-8">Cancel</Button>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => startEdit(item)} className="p-2 text-white/40 hover:text-white rounded hover:bg-white/10 transition-colors" title="Edit">
+                          <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-white/40 hover:text-red-400 rounded hover:bg-white/5 transition-colors" title="Delete">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                        <div className="w-px h-4 bg-white/10 mx-1" />
-                        <button onClick={() => handleMove(index, -1)} disabled={index === 0} className="p-1.5 text-white/40 hover:text-white disabled:opacity-30 rounded hover:bg-white/5 transition-colors" title="Move Up">
-                          <ArrowUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button onClick={() => handleMove(index, 1)} disabled={index === items.length - 1} className="p-1.5 text-white/40 hover:text-white disabled:opacity-30 rounded hover:bg-white/5 transition-colors" title="Move Down">
-                          <ArrowDown className="w-3.5 h-3.5" />
+                        <button onClick={() => handleDelete(item.id)} className="p-2 text-white/40 hover:text-red-400 rounded hover:bg-white/10 transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
+
               </div>
             </div>
-          ))}
 
-          {/* Add New Row */}
-          {!isAllEvents && items.length > 0 && !addingNew && (
-            <div className="flex items-start gap-4 sm:gap-6 py-4">
-              <div className="w-[80px] sm:w-[120px] shrink-0" />
-              <div className="shrink-0 flex items-center justify-center w-6 h-6" />
-              <div className="flex-1">
-                <button onClick={() => { setAddingNew(true); setFormActivity(""); setFormTime(""); }} className="flex items-center gap-2 text-indigo-400 text-sm font-medium hover:text-indigo-300 transition-colors bg-indigo-500/10 px-4 py-2 rounded-lg hover:bg-indigo-500/20">
-                  <Plus className="w-4 h-4" /> Add Plan Item
-                </button>
-              </div>
+          </div>
+        ))}
+
+        {/* Add New Row */}
+        {!isAllEvents && items.length > 0 && !addingNew && (
+          <div className="flex items-start gap-4 sm:gap-6 py-4 px-2 sm:px-4 mt-2">
+            <div className="w-[40px] sm:w-[60px] shrink-0 ml-6 sm:ml-0" />
+            <div className="flex-1">
+              <button onClick={() => { setAddingNew(true); setFormActivity(""); setFormTime(""); }} className="flex items-center gap-2 text-indigo-400 text-sm font-medium hover:text-indigo-300 transition-colors bg-indigo-500/10 px-4 py-2 rounded-lg hover:bg-indigo-500/20">
+                <Plus className="w-4 h-4" /> Add Plan Item
+              </button>
             </div>
-          )}
+          </div>
+        )}
 
-          {!isAllEvents && items.length === 0 && !addingNew && (
-            <div className="text-center py-12">
-               <p className="text-white/40 mb-4">No events planned yet.</p>
-               <Button onClick={() => { setAddingNew(true); setFormActivity(""); setFormTime(""); }}>
-                 <Plus className="w-4 h-4 mr-2" /> Add First Item
-               </Button>
+        {!isAllEvents && items.length === 0 && !addingNew && (
+          <div className="text-center py-12">
+             <p className="text-white/40 mb-4">No events planned yet.</p>
+             <Button onClick={() => { setAddingNew(true); setFormActivity(""); setFormTime(""); }}>
+               <Plus className="w-4 h-4 mr-2" /> Add First Item
+             </Button>
+          </div>
+        )}
+
+        {/* New Item Form */}
+        {addingNew && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 py-4 bg-white/[0.02] -mx-4 sm:-mx-6 px-4 sm:px-6 border-y border-white/5 mt-2">
+            <div className="w-auto sm:w-[60px] shrink-0">
+              <span className="text-indigo-400/50 font-mono text-sm sm:text-base font-medium hidden sm:block">
+                {String(items.length + 1).padStart(2, '0')}
+              </span>
             </div>
-          )}
-
-          {/* New Item Form */}
-          {addingNew && (
-            <div className="flex items-start gap-4 sm:gap-6 py-4 bg-white/[0.02] -mx-6 px-6 border-y border-white/5">
-              <div className="w-[80px] sm:w-[120px] shrink-0">
+            
+            <div className="flex-1 flex flex-col sm:flex-row w-full gap-3">
+              <Input 
+                value={formActivity} 
+                onChange={(e) => setFormActivity(e.target.value)} 
+                placeholder="Activity (e.g. Poruwa Ceremony)"
+                className="bg-black/20 border-white/10 h-9 flex-1"
+                autoFocus
+              />
+              <div className="w-full sm:w-[140px] shrink-0">
                  <TimePicker 
                     name="newTime" 
                     defaultValue={formTime}
                     onChange={(e) => setFormTime(e.target.value)} 
                  />
               </div>
-              <div className="shrink-0 flex items-center justify-center w-6 h-6 mt-1">
-                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500/50" />
-              </div>
-              <div className="flex-1 flex flex-col sm:flex-row gap-3">
-                <Input 
-                  value={formActivity} 
-                  onChange={(e) => setFormActivity(e.target.value)} 
-                  placeholder="Activity (e.g. Poruwa Ceremony)"
-                  className="bg-white/5 border-white/10"
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <Button onClick={() => handleSave(null)}>Add</Button>
-                  <Button variant="ghost" onClick={() => setAddingNew(false)}>Cancel</Button>
-                </div>
+              <div className="flex gap-2 shrink-0">
+                <Button onClick={() => handleSave(null)} className="h-9">Add</Button>
+                <Button variant="ghost" onClick={() => setAddingNew(false)} className="h-9">Cancel</Button>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-        </div>
       </div>
 
       {isBulkOpen && (

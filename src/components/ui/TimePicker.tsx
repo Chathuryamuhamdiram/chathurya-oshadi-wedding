@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Clock, ChevronDown } from "lucide-react";
+import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TimePickerProps {
@@ -10,209 +10,289 @@ interface TimePickerProps {
   defaultValue?: string | null;
   className?: string;
   onChange?: (e: { target: { value: string } }) => void;
+  required?: boolean;
+  disabled?: boolean;
 }
 
-export function TimePicker({ name, defaultValue, className, onChange }: TimePickerProps) {
+function parseManualTime(input: string): string | null {
+  if (!input) return null;
+  const normalized = input.trim().toUpperCase();
+  const match = normalized.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
+  
+  if (!match) return null;
+  
+  let h = parseInt(match[1], 10);
+  let m = match[2] ? parseInt(match[2], 10) : 0;
+  const ampm = match[3];
+
+  if (isNaN(h) || isNaN(m)) return null;
+  if (m < 0 || m > 59) return null;
+  
+  if (ampm) {
+    if (h < 1 || h > 12) return null;
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+  } else {
+    if (h < 0 || h > 23) return null;
+  }
+
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}
+
+function formatDisplayValue(time24: string): string {
+  if (!time24) return "";
+  const [h, m] = time24.split(":");
+  let hour = parseInt(h, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  const hourStr = hour.toString().padStart(2, "0");
+  return `${hourStr}:${m} ${ampm}`;
+}
+
+export function TimePicker({ name, defaultValue, className, onChange, required, disabled }: TimePickerProps) {
   const [open, setOpen] = useState(false);
-  
-  // The value kept in the hidden input for formData (HH:mm in 24h format)
   const [value, setValue] = useState<string>(defaultValue || "");
+  const [inputValue, setInputValue] = useState<string>(formatDisplayValue(defaultValue || ""));
   
-  // Temporary state for the popover selections
-  const [tempHour, setTempHour] = useState<string>("12");
-  const [tempMinute, setTempMinute] = useState<string>("00");
+  const [mode, setMode] = useState<"hour" | "minute">("hour");
+  const [tempHour, setTempHour] = useState<number>(12);
+  const [tempMinute, setTempMinute] = useState<number>(0);
   const [tempAmPm, setTempAmPm] = useState<"AM" | "PM">("AM");
 
-  // Format a 24h "HH:mm" string into a readable "hh:mm A" format
-  const formatDisplayValue = (time24: string) => {
-    if (!time24) return "Select Time";
-    const [h, m] = time24.split(":");
-    let hour = parseInt(h, 10);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    hour = hour % 12 || 12;
-    const hourStr = hour.toString().padStart(2, "0");
-    return `${hourStr}:${m} ${ampm}`;
-  };
-
-  // Sync temp state when opening
-  useEffect(() => {
-    if (open && value) {
-      const [h, m] = value.split(":");
-      let hour = parseInt(h, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-      hour = hour % 12 || 12;
-      
-      setTempHour(hour.toString().padStart(2, "0"));
-      setTempMinute(m);
-      setTempAmPm(ampm);
-    } else if (open && !value) {
-      setTempHour("12");
-      setTempMinute("00");
-      setTempAmPm("AM");
-    }
-  }, [open, value]);
-
-  // Keep value in sync if defaultValue prop changes (like when switching edited events)
+  // Keep value in sync if defaultValue prop changes
   useEffect(() => {
     if (defaultValue !== undefined) {
       setValue(defaultValue || "");
+      setInputValue(formatDisplayValue(defaultValue || ""));
     }
   }, [defaultValue]);
 
+  useEffect(() => {
+    if (open) {
+      setMode("hour");
+      if (value) {
+        const [h, m] = value.split(":");
+        let hour = parseInt(h, 10);
+        const ampm = hour >= 12 ? "PM" : "AM";
+        hour = hour % 12 || 12;
+        setTempHour(hour);
+        setTempMinute(parseInt(m, 10));
+        setTempAmPm(ampm);
+      } else {
+        setTempHour(12);
+        setTempMinute(0);
+        setTempAmPm("AM");
+      }
+    }
+  }, [open, value]);
+
   const handleApply = () => {
-    let h = parseInt(tempHour, 10);
+    let h = tempHour;
     if (tempAmPm === "PM" && h !== 12) h += 12;
     if (tempAmPm === "AM" && h === 12) h = 0;
     
-    const hStr = h.toString().padStart(2, "0");
-    const mStr = tempMinute.padStart(2, "0");
-    
-    const val = `${hStr}:${mStr}`;
+    const val = `${h.toString().padStart(2, "0")}:${tempMinute.toString().padStart(2, "0")}`;
     setValue(val);
+    setInputValue(formatDisplayValue(val));
     onChange?.({ target: { value: val } });
     setOpen(false);
   };
 
-  const handlePreset = (time24: string) => {
-    setValue(time24);
-    onChange?.({ target: { value: time24 } });
-    setOpen(false);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
   };
 
-  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, "0"));
-  const minutes = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
-  // Make sure current tempMinute is in the list (e.g. if default was 08:53)
-  if (!minutes.includes(tempMinute) && tempMinute !== "") {
-    minutes.push(tempMinute);
-    minutes.sort((a, b) => parseInt(a) - parseInt(b));
-  }
+  const handleInputBlur = () => {
+    if (!inputValue.trim()) {
+      setValue("");
+      onChange?.({ target: { value: "" } });
+      return;
+    }
+    const parsed = parseManualTime(inputValue);
+    if (parsed) {
+      setValue(parsed);
+      setInputValue(formatDisplayValue(parsed));
+      onChange?.({ target: { value: parsed } });
+    } else {
+      // Revert to last valid value
+      setInputValue(formatDisplayValue(value));
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleInputBlur();
+    }
+  };
+
+  // Clock generation
+  const renderClock = () => {
+    const radius = 95; // px
+    const items = mode === "hour" 
+      ? Array.from({ length: 12 }, (_, i) => ({ value: i === 0 ? 12 : i, label: (i === 0 ? 12 : i).toString() }))
+      : Array.from({ length: 12 }, (_, i) => ({ value: i * 5, label: (i * 5).toString().padStart(2, '0') }));
+      
+    return (
+      <div className="relative w-[220px] h-[220px] rounded-full bg-black/20 mx-auto border border-white/5 shadow-inner select-none">
+        {/* Center dot */}
+        <div className="absolute top-1/2 left-1/2 w-2 h-2 -ml-1 -mt-1 bg-purple-500 rounded-full z-20" />
+        
+        {items.map((item, index) => {
+          // 12 is at top (0 deg). In our array: index 0 is 12 for hours, 0 for minutes (top).
+          const angle = (index * 30 - 90) * (Math.PI / 180);
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          
+          const isSelected = mode === "hour" ? tempHour === item.value : tempMinute === item.value;
+          
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => {
+                if (mode === "hour") {
+                  setTempHour(item.value);
+                  setTimeout(() => setMode("minute"), 250);
+                } else {
+                  setTempMinute(item.value);
+                }
+              }}
+              className={cn(
+                "absolute w-10 h-10 -ml-5 -mt-5 rounded-full flex items-center justify-center text-sm font-medium transition-all z-10",
+                isSelected 
+                  ? "bg-purple-500 text-white shadow-lg shadow-purple-500/30 scale-110" 
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
+              )}
+              style={{ left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)` }}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+        {/* Hand line */}
+        {(() => {
+           let selectedIndex = 0;
+           if (mode === "hour") {
+             selectedIndex = tempHour === 12 ? 0 : tempHour;
+           } else {
+             // For minutes, we point to the closest 5 minute tick
+             selectedIndex = Math.round(tempMinute / 5) % 12;
+           }
+           const angle = (selectedIndex * 30 - 90) * (Math.PI / 180);
+           const length = radius - 15;
+           return (
+             <div 
+               className="absolute top-1/2 left-1/2 h-[2px] bg-purple-500 origin-left transition-transform duration-300 ease-out z-0 pointer-events-none"
+               style={{ 
+                 width: length,
+                 transform: `rotate(${angle}rad)`,
+               }}
+             />
+           )
+        })()}
+      </div>
+    );
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       {name && <input type="hidden" name={name} value={value} />}
-      <PopoverTrigger
-        className={cn(
-          "flex h-11 w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50 hover:bg-white/10 transition-colors",
-          !value && "text-white/40",
-          className
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-white/50" />
-          <span>{formatDisplayValue(value)}</span>
+      <div className={cn("relative flex items-center", className)}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          onKeyDown={handleKeyDown}
+          placeholder="00:00 AM"
+          disabled={disabled}
+          required={required}
+          className={cn(
+            "flex h-11 w-full rounded-xl border border-white/10 bg-white/5 pl-3 pr-10 py-2 text-sm text-white",
+            "focus:outline-none focus:ring-1 focus:ring-purple-500/50 hover:bg-white/10 transition-colors placeholder:text-white/20",
+            disabled && "opacity-50 cursor-not-allowed"
+          )}
+        />
+        <PopoverTrigger 
+          disabled={disabled}
+          className="absolute right-0 h-11 w-11 flex items-center justify-center rounded-r-xl text-white/50 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+        >
+          <Clock className="h-4 w-4" />
+        </PopoverTrigger>
+      </div>
+
+      <PopoverContent className="w-[320px] p-0 bg-[#111827] border-white/10 rounded-3xl shadow-2xl overflow-hidden" align="start" sideOffset={8}>
+        {/* Header */}
+        <div className="bg-gradient-to-b from-[#1e2333] to-[#111827] p-6 text-center border-b border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="flex items-center justify-center gap-1 text-4xl font-light text-white tracking-widest relative z-10">
+            <button 
+              type="button"
+              onClick={() => setMode("hour")}
+              className={cn("px-2 py-1 rounded-xl transition-all", mode === "hour" ? "bg-white/10 text-white font-medium shadow-inner" : "text-white/40 hover:text-white/80")}
+            >
+              {tempHour.toString().padStart(2, "0")}
+            </button>
+            <span className="text-white/20 mb-1">:</span>
+            <button 
+              type="button"
+              onClick={() => setMode("minute")}
+              className={cn("px-2 py-1 rounded-xl transition-all", mode === "minute" ? "bg-white/10 text-white font-medium shadow-inner" : "text-white/40 hover:text-white/80")}
+            >
+              {tempMinute.toString().padStart(2, "0")}
+            </button>
+          </div>
+          
+          <div className="flex justify-center gap-2 mt-5 relative z-10">
+            <button
+              type="button"
+              onClick={() => setTempAmPm("AM")}
+              className={cn(
+                "px-5 py-2 rounded-full text-xs font-bold transition-all border",
+                tempAmPm === "AM" 
+                  ? "bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-500/25" 
+                  : "bg-black/20 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
+              )}
+            >
+              AM
+            </button>
+            <button
+              type="button"
+              onClick={() => setTempAmPm("PM")}
+              className={cn(
+                "px-5 py-2 rounded-full text-xs font-bold transition-all border",
+                tempAmPm === "PM" 
+                  ? "bg-purple-500 border-purple-500 text-white shadow-lg shadow-purple-500/25" 
+                  : "bg-black/20 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
+              )}
+            >
+              PM
+            </button>
+          </div>
         </div>
-        <ChevronDown className="h-4 w-4 opacity-50" />
-      </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-4 bg-[#111827] border-white/10 rounded-2xl shadow-2xl" align="start">
-        <div className="flex flex-col gap-4">
-          <div className="text-center font-serif text-sm text-white/70 tracking-widest uppercase">
-            Select Time
-          </div>
 
-          {/* Time Scrollers */}
-          <div className="flex items-center justify-center gap-2">
-            {/* Hour */}
-            <div className="flex flex-col gap-1 w-16 h-32 overflow-y-auto custom-scrollbar bg-black/20 rounded-xl p-1 border border-white/5 snap-y">
-              {hours.map(h => (
-                <button
-                  key={`h-${h}`}
-                  type="button"
-                  onClick={() => setTempHour(h)}
-                  className={cn(
-                    "flex-shrink-0 h-8 rounded-lg text-sm transition-colors snap-center",
-                    tempHour === h ? "bg-purple-500 text-white font-medium" : "text-white/60 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  {h}
-                </button>
-              ))}
-            </div>
+        {/* Clock Body */}
+        <div className="p-6 bg-[#111827]">
+          {renderClock()}
+        </div>
 
-            <span className="text-white/50 font-bold">:</span>
-
-            {/* Minute */}
-            <div className="flex flex-col gap-1 w-16 h-32 overflow-y-auto custom-scrollbar bg-black/20 rounded-xl p-1 border border-white/5 snap-y">
-              {minutes.map(m => (
-                <button
-                  key={`m-${m}`}
-                  type="button"
-                  onClick={() => setTempMinute(m)}
-                  className={cn(
-                    "flex-shrink-0 h-8 rounded-lg text-sm transition-colors snap-center",
-                    tempMinute === m ? "bg-purple-500 text-white font-medium" : "text-white/60 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-
-            {/* AM/PM */}
-            <div className="flex flex-col gap-2 ml-2">
-              <button
-                type="button"
-                onClick={() => setTempAmPm("AM")}
-                className={cn(
-                  "px-3 py-2 rounded-lg text-xs font-bold transition-colors",
-                  tempAmPm === "AM" ? "bg-purple-500 text-white" : "bg-black/20 text-white/50 border border-white/5 hover:bg-white/10"
-                )}
-              >
-                AM
-              </button>
-              <button
-                type="button"
-                onClick={() => setTempAmPm("PM")}
-                className={cn(
-                  "px-3 py-2 rounded-lg text-xs font-bold transition-colors",
-                  tempAmPm === "PM" ? "bg-purple-500 text-white" : "bg-black/20 text-white/50 border border-white/5 hover:bg-white/10"
-                )}
-              >
-                PM
-              </button>
-            </div>
-          </div>
-
-          {/* Presets */}
-          <div className="pt-2 border-t border-white/10">
-            <div className="text-[10px] text-white/40 uppercase mb-2">Quick Select</div>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: "08:00 AM", val: "08:00" },
-                { label: "09:00 AM", val: "09:00" },
-                { label: "10:30 AM", val: "10:30" },
-                { label: "12:00 PM", val: "12:00" },
-                { label: "04:00 PM", val: "16:00" },
-                { label: "06:30 PM", val: "18:30" },
-              ].map(preset => (
-                <button
-                  key={preset.val}
-                  type="button"
-                  onClick={() => handlePreset(preset.val)}
-                  className="text-xs py-1.5 rounded bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors border border-white/5"
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="flex-1 py-2 text-xs font-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors border border-transparent hover:border-white/10"
-            >
-              CANCEL
-            </button>
-            <button
-              type="button"
-              onClick={handleApply}
-              className="flex-1 py-2 text-xs font-medium text-white bg-purple-500 hover:bg-purple-400 rounded-lg shadow-lg shadow-purple-500/20 transition-colors"
-            >
-              APPLY
-            </button>
-          </div>
+        {/* Actions */}
+        <div className="flex justify-end gap-3 p-4 bg-[#0d1117] border-t border-white/5">
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="px-4 py-2 text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleApply}
+            className="px-6 py-2 text-sm font-medium text-white bg-purple-500 hover:bg-purple-400 rounded-xl shadow-lg shadow-purple-500/20 transition-all active:scale-95"
+          >
+            OK
+          </button>
         </div>
       </PopoverContent>
     </Popover>

@@ -14,12 +14,9 @@ export default function MenuExportModal({
   const [open, setOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async () => {
+  const handleExport = () => {
     setIsExporting(true);
     try {
-      // Dynamically import html2pdf so it doesn't break SSR
-      const html2pdfModule = (await import('html2pdf.js')).default;
-      
       const sectionsHtml = (menu?.sections || []).map((section: any) => `
         <div style="margin-bottom: 25px; page-break-inside: avoid;">
           <h3 style="color: #10233B; font-size: 14px; font-weight: bold; border-bottom: 1px solid #E5E7EB; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase;">
@@ -40,7 +37,7 @@ export default function MenuExportModal({
       `).join('');
 
       const htmlContent = `
-        <div style="width: 794px; padding: 40px; background-color: white; color: #1F2937; font-family: 'Noto Sans Sinhala', sans-serif; line-height: 1.6;">
+        <div style="max-width: 800px; margin: 0 auto; background-color: white; color: #1F2937; font-family: 'Noto Sans Sinhala', sans-serif; line-height: 1.6;">
           <div style="margin-bottom: 30px;">
             <h1 style="color: #10233B; font-size: 24px; font-weight: bold; margin: 0 0 5px 0;">CHATHURYA & OSHADI</h1>
             <h2 style="color: #D7B56D; font-size: 16px; font-weight: normal; margin: 0 0 20px 0;">FOOD MENU</h2>
@@ -59,21 +56,63 @@ export default function MenuExportModal({
         </div>
       `;
 
-      const opt = {
-        margin:       10,
-        filename:     `${menuTitle ? menuTitle.toLowerCase().replace(/\s+/g, '-') : 'food-menu'}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
-      };
+      // Use a hidden iframe to leverage the browser's native print engine
+      // This is the ONLY reliable way to perfectly shape Sinhala Unicode characters in PDFs!
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
 
-      await html2pdfModule().set(opt).from(htmlContent).save();
-      
-      setOpen(false);
+      const contentWindow = iframe.contentWindow;
+      if (!contentWindow) throw new Error("Print layout failed to initialize");
+
+      const doc = contentWindow.document;
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${menuTitle ? menuTitle : 'Food Menu'}</title>
+          <style>
+            @font-face {
+              font-family: 'Noto Sans Sinhala';
+              src: url('/fonts/NotoSansSinhala-Regular.ttf') format('truetype');
+              font-weight: normal;
+              font-style: normal;
+            }
+            @media print {
+              @page { margin: 15mm; }
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            }
+            body { 
+              font-family: 'Noto Sans Sinhala', sans-serif;
+              padding: 0;
+              margin: 0;
+            }
+          </style>
+        </head>
+        <body>
+          ${htmlContent}
+        </body>
+        </html>
+      `);
+      doc.close();
+
+      // Wait a moment for fonts and layouts to be completely parsed by the iframe
+      setTimeout(() => {
+        contentWindow.focus();
+        contentWindow.print();
+        
+        // Clean up the iframe and close the dialog
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          setOpen(false);
+          setIsExporting(false);
+        }, 500);
+      }, 500);
+
     } catch (error) {
       console.error(error);
-      alert("Failed to export PDF.");
-    } finally {
+      alert("Failed to initiate PDF print dialog.");
       setIsExporting(false);
     }
   };
@@ -108,7 +147,9 @@ export default function MenuExportModal({
           </div>
           
           <p className="text-sm text-white/70">
-            This will generate a perfectly shaped PDF natively in your browser using the Noto Sans Sinhala font.
+            This will open your browser's native print dialog. 
+            <strong className="text-white block mt-2">Please select "Save as PDF" as the destination.</strong>
+            This is required to properly render Sinhala typography.
           </p>
         </div>
 
@@ -124,7 +165,7 @@ export default function MenuExportModal({
             disabled={isExporting}
             className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
-            {isExporting ? "GENERATING..." : "DOWNLOAD PDF"}
+            {isExporting ? "PREPARING..." : "GENERATE PDF"}
           </button>
         </div>
       </DialogContent>

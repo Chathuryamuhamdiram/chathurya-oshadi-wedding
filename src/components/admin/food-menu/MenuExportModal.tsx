@@ -14,7 +14,7 @@ export default function MenuExportModal({
   const [open, setOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     setIsExporting(true);
     try {
       const sectionsHtml = (menu?.sections || []).map((section: any) => `
@@ -37,53 +37,18 @@ export default function MenuExportModal({
       `).join('');
 
       const htmlContent = `
-        <div style="max-width: 800px; margin: 0 auto; background-color: white; color: #1F2937; font-family: 'Noto Sans Sinhala', sans-serif; line-height: 1.6;">
-          <div style="margin-bottom: 30px;">
-            <h1 style="color: #10233B; font-size: 24px; font-weight: bold; margin: 0 0 5px 0;">CHATHURYA & OSHADI</h1>
-            <h2 style="color: #D7B56D; font-size: 16px; font-weight: normal; margin: 0 0 20px 0;">FOOD MENU</h2>
-            
-            <div style="font-size: 12px; color: #4B5563;">
-              <p style="margin: 2px 0;">Event: ${eventName || 'Unknown'}</p>
-              <p style="margin: 2px 0;">Generated: ${new Date().toLocaleDateString('en-GB')}</p>
-              ${menu?.title ? `<p style="margin: 2px 0;">Menu Title: ${menu.title}</p>` : ''}
-              ${menu?.venue ? `<p style="margin: 2px 0;">Venue: ${menu.venue}</p>` : ''}
-              ${menu?.vendor?.vendorName ? `<p style="margin: 2px 0;">Caterer: ${menu.vendor.vendorName}</p>` : ''}
-            </div>
-          </div>
-          <div>
-            ${sectionsHtml}
-          </div>
-        </div>
-      `;
-
-      // Use a hidden iframe to leverage the browser's native print engine
-      // This is the ONLY reliable way to perfectly shape Sinhala Unicode characters in PDFs!
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-
-      const contentWindow = iframe.contentWindow;
-      if (!contentWindow) throw new Error("Print layout failed to initialize");
-
-      const doc = contentWindow.document;
-      doc.open();
-      doc.write(`
         <!DOCTYPE html>
         <html>
         <head>
-          <title>${menuTitle ? menuTitle : 'Food Menu'}</title>
+          <meta charset="utf-8">
           <style>
             @font-face {
               font-family: 'Noto Sans Sinhala';
-              src: url('/fonts/NotoSansSinhala-Regular.ttf') format('truetype');
+              src: url('${window.location.origin}/fonts/NotoSansSinhala-Regular.ttf') format('truetype');
               font-weight: normal;
               font-style: normal;
             }
-            @media print {
-              @page { margin: 15mm; }
-              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            }
-            body { 
+            body {
               font-family: 'Noto Sans Sinhala', sans-serif;
               padding: 0;
               margin: 0;
@@ -91,28 +56,61 @@ export default function MenuExportModal({
           </style>
         </head>
         <body>
-          ${htmlContent}
+          <div style="max-width: 800px; margin: 0 auto; background-color: white; color: #1F2937; line-height: 1.6;">
+            <div style="margin-bottom: 30px;">
+              <h1 style="color: #10233B; font-size: 24px; font-weight: bold; margin: 0 0 5px 0;">CHATHURYA & OSHADI</h1>
+              <h2 style="color: #D7B56D; font-size: 16px; font-weight: normal; margin: 0 0 20px 0;">FOOD MENU</h2>
+              
+              <div style="font-size: 12px; color: #4B5563;">
+                <p style="margin: 2px 0;">Event: ${eventName || 'Unknown'}</p>
+                <p style="margin: 2px 0;">Generated: ${new Date().toLocaleDateString('en-GB')}</p>
+                ${menu?.title ? `<p style="margin: 2px 0;">Menu Title: ${menu.title}</p>` : ''}
+                ${menu?.venue ? `<p style="margin: 2px 0;">Venue: ${menu.venue}</p>` : ''}
+                ${menu?.vendor?.vendorName ? `<p style="margin: 2px 0;">Caterer: ${menu.vendor.vendorName}</p>` : ''}
+              </div>
+            </div>
+            <div>
+              ${sectionsHtml}
+            </div>
+          </div>
         </body>
         </html>
-      `);
-      doc.close();
+      `;
 
-      // Wait a moment for fonts and layouts to be completely parsed by the iframe
-      setTimeout(() => {
-        contentWindow.focus();
-        contentWindow.print();
-        
-        // Clean up the iframe and close the dialog
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-          setOpen(false);
-          setIsExporting(false);
-        }, 500);
-      }, 500);
+      const res = await fetch('/api/admin/food-menu/export-pdf-headless', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ htmlContent })
+      });
 
+      if (!res.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Convert response to blob
+      const blob = await res.blob();
+      
+      // Create an object URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary anchor element and trigger download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${menuTitle ? menuTitle.toLowerCase().replace(/\s+/g, '-') : 'food-menu'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      setOpen(false);
     } catch (error) {
       console.error(error);
-      alert("Failed to initiate PDF print dialog.");
+      alert("Failed to export PDF.");
+    } finally {
       setIsExporting(false);
     }
   };
@@ -147,9 +145,7 @@ export default function MenuExportModal({
           </div>
           
           <p className="text-sm text-white/70">
-            This will open your browser's native print dialog. 
-            <strong className="text-white block mt-2">Please select "Save as PDF" as the destination.</strong>
-            This is required to properly render Sinhala typography.
+            This will generate the PDF seamlessly and prompt you to download the file directly.
           </p>
         </div>
 
@@ -165,7 +161,7 @@ export default function MenuExportModal({
             disabled={isExporting}
             className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
-            {isExporting ? "PREPARING..." : "GENERATE PDF"}
+            {isExporting ? "GENERATING..." : "DOWNLOAD PDF"}
           </button>
         </div>
       </DialogContent>

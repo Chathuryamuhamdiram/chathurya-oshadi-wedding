@@ -306,3 +306,52 @@ export async function bulkSaveFoodMenuItems(sectionId: string, items: { name: st
   revalidatePath("/admin/food-menu");
   return { success: true };
 }
+
+export async function duplicateSection(sectionId: string) {
+  const session = await requirePermission(PERMISSIONS.MENU_EDIT);
+
+  const existingSection = await prisma.foodMenuSection.findUnique({
+    where: { id: sectionId },
+    include: { items: true }
+  });
+
+  if (!existingSection) {
+    throw new Error("Section not found");
+  }
+
+  const existingSectionsCount = await prisma.foodMenuSection.count({
+    where: { menuId: existingSection.menuId }
+  });
+
+  const newSection = await prisma.foodMenuSection.create({
+    data: {
+      menuId: existingSection.menuId,
+      title: `${existingSection.title} (Copy)`,
+      sortOrder: existingSectionsCount,
+      items: {
+        create: existingSection.items.map(item => ({
+          name: item.name,
+          description: item.description,
+          cost: item.cost,
+          costType: item.costType,
+          vendorId: item.vendorId,
+          status: item.status,
+          sortOrder: item.sortOrder
+        }))
+      }
+    }
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      userId: session.userId,
+      action: "DUPLICATE_MENU_SECTION",
+      entity: "FoodMenuSection",
+      entityId: newSection.id,
+      newValue: newSection.title
+    }
+  });
+
+  revalidatePath("/admin/food-menu");
+  return { success: true, section: newSection };
+}

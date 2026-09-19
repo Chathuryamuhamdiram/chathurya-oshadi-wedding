@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Plus, Edit2, Trash2, GripVertical, FileDown, UtensilsCrossed } from "lucide-react";
-import { createOrUpdateMenu, addSection, updateSection, deleteSection, addItem, updateItem, deleteItem, reorderSections, reorderItems } from "@/app/admin/food-menu/actions";
+import { createOrUpdateMenu, addSection, updateSection, deleteSection, duplicateSection, addItem, updateItem, deleteItem, reorderSections, reorderItems } from "@/app/admin/food-menu/actions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import MenuExportModal from "./MenuExportModal";
 import { FoodMenuBulkSectionImport } from "./FoodMenuBulkSectionImport";
@@ -128,6 +128,15 @@ export default function FoodMenuClient({
       await deleteItem(id);
     }
   };
+
+  const handleDuplicateSection = async (id: string) => {
+    try {
+      await duplicateSection(id);
+    } catch (e: any) {
+      alert("Failed to duplicate section: " + e.message);
+    }
+  };
+
 
   const moveSection = async (index: number, direction: 'up' | 'down') => {
     if (!menu) return;
@@ -377,7 +386,7 @@ export default function FoodMenuClient({
                           onCancel={() => setInlineAddSectionId(null)} 
                         />
                       ) : (
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                           <button
                             onClick={() => setInlineAddSectionId(section.id)}
                             className="flex items-center gap-2 text-sm text-white/40 hover:text-white/80 transition-colors"
@@ -390,6 +399,14 @@ export default function FoodMenuClient({
                             sectionTitle={section.title}
                             existingItems={section.items.map((i: any) => ({ id: i.id, name: i.name }))}
                           />
+                          <button
+                            onClick={() => handleDuplicateSection(section.id)}
+                            className="flex items-center gap-2 text-sm text-white/40 hover:text-white/80 transition-colors ml-auto md:ml-0"
+                            title="Duplicate this entire section"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            Duplicate Section
+                          </button>
                         </div>
                       )}
                     </div>

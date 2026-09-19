@@ -4,6 +4,8 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import fs from "fs";
+import path from "path";
 
 export async function GET(request: Request) {
   try {
@@ -43,6 +45,19 @@ export async function GET(request: Request) {
     // 2. Generate PDF
     const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     
+    // Add custom font for Sinhala support
+    try {
+      const fontPath = path.join(process.cwd(), 'public/fonts/NotoSansSinhala-Regular.ttf');
+      const fontBase64 = fs.readFileSync(fontPath).toString('base64');
+      doc.addFileToVFS('NotoSansSinhala.ttf', fontBase64);
+      doc.addFont('NotoSansSinhala.ttf', 'NotoSansSinhala', 'normal');
+      doc.addFont('NotoSansSinhala.ttf', 'NotoSansSinhala', 'bold');
+    } catch (err) {
+      console.warn("Could not load NotoSansSinhala font", err);
+    }
+
+    const defaultFont = "NotoSansSinhala";
+
     // Brand Colors
     const primaryColor = "#10233B"; // Deep Navy
     const accentColor = "#D7B56D"; // Champagne Gold
@@ -51,13 +66,13 @@ export async function GET(request: Request) {
     let currentY = 40;
 
     // Header
-    doc.setFont("helvetica", "bold");
+    doc.setFont(defaultFont, "bold");
     doc.setFontSize(18);
     doc.setTextColor(primaryColor);
     doc.text("CHATHURYA & OSHADI", 40, currentY);
     currentY += 18;
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(defaultFont, "normal");
     doc.setFontSize(12);
     doc.setTextColor(accentColor);
     doc.text("FOOD MENU", 40, currentY);
@@ -94,7 +109,7 @@ export async function GET(request: Request) {
     // Sections
     menu.sections.forEach((section: any) => {
       doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
+      doc.setFont(defaultFont, "bold");
       doc.setTextColor(primaryColor);
       doc.text(section.title.toUpperCase(), 40, currentY + 15);
       currentY += 25;
@@ -109,6 +124,9 @@ export async function GET(request: Request) {
           head: [], // No table headers needed for a simple list
           body: rows,
           theme: "plain",
+          styles: {
+            font: defaultFont,
+          },
           bodyStyles: {
             fontSize: 10,
             textColor: textColor,
@@ -128,7 +146,7 @@ export async function GET(request: Request) {
         currentY = (doc as any).lastAutoTable.finalY + 20;
       } else {
         doc.setFontSize(9);
-        doc.setFont("helvetica", "italic");
+        doc.setFont(defaultFont, "normal");
         doc.setTextColor(150);
         doc.text("No items in this section", 40, currentY);
         currentY += 25;

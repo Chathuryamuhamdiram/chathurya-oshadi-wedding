@@ -192,7 +192,7 @@ export default function FoodMenuClient({
               isAllEvents={isAllEvents}
               menuTitle={menu.title}
               eventName={activeEvent?.name}
-              canViewCosts={canEdit} 
+              menu={menu}
             />
             {canEdit && (
               <button 

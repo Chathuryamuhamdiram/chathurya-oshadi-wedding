@@ -27,10 +27,11 @@ export async function POST(request: Request) {
     const executablePath = isLocal ? localExecutable : await chromium.executablePath();
     let args: any = [];
     if (isLocal) {
-      args = puppeteer.defaultArgs();
+      args = await puppeteer.defaultArgs();
     } else {
-      // @ts-ignore
-      args = await chromium.args;
+      const crArgs = await chromium.args;
+      const baseArgs = Array.isArray(crArgs) ? crArgs : (Array.isArray(chromium.args) ? chromium.args : []);
+      args = [...baseArgs, "--no-sandbox", "--disable-setuid-sandbox"];
     }
 
     const browser = await puppeteer.launch({

@@ -24,8 +24,13 @@ export default function MenuExportModal({
       const element = printRef.current;
       if (!element) throw new Error("Print layout not found");
 
-      // Temporarily make it visible but off-screen to render
+      // Make it visible and reset position to 0,0 for html2canvas
       element.style.display = "block";
+      element.style.left = "0px";
+      element.style.top = "0px";
+      
+      // Yield to the browser to ensure layout and paint happen before capturing
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       const opt = {
         margin:       10,
@@ -37,8 +42,10 @@ export default function MenuExportModal({
 
       await html2pdfModule().set(opt).from(element).save();
 
-      // Hide it again
+      // Restore styles
       element.style.display = "none";
+      element.style.left = "-9999px";
+      element.style.top = "-9999px";
       
       setOpen(false);
     } catch (error) {
@@ -57,7 +64,7 @@ export default function MenuExportModal({
       {/* Hidden printable area */}
       <div 
         ref={printRef} 
-        style={{ display: "none", position: "absolute", left: "-9999px", top: "-9999px", width: "794px", backgroundColor: "white", color: "#1F2937", padding: "40px", fontFamily: "'Noto Sans Sinhala', sans-serif", lineHeight: "1.6" }}
+        style={{ display: "none", position: "absolute", left: "-9999px", top: "-9999px", zIndex: -9999, width: "794px", backgroundColor: "white", color: "#1F2937", padding: "40px", fontFamily: "'Noto Sans Sinhala', sans-serif", lineHeight: "1.6" }}
       >
         <div style={{ marginBottom: "30px" }}>
           <h1 style={{ color: "#10233B", fontSize: "24px", fontWeight: "bold", margin: "0 0 5px 0" }}>CHATHURYA & OSHADI</h1>

@@ -38,7 +38,7 @@ export default function MenuExportModal({
 
       const htmlContent = `
         <!DOCTYPE html>
-        <html>
+        <html lang="si">
         <head>
           <meta charset="utf-8">
           <style>

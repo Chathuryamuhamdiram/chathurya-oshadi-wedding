@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { notoSansSinhalaBase64 } from "@/lib/fonts/notoSansSinhalaBase64";
-import * as htmlToImage from "html-to-image";
+import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 export default function MenuExportModal({ 
@@ -21,38 +21,30 @@ export default function MenuExportModal({
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // 1. Wait for fonts to be ready
       await document.fonts.ready;
-      
-      // 2. Wait two render frames for DOM to fully flush
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
       const printElement = printRef.current;
       if (!printElement) throw new Error("Print container not found");
 
-      // Temporarily show the print container so html-to-image can capture it properly
+      // We explicitly make it visible but off-screen for the capture phase
       printElement.style.display = "block";
       
-      // Add standard A4 dimensions (width ~794px for 96dpi A4 portrait)
-      printElement.style.width = "794px";
-      printElement.style.padding = "40px"; // Margins
-      
-      // Capture the rendered DOM to a high-res Canvas
-      // Scale 3 provides excellent print quality
-      const canvas = await htmlToImage.toCanvas(printElement, {
-        pixelRatio: 3,
+      // Let the browser flush layout
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const canvas = await html2canvas(printElement, {
+        scale: 2,
+        useCORS: true,
         backgroundColor: "#ffffff",
-        style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left',
-          margin: '0'
-        }
+        logging: false
       });
 
-      // Hide the print container again
+      // Hide it again
       printElement.style.display = "none";
 
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -68,13 +60,13 @@ export default function MenuExportModal({
       let heightLeft = imgHeightInMm;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeightInMm);
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightInMm);
       heightLeft -= pdfHeight;
 
       while (heightLeft > 0) {
         position = heightLeft - imgHeightInMm;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeightInMm);
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeightInMm);
         heightLeft -= pdfHeight;
       }
 
@@ -109,6 +101,8 @@ export default function MenuExportModal({
           position: 'absolute', 
           top: '-9999px', 
           left: '-9999px',
+          width: '794px',
+          padding: '40px',
           fontFamily: '"Noto Sans Sinhala", "Noto Sans", sans-serif',
           backgroundColor: 'white',
           color: '#1F2937',

@@ -40,9 +40,9 @@ export async function GET(request: Request) {
     
     browser = await puppeteer.launch({
       args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH,
-      headless: chromium.headless,
+      defaultViewport: chromium.defaultViewport as any,
+      executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH as string,
+      headless: chromium.headless === true || chromium.headless === 'new' ? true : chromium.headless as any,
     });
 
     const page = await browser.newPage();
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
     const safeMenu = (menu.title || "Menu").toLowerCase().replace(/[^a-z0-9]+/g, "_");
     const filename = `Chathurya_Oshadi_${safeEvent}_${safeMenu}.pdf`;
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,

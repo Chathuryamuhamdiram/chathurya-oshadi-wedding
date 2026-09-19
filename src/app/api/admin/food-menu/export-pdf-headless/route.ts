@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 
 export const maxDuration = 30; // 30 seconds for Vercel
 
@@ -24,14 +24,17 @@ export async function POST(request: Request) {
       ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
       : '/usr/bin/google-chrome';
 
-    const executablePath = isLocal ? localExecutable : await chromium.executablePath();
+    const executablePath = isLocal 
+      ? localExecutable 
+      : await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar');
+      
     let args: any = [];
     if (isLocal) {
       args = await puppeteer.defaultArgs();
     } else {
       const crArgs = await chromium.args;
       const baseArgs = Array.isArray(crArgs) ? crArgs : (Array.isArray(chromium.args) ? chromium.args : []);
-      args = [...baseArgs, "--no-sandbox", "--disable-setuid-sandbox"];
+      args = [...baseArgs, "--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"];
     }
 
     const browser = await puppeteer.launch({

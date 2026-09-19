@@ -86,7 +86,12 @@ export default function MenuExportModal({
       });
 
       if (!res.ok) {
-        throw new Error('Failed to generate PDF');
+        let errStr = 'Failed to generate PDF';
+        try {
+          const errData = await res.json();
+          if (errData.error) errStr = errData.error;
+        } catch(e) {}
+        throw new Error(errStr);
       }
 
       // Convert response to blob
@@ -107,9 +112,9 @@ export default function MenuExportModal({
       document.body.removeChild(link);
 
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to export PDF.");
+      alert(`Failed to export PDF: ${error.message || String(error)}`);
     } finally {
       setIsExporting(false);
     }

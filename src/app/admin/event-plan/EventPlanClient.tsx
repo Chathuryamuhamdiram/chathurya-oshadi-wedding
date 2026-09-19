@@ -90,8 +90,31 @@ export function EventPlanClient({ items: initialItems, eventId, eventName, isAll
     setFormTime(item.plannedTime || "");
   };
 
-  const handleDownloadPDF = () => {
-    window.open(`/event-plan/print?eventId=${eventId}`, "_blank");
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/admin/event-plan/export-pdf?eventId=${eventId}`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Chathurya_Oshadi_${(eventName || "Event").replace(/[^a-zA-Z0-9]/g, "_")}_Day_Plan.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error: any) {
+      console.error(error);
+      alert(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (!isMounted) return null;
@@ -104,8 +127,9 @@ export function EventPlanClient({ items: initialItems, eventId, eventName, isAll
         </h3>
         {!isAllEvents && (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleDownloadPDF} className="bg-white/5 border-white/10 hover:bg-white/10">
-              <FileDown className="w-4 h-4 mr-2" /> PDF
+            <Button variant="outline" onClick={handleDownloadPDF} disabled={isExporting} className="bg-white/5 border-white/10 hover:bg-white/10">
+              {isExporting ? <span className="animate-spin mr-2">⟳</span> : <FileDown className="w-4 h-4 mr-2" />} 
+              {isExporting ? "Exporting..." : "PDF"}
             </Button>
             <Button variant="outline" onClick={() => setIsBulkOpen(true)} className="bg-white/5 border-white/10 hover:bg-white/10">
               Bulk Paste

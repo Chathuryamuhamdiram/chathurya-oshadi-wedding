@@ -13,19 +13,38 @@ export default function MenuExportModal({
 }: any) {
   const [open, setOpen] = useState(false);
 
-  const handleOpenPrintView = () => {
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
     if (!menu?.id) {
       alert("No menu selected.");
       return;
     }
 
-    // Open the dedicated, clean print page in a new tab.
-    // The page renders Sinhala using the browser's native HarfBuzz engine.
-    // No canvas. No PDF library. No text splitting.
-    // User clicks "Print / Save as PDF" in the print page toolbar.
-    const printUrl = `/food-menu/print?menuId=${menu.id}`;
-    window.open(printUrl, "_blank");
-    setOpen(false);
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/admin/food-menu/export-pdf?menuId=${menu.id}`);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Chathurya_Oshadi_${(eventName || "Wedding").replace(/[^a-zA-Z0-9]/g, "_")}_Food_Menu.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      setOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      alert(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isAllEvents) return null;
@@ -58,25 +77,33 @@ export default function MenuExportModal({
           </div>
 
           <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 text-xs text-white/60 space-y-1">
-            <p>A print preview will open in a new tab.</p>
-            <p>Click <strong className="text-white/80">&ldquo;Print / Save as PDF&rdquo;</strong> in that tab.</p>
-            <p>In Chrome: choose <strong className="text-white/80">Save as PDF</strong> as the printer.</p>
+            <p>This will generate a high-quality PDF using a headless browser on the server.</p>
+            <p>Sinhala text will be rendered perfectly.</p>
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-6">
           <button
             onClick={() => setOpen(false)}
-            className="px-4 py-2 text-sm text-white/60 hover:text-white font-medium transition-colors"
+            disabled={isExporting}
+            className="px-4 py-2 text-sm text-white/60 hover:text-white font-medium transition-colors disabled:opacity-50"
           >
             CANCEL
           </button>
           <button
-            onClick={handleOpenPrintView}
-            className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
-            OPEN PRINT VIEW
+            {isExporting ? (
+              <>
+                <span className="animate-spin">⟳</span> GENERATING...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" /> DOWNLOAD PDF
+              </>
+            )}
           </button>
         </div>
       </DialogContent>

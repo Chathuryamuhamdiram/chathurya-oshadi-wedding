@@ -43,13 +43,7 @@ export default async function FoodMenuPrintPage({ searchParams }: Props) {
         /public/fonts/ — no CDN dependency.
       */}
       <style>{`
-        @font-face {
-          font-family: "Noto Sans Sinhala";
-          src: url("/fonts/NotoSansSinhala-Regular.ttf") format("truetype");
-          font-weight: 400;
-          font-style: normal;
-          font-display: block;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap');
 
         *, *::before, *::after {
           box-sizing: border-box;
@@ -62,7 +56,7 @@ export default async function FoodMenuPrintPage({ searchParams }: Props) {
         }
 
         body {
-          font-family: "Noto Sans Sinhala", "Noto Sans", Arial, sans-serif;
+          font-family: "Noto Sans Sinhala", Arial, sans-serif;
           background: #f0f0f0;
           color: #1a1a1a;
           line-height: 1.6;
@@ -184,7 +178,7 @@ export default async function FoodMenuPrintPage({ searchParams }: Props) {
         }
 
         .menu-item {
-          font-family: "Noto Sans Sinhala", "Noto Sans", Arial, sans-serif;
+          font-family: "Noto Sans Sinhala", Arial, sans-serif;
           font-size: 15px;
           font-weight: 400;
           color: #374151;
@@ -193,14 +187,13 @@ export default async function FoodMenuPrintPage({ searchParams }: Props) {
           break-inside: avoid;
           page-break-inside: avoid;
 
-          /* Sinhala-safe typography — do NOT change these */
+          /* Sinhala-safe typography */
           letter-spacing: normal;
           word-spacing: normal;
           word-break: normal;
           overflow-wrap: normal;
           white-space: normal;
           line-height: 1.7;
-          text-rendering: optimizeLegibility;
           font-kerning: normal;
         }
 

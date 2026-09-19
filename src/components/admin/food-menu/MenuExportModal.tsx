@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { notoSansSinhalaBase64 } from "@/lib/fonts/notoSansSinhalaBase64";
-import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function MenuExportModal({ 
   activeEventId,
@@ -16,129 +15,141 @@ export default function MenuExportModal({
 }: any) {
   const [open, setOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [status, setStatus] = useState("");
 
   const handleExport = async () => {
+    if (!menu?.id) {
+      alert("No menu selected.");
+      return;
+    }
+
     setIsExporting(true);
-
-    // Build the print container imperatively and inject into document.body.
-    // Positioning as `fixed` at top:0/left:0 with opacity:0 gives html2canvas
-    // a real layout box to measure — unlike position:absolute top:-9999px
-    // which causes html2canvas to capture 0x0 pixels.
-    const container = document.createElement("div");
-    container.style.cssText = [
-      "position: fixed",
-      "top: 0",
-      "left: 0",
-      "width: 794px",
-      "padding: 40px",
-      "box-sizing: border-box",
-      "background: #ffffff",
-      "color: #1F2937",
-      `font-family: "Noto Sans Sinhala", "Noto Sans", sans-serif`,
-      "line-height: 1.6",
-      "letter-spacing: normal",
-      "word-spacing: normal",
-      "white-space: normal",
-      "text-align: left",
-      "word-break: normal",
-      "overflow-wrap: normal",
-      "z-index: -9999",
-      "opacity: 0",
-      "pointer-events: none"
-    ].join(";");
-
-    const sectionsHtml = (menu?.sections || []).map((section: any) => `
-      <div style="margin-bottom:25px;">
-        <h3 style="color:#10233B;font-size:14px;font-weight:bold;border-bottom:1px solid #E5E7EB;padding-bottom:5px;margin-bottom:10px;text-transform:uppercase;">
-          ${section.title}
-        </h3>
-        ${section.items && section.items.length > 0
-          ? `<ul style="list-style:none;padding:0;margin:0;">
-              ${section.items.map((item: any) => `
-                <li style="font-size:14px;padding:6px 0;border-bottom:1px solid #F3F4F6;letter-spacing:normal;word-spacing:normal;">
-                  ${item.name}
-                </li>
-              `).join('')}
-            </ul>`
-          : `<p style="font-size:11px;font-style:italic;color:#9CA3AF;">No items in this section</p>`
-        }
-      </div>
-    `).join('');
-
-    container.innerHTML = `
-      <style>
-        @font-face {
-          font-family: "Noto Sans Sinhala";
-          src: url("data:font/truetype;charset=utf-8;base64,${notoSansSinhalaBase64}") format("truetype");
-          font-weight: 400;
-          font-style: normal;
-        }
-      </style>
-      <div style="margin-bottom:30px;">
-        <h1 style="color:#10233B;font-size:24px;font-weight:bold;margin:0 0 5px 0;">CHATHURYA &amp; OSHADI</h1>
-        <h2 style="color:#D7B56D;font-size:16px;font-weight:normal;margin:0 0 20px 0;">FOOD MENU</h2>
-        <div style="font-size:12px;color:#4B5563;">
-          <p style="margin:2px 0;">Event: ${eventName || 'Unknown'}</p>
-          <p style="margin:2px 0;">Generated: ${new Date().toLocaleDateString('en-GB')}</p>
-          ${menu?.title ? `<p style="margin:2px 0;">Menu Title: ${menu.title}</p>` : ''}
-          ${menu?.venue ? `<p style="margin:2px 0;">Venue: ${menu.venue}</p>` : ''}
-          ${menu?.vendor?.vendorName ? `<p style="margin:2px 0;">Caterer: ${menu.vendor.vendorName}</p>` : ''}
-        </div>
-      </div>
-      <div>${sectionsHtml}</div>
-    `;
-
-    document.body.appendChild(container);
+    setStatus("Opening print view…");
 
     try {
-      // Wait for fonts (including our base64 font) to finish loading
-      await document.fonts.ready;
-      // Two animation frames ensure paint is complete
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      // Extra 300ms buffer for Sinhala ligature composition
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // --- STEP 1: Create a hidden iframe pointing to our dedicated print HTML endpoint ---
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = [
+        "position:fixed",
+        "top:0",
+        "left:0",
+        "width:794px",
+        "height:1200px",
+        "border:none",
+        "z-index:9999",
+        "opacity:0",
+        "pointer-events:none",
+        "background:#fff"
+      ].join(";");
 
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        width: container.scrollWidth,
-        height: container.scrollHeight,
+      const printUrl = `/api/admin/food-menu/print-html?menuId=${menu.id}`;
+      iframe.src = printUrl;
+      document.body.appendChild(iframe);
+
+      setStatus("Loading fonts & rendering Sinhala…");
+
+      // --- STEP 2: Wait for iframe to fully load AND for fonts to be ready ---
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("Print page timed out after 15s")), 15000);
+
+        iframe.onload = async () => {
+          try {
+            const iWin = iframe.contentWindow as any;
+            const iDoc = iframe.contentDocument as Document;
+
+            // Wait for document.fonts.ready inside the iframe
+            await iDoc.fonts.ready;
+
+            // Give the browser an extra 500ms to fully paint ligatures
+            await new Promise(r => setTimeout(r, 500));
+
+            // Double-check font is actually loaded
+            const fontLoaded = iDoc.fonts.check('14px "Noto Sans Sinhala"');
+            console.log("[PDF Export] Noto Sans Sinhala loaded:", fontLoaded);
+
+            clearTimeout(timeout);
+            resolve();
+          } catch(e) {
+            clearTimeout(timeout);
+            reject(e);
+          }
+        };
+
+        iframe.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error("Failed to load print page"));
+        };
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      setStatus("Capturing render…");
 
+      const iDoc = iframe.contentDocument as Document;
+      const printRoot = iDoc.getElementById("print-root") || iDoc.body;
+
+      // --- STEP 3: Capture the iframe's rendered DOM with html2canvas ---
+      const canvas = await html2canvas(printRoot, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: "#ffffff",
+        logging: true,
+        width: printRoot.scrollWidth,
+        height: printRoot.scrollHeight,
+        windowWidth: 794,
+        windowHeight: printRoot.scrollHeight,
+        // Tell html2canvas to use the iframe's document, not the parent's
+        foreignObjectRendering: false,
+      });
+
+      // Remove the iframe
+      document.body.removeChild(iframe);
+
+      console.log("[PDF Export] Canvas size:", canvas.width, "x", canvas.height);
+      
+      if (canvas.width === 0 || canvas.height === 0) {
+        throw new Error("Canvas captured 0x0 pixels — layout issue");
+      }
+
+      setStatus("Building PDF…");
+
+      // --- STEP 4: Paginate the canvas into an A4 jsPDF ---
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
 
       const imgProps = pdf.getImageProperties(imgData);
-      const imgHeightInMm = (imgProps.height * pdfWidth) / imgProps.width;
+      const imgHmm = (imgProps.height * pdfW) / imgProps.width;
 
-      let heightLeft = imgHeightInMm;
-      let position = 0;
+      let remaining = imgHmm;
+      let yOffset = 0;
 
-      pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeightInMm);
-      heightLeft -= pdfHeight;
+      pdf.addImage(imgData, "JPEG", 0, yOffset, pdfW, imgHmm);
+      remaining -= pdfH;
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeightInMm;
+      while (remaining > 0) {
+        yOffset = remaining - imgHmm;
         pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, position, pdfWidth, imgHeightInMm);
-        heightLeft -= pdfHeight;
+        pdf.addImage(imgData, "JPEG", 0, yOffset, pdfW, imgHmm);
+        remaining -= pdfH;
       }
 
-      pdf.save(`${menuTitle ? menuTitle.toLowerCase().replace(/\s+/g, "-") : "food-menu"}.pdf`);
+      // --- STEP 5: Generate clean filename ---
+      const safeEventName = (eventName || "Wedding")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "_")
+        .replace(/_+/g, "_");
+      const filename = `Chathurya_Oshadi_${safeEventName}_Food_Menu.pdf`;
+
+      pdf.save(filename);
+      setStatus("Done!");
       setOpen(false);
     } catch (error: any) {
-      console.error("Export Error:", error);
-      alert(`Failed to export PDF: ${error.message || String(error)}`);
+      console.error("[PDF Export] Error:", error);
+      alert(`PDF export failed: ${error.message || String(error)}`);
     } finally {
-      if (document.body.contains(container)) {
-        document.body.removeChild(container);
-      }
       setIsExporting(false);
+      setStatus("");
     }
   };
 
@@ -171,15 +182,23 @@ export default function MenuExportModal({
             </div>
           </div>
 
+          {isExporting && status && (
+            <div className="flex items-center gap-2 text-sm text-emerald-400">
+              <span className="animate-spin">⟳</span>
+              <span>{status}</span>
+            </div>
+          )}
+
           <p className="text-sm text-white/70">
-            This will generate the PDF natively using your browser&apos;s font shaping engine.
+            Generates a PDF using your browser&apos;s native Sinhala text shaping engine.
           </p>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-6">
           <button
             onClick={() => setOpen(false)}
-            className="px-4 py-2 text-sm text-white/60 hover:text-white font-medium transition-colors"
+            disabled={isExporting}
+            className="px-4 py-2 text-sm text-white/60 hover:text-white font-medium transition-colors disabled:opacity-50"
           >
             CANCEL
           </button>
@@ -188,7 +207,7 @@ export default function MenuExportModal({
             disabled={isExporting}
             className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
           >
-            {isExporting ? "GENERATING..." : "DOWNLOAD PDF"}
+            {isExporting ? "GENERATING…" : "DOWNLOAD PDF"}
           </button>
         </div>
       </DialogContent>

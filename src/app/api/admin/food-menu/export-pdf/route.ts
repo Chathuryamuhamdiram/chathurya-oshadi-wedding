@@ -38,11 +38,13 @@ export async function GET(request: Request) {
     // Configure Sparticuz Chromium for Vercel Serverless
     const executablePath = await chromium.executablePath("https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar");
     
+    const chromiumAny = chromium as any;
+    
     browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport as any,
-      executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH as string,
-      headless: chromium.headless === true || chromium.headless === 'new' ? true : chromium.headless as any,
+      args: chromiumAny.args,
+      defaultViewport: chromiumAny.defaultViewport,
+      executablePath: executablePath || (process.env.PUPPETEER_EXECUTABLE_PATH as string),
+      headless: chromiumAny.headless === true || chromiumAny.headless === 'new' ? true : chromiumAny.headless,
     });
 
     const page = await browser.newPage();

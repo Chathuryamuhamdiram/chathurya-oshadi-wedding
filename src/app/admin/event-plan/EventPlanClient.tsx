@@ -91,7 +91,7 @@ export function EventPlanClient({ items: initialItems, eventId, eventName, isAll
   };
 
   const handleDownloadPDF = () => {
-    window.open(`/api/admin/event-plan/export-pdf?eventId=${eventId}`, "_blank");
+    window.open(`/event-plan/print?eventId=${eventId}`, "_blank");
   };
 
   if (!isMounted) return null;

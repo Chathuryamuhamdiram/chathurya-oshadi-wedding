@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 export default function MenuExportModal({ 
   activeEventId,
@@ -24,130 +23,107 @@ export default function MenuExportModal({
     }
 
     setIsExporting(true);
-    setStatus("Opening print view…");
+    setStatus("Opening print window…");
+
+    // KEY INSIGHT: We set up the postMessage listener BEFORE opening the popup.
+    // Then we open the popup SYNCHRONOUSLY (no await before window.open) so
+    // popup blockers don't interfere.
+    //
+    // The popup loads our print HTML page with ?capture=true.
+    // That page runs html2canvas INSIDE THE POPUP where Noto Sans Sinhala
+    // is fully loaded in the popup's own font context.
+    // This fixes the core issue: html2canvas previously used the parent
+    // window's canvas context which defaulted to the Windows system Sinhala
+    // font (Iskoola Pota) instead of Noto Sans Sinhala.
+
+    const imageDataPromise = new Promise<string>((resolve, reject) => {
+      const TIMEOUT_MS = 30000;
+      const timer = setTimeout(() => {
+        window.removeEventListener("message", handler);
+        reject(new Error("PDF capture timed out after 30s. Please try again."));
+      }, TIMEOUT_MS);
+
+      const handler = (event: MessageEvent) => {
+        // Only accept messages from our own origin
+        if (event.origin !== window.location.origin) return;
+
+        if (event.data?.type === "PDF_CANVAS_READY" && typeof event.data.imageData === "string") {
+          clearTimeout(timer);
+          window.removeEventListener("message", handler);
+          resolve(event.data.imageData);
+        }
+
+        if (event.data?.type === "PDF_CANVAS_ERROR") {
+          clearTimeout(timer);
+          window.removeEventListener("message", handler);
+          reject(new Error(event.data.error || "Capture failed in popup"));
+        }
+      };
+
+      window.addEventListener("message", handler);
+    });
+
+    // Open popup SYNCHRONOUSLY — must be direct response to a user click
+    const printUrl = `/api/admin/food-menu/print-html?menuId=${menu.id}&capture=true`;
+    const popup = window.open(
+      printUrl,
+      "food-menu-pdf-capture",
+      "width=860,height=1100,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no,resizable=yes"
+    );
+
+    if (!popup) {
+      setIsExporting(false);
+      setStatus("");
+      alert(
+        "⚠️ Popup was blocked by your browser.\n\n" +
+        "Please click the popup blocker icon in your address bar and allow popups for this site, then try again."
+      );
+      return;
+    }
 
     try {
-      // --- STEP 1: Create a hidden iframe pointing to our dedicated print HTML endpoint ---
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText = [
-        "position:fixed",
-        "top:0",
-        "left:0",
-        "width:794px",
-        "height:1200px",
-        "border:none",
-        "z-index:9999",
-        "opacity:0",
-        "pointer-events:none",
-        "background:#fff"
-      ].join(";");
+      setStatus("Rendering Sinhala text in popup…");
 
-      const printUrl = `/api/admin/food-menu/print-html?menuId=${menu.id}`;
-      iframe.src = printUrl;
-      document.body.appendChild(iframe);
-
-      setStatus("Loading fonts & rendering Sinhala…");
-
-      // --- STEP 2: Wait for iframe to fully load AND for fonts to be ready ---
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error("Print page timed out after 15s")), 15000);
-
-        iframe.onload = async () => {
-          try {
-            const iWin = iframe.contentWindow as any;
-            const iDoc = iframe.contentDocument as Document;
-
-            // Wait for document.fonts.ready inside the iframe
-            await iDoc.fonts.ready;
-
-            // Give the browser an extra 500ms to fully paint ligatures
-            await new Promise(r => setTimeout(r, 500));
-
-            // Double-check font is actually loaded
-            const fontLoaded = iDoc.fonts.check('14px "Noto Sans Sinhala"');
-            console.log("[PDF Export] Noto Sans Sinhala loaded:", fontLoaded);
-
-            clearTimeout(timeout);
-            resolve();
-          } catch(e) {
-            clearTimeout(timeout);
-            reject(e);
-          }
-        };
-
-        iframe.onerror = () => {
-          clearTimeout(timeout);
-          reject(new Error("Failed to load print page"));
-        };
-      });
-
-      setStatus("Capturing render…");
-
-      const iDoc = iframe.contentDocument as Document;
-      const printRoot = iDoc.getElementById("print-root") || iDoc.body;
-
-      // --- STEP 3: Capture the iframe's rendered DOM with html2canvas ---
-      const canvas = await html2canvas(printRoot, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        logging: true,
-        width: printRoot.scrollWidth,
-        height: printRoot.scrollHeight,
-        windowWidth: 794,
-        windowHeight: printRoot.scrollHeight,
-        // Tell html2canvas to use the iframe's document, not the parent's
-        foreignObjectRendering: false,
-      });
-
-      // Remove the iframe
-      document.body.removeChild(iframe);
-
-      console.log("[PDF Export] Canvas size:", canvas.width, "x", canvas.height);
-      
-      if (canvas.width === 0 || canvas.height === 0) {
-        throw new Error("Canvas captured 0x0 pixels — layout issue");
-      }
+      const imageData = await imageDataPromise;
 
       setStatus("Building PDF…");
 
-      // --- STEP 4: Paginate the canvas into an A4 jsPDF ---
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
 
-      const imgProps = pdf.getImageProperties(imgData);
+      const imgProps = pdf.getImageProperties(imageData);
       const imgHmm = (imgProps.height * pdfW) / imgProps.width;
 
       let remaining = imgHmm;
-      let yOffset = 0;
+      let yPos = 0;
 
-      pdf.addImage(imgData, "JPEG", 0, yOffset, pdfW, imgHmm);
+      pdf.addImage(imageData, "JPEG", 0, yPos, pdfW, imgHmm);
       remaining -= pdfH;
 
       while (remaining > 0) {
-        yOffset = remaining - imgHmm;
+        yPos = remaining - imgHmm;
         pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, yOffset, pdfW, imgHmm);
+        pdf.addImage(imageData, "JPEG", 0, yPos, pdfW, imgHmm);
         remaining -= pdfH;
       }
 
-      // --- STEP 5: Generate clean filename ---
-      const safeEventName = (eventName || "Wedding")
+      // Generate clean filename based on event name
+      const safeEvent = (eventName || "Wedding")
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, "_")
-        .replace(/_+/g, "_");
-      const filename = `Chathurya_Oshadi_${safeEventName}_Food_Menu.pdf`;
+        .replace(/[^a-z0-9\u0D80-\u0DFF]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_|_$/g, "");
+      const filename = `Chathurya_Oshadi_${safeEvent}_Food_Menu.pdf`;
 
       pdf.save(filename);
-      setStatus("Done!");
       setOpen(false);
     } catch (error: any) {
-      console.error("[PDF Export] Error:", error);
-      alert(`PDF export failed: ${error.message || String(error)}`);
+      console.error("[PDF Export]", error);
+      alert(`PDF export failed: ${error.message}`);
     } finally {
+      // Best-effort close the popup if it's still open
+      try { if (popup && !popup.closed) popup.close(); } catch {}
       setIsExporting(false);
       setStatus("");
     }
@@ -183,22 +159,25 @@ export default function MenuExportModal({
           </div>
 
           {isExporting && status && (
-            <div className="flex items-center gap-2 text-sm text-emerald-400">
-              <span className="animate-spin">⟳</span>
+            <div className="flex items-center gap-2 text-sm text-emerald-400 bg-emerald-500/10 rounded-lg px-3 py-2">
+              <span className="inline-block animate-spin">⟳</span>
               <span>{status}</span>
             </div>
           )}
 
-          <p className="text-sm text-white/70">
-            Generates a PDF using your browser&apos;s native Sinhala text shaping engine.
-          </p>
+          {!isExporting && (
+            <p className="text-sm text-white/60">
+              A brief popup window will open to render the Sinhala text correctly, then close automatically.
+              Please allow popups for this site if prompted.
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-6 border-t border-white/10 mt-6">
           <button
             onClick={() => setOpen(false)}
             disabled={isExporting}
-            className="px-4 py-2 text-sm text-white/60 hover:text-white font-medium transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-white/60 hover:text-white font-medium transition-colors disabled:opacity-30"
           >
             CANCEL
           </button>

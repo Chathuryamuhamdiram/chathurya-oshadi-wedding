@@ -70,7 +70,8 @@ export async function GET(request: Request) {
     });
 
     const safeEvent = (menu.event?.name || "Wedding").toLowerCase().replace(/[^a-z0-9]+/g, "_");
-    const filename = `Chathurya_Oshadi_${safeEvent}_Food_Menu.pdf`;
+    const safeMenu = (menu.title || "Menu").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    const filename = `Chathurya_Oshadi_${safeEvent}_${safeMenu}.pdf`;
 
     return new NextResponse(pdfBuffer, {
       headers: {

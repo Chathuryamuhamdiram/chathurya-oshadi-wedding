@@ -32,7 +32,9 @@ export default function MenuExportModal({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Chathurya_Oshadi_${(eventName || "Wedding").replace(/[^a-zA-Z0-9]/g, "_")}_Food_Menu.pdf`;
+      const safeEventName = (eventName || "Wedding").replace(/[^a-zA-Z0-9]/g, "_");
+      const safeMenuTitle = (menuTitle || "Menu").replace(/[^a-zA-Z0-9]/g, "_");
+      a.download = `Chathurya_Oshadi_${safeEventName}_${safeMenuTitle}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

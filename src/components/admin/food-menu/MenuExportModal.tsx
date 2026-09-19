@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { notoSansSinhalaBase64 } from "@/lib/fonts/notoSansSinhalaBase64";
 
 export default function MenuExportModal({ 
   activeEventId,
@@ -25,7 +26,7 @@ export default function MenuExportModal({
           ${(section.items && section.items.length > 0) ? `
             <ul style="list-style: none; padding: 0; margin: 0;">
               ${section.items.map((item: any) => `
-                <li style="font-size: 12px; padding: 6px 0; border-bottom: 1px solid #F3F4F6; break-inside: avoid;">
+                <li style="font-size: 12px; padding: 6px 0; border-bottom: 1px solid #F3F4F6; break-inside: avoid; white-space: pre-wrap; word-break: keep-all;">
                   ${item.name}
                 </li>
               `).join('')}
@@ -44,7 +45,7 @@ export default function MenuExportModal({
           <style>
             @font-face {
               font-family: 'Noto Sans Sinhala';
-              src: url('${window.location.origin}/fonts/NotoSansSinhala-Regular.ttf') format('truetype');
+              src: url('data:font/truetype;charset=utf-8;base64,${notoSansSinhalaBase64}') format('truetype');
               font-weight: normal;
               font-style: normal;
             }

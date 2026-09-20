@@ -9,92 +9,65 @@ datasource db {
 }
 
 model User {
-  id               String       @id @default(uuid())
-  fullName         String
-  email            String       @unique
-  phone            String?
-  passwordHash     String?
-  role             String       @default("VIEWER") // SUPER_ADMIN, ADMIN, FAMILY_MEMBER, VIEWER
-  isActive         Boolean      @default(true)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  assignedTasks    Task[]       @relation("AssignedTasks")
-  createdTasks     Task[]       @relation("CreatedTasks")
-  taskComments     TaskComment[]
-  notifications    Notification[]
-  preferences      UserPreference?
-  userPermissions  UserPermission[]
+  id                   String                @id @default(uuid())
+  fullName             String
+  email                String                @unique
+  phone                String?
+  passwordHash         String?
+  role                 String                @default("VIEWER")
+  isActive             Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
   fundBalanceSnapshots FundBalanceSnapshot[]
+  notifications        Notification[]
+  assignedTasks        Task[]                @relation("AssignedTasks")
+  createdTasks         Task[]                @relation("CreatedTasks")
+  taskComments         TaskComment[]
+  userPermissions      UserPermission[]
+  preferences          UserPreference?
+  assignedTasksMulti   Task[]                @relation("TaskAssignees")
 }
-
-// ─── Multi-Event Enums ──────────────────────────────────────────────────────
-
-enum CeremonyType {
-  WEDDING
-  HOMECOMING
-  PORUWA
-  ENGAGEMENT
-  PRE_SHOOT
-  AFTER_PARTY
-  OTHER
-}
-
-enum CeremonyStatus {
-  PLANNING
-  ACTIVE
-  COMPLETED
-  CANCELLED
-}
-
-// ─── CeremonyEvent ──────────────────────────────────────────────────────────
 
 model CeremonyEvent {
-  id           String         @id @default(uuid())
-  name         String
-  eventType    CeremonyType   @default(WEDDING)
-  eventDate    DateTime?
-  startTime    String?
-  endTime      String?
-  venueName    String?
-  venueAddress String?
-  description  String?
-  status       CeremonyStatus @default(PLANNING)
-  isActive     Boolean        @default(true)
-
-  budgetItems   BudgetItem[]
-  tasks         Task[]
-  contributions Contribution[]
-  guestLinks    EventGuest[]
-  itineraryEvents WeddingEvent[]
+  id                   String                @id @default(uuid())
+  name                 String
+  eventType            CeremonyType          @default(WEDDING)
+  eventDate            DateTime?
+  startTime            String?
+  endTime              String?
+  venueName            String?
+  venueAddress         String?
+  description          String?
+  status               CeremonyStatus        @default(PLANNING)
+  isActive             Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  budgetItems          BudgetItem[]
+  contributions        Contribution[]
+  guestLinks           EventGuest[]
+  eventPlanItems       EventPlanItem[]
+  foodMenus            FoodMenu[]
   fundBalanceSnapshots FundBalanceSnapshot[]
-  foodMenus     FoodMenu[]
-  eventPlanItems EventPlanItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  tasks                Task[]
+  itineraryEvents      WeddingEvent[]
 }
 
-// ─── EventGuest (shared guest identity, per-event membership) ───────────────
-
 model EventGuest {
-  id             String        @id @default(uuid())
-  guestId        String
-  eventId        String
+  id              String        @id @default(uuid())
+  guestId         String
+  eventId         String
   invitationCount Int?
-  rsvpStatus     String?
-  confirmedCount Int?
-  liquorCount    Int?
-  tableNumber    String?
-  notes          String?
-  
-  send           Boolean       @default(false)
-  sendAt         DateTime?
-
-  guest Guest         @relation(fields: [guestId], references: [id], onDelete: Cascade)
-  event CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  rsvpStatus      String?
+  confirmedCount  Int?
+  liquorCount     Int?
+  tableNumber     String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  send            Boolean       @default(false)
+  sendAt          DateTime?
+  event           CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest           Guest         @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
   @@unique([guestId, eventId])
   @@index([eventId])
@@ -102,28 +75,28 @@ model EventGuest {
 }
 
 model Guest {
-  id                       String    @id @default(uuid())
-  invitationCode           String    @unique
-  displayName              String
-  primaryContactName       String?
-  whatsappNumber           String?
-  email                    String?
-  invitationType           String    @default("INDIVIDUAL") // INDIVIDUAL, FAMILY
-  allowedGuestCount        Int       @default(1)
-  confirmedGuestCount      Int       @default(0)
-  liquorCount              Int       @default(0)
-  side                     String    @default("BRIDE") // BRIDE, GROOM, BOTH
-  rsvpStatus               String    @default("PENDING") // PENDING, ATTENDING, NOT_ATTENDING, NOT_SURE
-  invitationStatus         String    @default("NOT_SENT") // NOT_SENT, SHARED, RSVP_PENDING, CONFIRMED, DECLINED
-  invitationSentAt         DateTime?
-  invitationLastSharedAt   DateTime?
-  notes                    String?
-  tableId                  String?
-  table                    SeatingTable? @relation(fields: [tableId], references: [id])
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
-  logistics                GuestLogistics?
-  eventGuests              EventGuest[]
+  id                     String          @id @default(uuid())
+  invitationCode         String          @unique
+  displayName            String
+  primaryContactName     String?
+  whatsappNumber         String?
+  email                  String?
+  invitationType         String          @default("INDIVIDUAL")
+  allowedGuestCount      Int             @default(1)
+  confirmedGuestCount    Int             @default(0)
+  liquorCount            Int             @default(0)
+  side                   String          @default("BRIDE")
+  rsvpStatus             String          @default("PENDING")
+  invitationStatus       String          @default("NOT_SENT")
+  invitationSentAt       DateTime?
+  invitationLastSharedAt DateTime?
+  notes                  String?
+  tableId                String?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  eventGuests            EventGuest[]
+  table                  SeatingTable?   @relation(fields: [tableId], references: [id])
+  logistics              GuestLogistics?
 
   @@index([rsvpStatus])
   @@index([side])
@@ -131,27 +104,12 @@ model Guest {
 }
 
 model SeatingTable {
-  id          String   @id @default(uuid())
-  name        String
-  capacity    Int      @default(8)
-  guests      Guest[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-enum VendorStatus {
-  POTENTIAL
-  SHORTLISTED
-  CONFIRMED
-  COMPLETED
-  CANCELLED
-}
-
-enum ExpenseType {
-  ADVANCE
-  INSTALLMENT
-  FINAL_PAYMENT
-  OTHER
+  id        String   @id @default(uuid())
+  name      String
+  capacity  Int      @default(8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  guests    Guest[]
 }
 
 model BudgetCategory {
@@ -164,46 +122,46 @@ model BudgetCategory {
 }
 
 model Vendor {
-  id              String       @id @default(uuid())
+  id              String         @id @default(uuid())
   vendorName      String
   contactName     String?
   phone           String?
   whatsappNumber  String?
   email           String?
   serviceCategory String?
-  quotationAmount Decimal      @default(0) @db.Decimal(10, 2)
-  finalAmount     Decimal      @default(0) @db.Decimal(10, 2)
-  advancePaid     Decimal      @default(0) @db.Decimal(10, 2)
+  quotationAmount Decimal        @default(0) @db.Decimal(10, 2)
+  finalAmount     Decimal        @default(0) @db.Decimal(10, 2)
+  advancePaid     Decimal        @default(0) @db.Decimal(10, 2)
   nextPaymentDue  DateTime?
-  status          VendorStatus @default(POTENTIAL)
   notes           String?
-  isArchived      Boolean      @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  isArchived      Boolean        @default(false)
+  status          VendorStatus   @default(POTENTIAL)
   items           BudgetItem[]
   foodMenus       FoodMenu[]
   foodMenuItems   FoodMenuItem[]
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
 }
 
 model BudgetItem {
   id                String         @id @default(uuid())
-  eventId           String?
-  event             CeremonyEvent? @relation(fields: [eventId], references: [id])
   categoryId        String
-  category          BudgetCategory @relation(fields: [categoryId], references: [id])
   vendorId          String?
-  vendor            Vendor?        @relation(fields: [vendorId], references: [id])
   title             String
   description       String?
   estimatedCost     Decimal        @default(0) @db.Decimal(10, 2)
   actualCost        Decimal        @default(0) @db.Decimal(10, 2)
   paidAmount        Decimal        @default(0) @db.Decimal(10, 2)
   paymentDueDate    DateTime?
-  paymentStatus     String         @default("NOT_STARTED") // NOT_STARTED, PARTIALLY_PAID, FULLY_PAID, OVERDUE
+  paymentStatus     String         @default("NOT_STARTED")
   responsibleUserId String?
   notes             String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  eventId           String?
+  category          BudgetCategory @relation(fields: [categoryId], references: [id])
+  event             CeremonyEvent? @relation(fields: [eventId], references: [id])
+  vendor            Vendor?        @relation(fields: [vendorId], references: [id])
   expenses          Expense[]
 
   @@index([eventId])
@@ -213,18 +171,18 @@ model BudgetItem {
 }
 
 model Expense {
-  id            String     @id @default(uuid())
+  id            String              @id @default(uuid())
   budgetItemId  String
-  budgetItem    BudgetItem @relation(fields: [budgetItemId], references: [id])
   expenseName   String
-  expenseDate   DateTime   @default(now())
-  amount        Decimal    @db.Decimal(10, 2)
-  expenseType   ExpenseType @default(OTHER)
+  expenseDate   DateTime            @default(now())
+  amount        Decimal             @db.Decimal(10, 2)
   paidByUserId  String?
-  paymentMethod String?    // CASH, BANK_TRANSFER, CARD
+  paymentMethod String?
   notes         String?
+  createdAt     DateTime            @default(now())
+  expenseType   ExpenseType         @default(OTHER)
+  budgetItem    BudgetItem          @relation(fields: [budgetItemId], references: [id])
   attachments   ExpenseAttachment[]
-  createdAt     DateTime   @default(now())
 
   @@index([budgetItemId])
   @@index([expenseDate])
@@ -233,7 +191,6 @@ model Expense {
 model ExpenseAttachment {
   id               String   @id @default(uuid())
   expenseId        String
-  expense          Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   fileName         String
   originalFileName String
   mimeType         String
@@ -241,24 +198,25 @@ model ExpenseAttachment {
   storagePath      String
   uploadedBy       String?
   uploadedAt       DateTime @default(now())
+  expense          Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
 
   @@index([expenseId])
 }
 
 model Contribution {
   id               String         @id @default(uuid())
-  eventId          String?
-  event            CeremonyEvent? @relation(fields: [eventId], references: [id])
   contributorName  String
   amount           Decimal        @db.Decimal(10, 2)
   contributionDate DateTime       @default(now())
   paymentMethod    String?
-  reference        String?
   purpose          String?
   notes            String?
-  status           String         @default("RECEIVED") // RECEIVED, PENDING, CANCELLED
   createdAt        DateTime       @default(now())
+  reference        String?
+  status           String         @default("RECEIVED")
   updatedAt        DateTime       @updatedAt
+  eventId          String?
+  event            CeremonyEvent? @relation(fields: [eventId], references: [id])
 
   @@index([eventId])
   @@index([status])
@@ -267,59 +225,68 @@ model Contribution {
 model FundBalanceSnapshot {
   id            String         @id @default(uuid())
   eventId       String?
-  event         CeremonyEvent? @relation(fields: [eventId], references: [id])
   amount        Decimal        @db.Decimal(10, 2)
   effectiveDate DateTime
   note          String?
   updatedById   String?
-  updatedBy     User?          @relation(fields: [updatedById], references: [id])
   createdAt     DateTime       @default(now())
+  event         CeremonyEvent? @relation(fields: [eventId], references: [id])
+  updatedBy     User?          @relation(fields: [updatedById], references: [id])
 
   @@index([eventId])
   @@index([updatedById])
 }
 
 model Task {
-  id               String         @id @default(uuid())
-  eventId          String?
-  event            CeremonyEvent? @relation(fields: [eventId], references: [id])
+  id               String           @id @default(uuid())
   title            String
   description      String?
   category         String?
   assignedUserId   String?
-  assignedUser     User?          @relation(name: "AssignedTasks", fields: [assignedUserId], references: [id])
   createdById      String?
-  createdBy        User?          @relation(name: "CreatedTasks", fields: [createdById], references: [id])
   startDate        DateTime?
-  dueDate          DateTime?
-  priority         String         @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
-  status           String         @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, WAITING, COMPLETED, CANCELLED
-  reminderSettings String?        // JSON string like {"remindAt": ["7_DAYS_BEFORE", "1_DAY_BEFORE", "DUE_TODAY"]}
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  
-  // Relations
-  reminders        TaskReminder[]
-  comments         TaskComment[]
+  targetDate       DateTime?        @map("dueDate")
+  priority         String           @default("MEDIUM")
+  status           String           @default("NOT_STARTED")
+  reminderSettings String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  eventId          String?
+  assignedUser     User?            @relation("AssignedTasks", fields: [assignedUserId], references: [id])
+  createdBy        User?            @relation("CreatedTasks", fields: [createdById], references: [id])
+  event            CeremonyEvent?   @relation(fields: [eventId], references: [id])
   attachments      TaskAttachment[]
-  
-  // Self-referencing dependencies
+  comments         TaskComment[]
   blockedBy        TaskDependency[] @relation("BlocksTask")
   blocks           TaskDependency[] @relation("BlockedByTask")
+  items            TaskItem[]
+  reminders        TaskReminder[]
+  assignees        User[]           @relation("TaskAssignees")
 
   @@index([eventId])
   @@index([status])
   @@index([assignedUserId])
-  @@index([dueDate])
+  @@index([targetDate])
+}
+
+model TaskItem {
+  id        String   @id @default(uuid())
+  taskId    String
+  name      String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
 }
 
 model TaskDependency {
   id             String @id @default(uuid())
-  blockingTaskId String // The task that must be finished first
-  blockedTaskId  String // The task that cannot start yet
-  
-  blockingTask   Task   @relation("BlockedByTask", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+  blockingTaskId String
+  blockedTaskId  String
   blockedTask    Task   @relation("BlocksTask", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+  blockingTask   Task   @relation("BlockedByTask", fields: [blockingTaskId], references: [id], onDelete: Cascade)
 
   @@unique([blockingTaskId, blockedTaskId])
 }
@@ -327,33 +294,33 @@ model TaskDependency {
 model TaskComment {
   id        String   @id @default(uuid())
   taskId    String
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String
   createdAt DateTime @default(now())
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TaskAttachment {
-  id        String   @id @default(uuid())
-  taskId    String
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  fileName  String
-  fileUrl   String
-  fileType  String?
+  id         String   @id @default(uuid())
+  taskId     String
+  fileName   String
+  fileUrl    String
+  fileType   String?
   uploadedBy String
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model TaskReminder {
   id           String    @id @default(uuid())
   taskId       String
-  task         Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  reminderType String    // e.g. 7_DAYS_BEFORE, 3_DAYS_BEFORE, 1_DAY_BEFORE, DUE_TODAY, OVERDUE
+  reminderType String
   reminderAt   DateTime
-  status       String    @default("PENDING") // PENDING, SENT, CANCELLED
+  status       String    @default("PENDING")
   sentAt       DateTime?
   createdAt    DateTime  @default(now())
+  task         Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
   @@index([status, reminderAt])
@@ -366,27 +333,27 @@ model Venue {
   googleMapsUrl String?
   phone         String?
   notes         String?
-  events        WeddingEvent[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  events        WeddingEvent[]
 }
 
 model WeddingEvent {
   id          String         @id @default(uuid())
-  eventId     String?
-  event       CeremonyEvent? @relation(fields: [eventId], references: [id])
   title       String
   description String?
   eventDate   DateTime?
   startTime   String?
   endTime     String?
   venueId     String?
-  venue       Venue?    @relation(fields: [venueId], references: [id])
-  visibility  String    @default("PUBLIC") // PUBLIC, PRIVATE, INVITE_ONLY
-  sortOrder   Int       @default(0)
+  visibility  String         @default("PUBLIC")
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  eventId     String?
   items       EventItem[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  event       CeremonyEvent? @relation(fields: [eventId], references: [id])
+  venue       Venue?         @relation(fields: [venueId], references: [id])
 
   @@index([eventId])
   @@index([eventDate])
@@ -395,36 +362,36 @@ model WeddingEvent {
 model EventItem {
   id        String       @id @default(uuid())
   eventId   String
-  event     WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name      String
   quantity  String       @default("1")
-  status    String       @default("PENDING") // PENDING, BOUGHT
+  status    String       @default("PENDING")
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  event     WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model GuestLogistics {
   id                String    @id @default(uuid())
   guestId           String    @unique
-  guest             Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
   arrivalDateTime   DateTime?
   departureDateTime DateTime?
   accommodationName String?
   transportNotes    String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+  guest             Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // TASK_REMINDER, SYSTEM, VENDOR_DUE, RSVP_RECEIVED
+  type      String
   title     String
   message   String
   isRead    Boolean  @default(false)
-  linkUrl   String?  // Optional link to click through (e.g. /admin/tasks/123)
+  linkUrl   String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
 }
@@ -432,10 +399,10 @@ model Notification {
 model UserPreference {
   id                 String   @id @default(uuid())
   userId             String   @unique
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  emailNotifications Boolean  @default(false) // Default off until configured
+  emailNotifications Boolean  @default(false)
   inAppNotifications Boolean  @default(true)
   updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model GuestbookEntry {
@@ -455,8 +422,8 @@ model Announcement {
 }
 
 model Permission {
-  id          String   @id @default(uuid())
-  code        String   @unique // e.g. "guest.view"
+  id          String           @id @default(uuid())
+  code        String           @unique
   description String?
   roles       RolePermission[]
   users       UserPermission[]
@@ -464,34 +431,34 @@ model Permission {
 
 model RolePermission {
   id           String     @id @default(uuid())
-  role         String     // "SUPER_ADMIN", "ADMIN", "FAMILY_MEMBER", "VIEWER"
+  role         String
   permissionId String
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   allowed      Boolean    @default(true)
-  
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
   @@unique([role, permissionId])
 }
 
 model UserPermission {
   id           String     @id @default(uuid())
   userId       String
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   permissionId String
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   allowed      Boolean    @default(true)
-  
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, permissionId])
 }
 
 model AuditLog {
-  id          String   @id @default(uuid())
-  userId      String?
-  action      String
-  entity      String
-  entityId    String?
-  oldValue    String?
-  newValue    String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  oldValue  String?
+  newValue  String?
+  createdAt DateTime @default(now())
 }
 
 model GalleryImage {
@@ -506,75 +473,73 @@ model GalleryImage {
 
 model SiteAsset {
   id        String   @id @default(uuid())
-  key       String   @unique // e.g. "HERO_IMAGE", "STORY_1"
+  key       String   @unique
   url       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// ─── Food Menu Models ───────────────────────────────────────────────────────
-
 model FoodMenu {
-  id          String   @id @default(uuid())
+  id          String               @id @default(uuid())
   eventId     String?
-  event       CeremonyEvent? @relation(fields: [eventId], references: [id], onDelete: Cascade)
   title       String
   venue       String?
   vendorId    String?
-  vendor      Vendor?  @relation(fields: [vendorId], references: [id])
-  status      String   @default("DRAFT") // DRAFT, CONFIRMED, CANCELLED
+  status      String               @default("DRAFT")
   notes       String?
-  sections    FoodMenuSection[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  event       CeremonyEvent?       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vendor      Vendor?              @relation(fields: [vendorId], references: [id])
   attachments FoodMenuAttachment[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sections    FoodMenuSection[]
 
   @@index([eventId])
   @@index([vendorId])
 }
 
 model FoodMenuSection {
-  id          String         @id @default(uuid())
-  menuId      String
-  menu        FoodMenu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  title       String
-  sortOrder   Int            @default(0)
-  items       FoodMenuItem[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id        String         @id @default(uuid())
+  menuId    String
+  title     String
+  sortOrder Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  items     FoodMenuItem[]
+  menu      FoodMenu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
 
   @@index([menuId])
 }
 
 model FoodMenuItem {
-  id          String          @id @default(uuid())
-  sectionId   String
-  section     FoodMenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  name        String
-  description String?
-  cost        Decimal?        @db.Decimal(10, 2)
-  costType    String?         // PER_ITEM, PER_PERSON, PACKAGE, FIXED
-  vendorId    String?
-  vendor      Vendor?         @relation(fields: [vendorId], references: [id])
-  status      String          @default("PLANNED") // PLANNED, CONFIRMED, REMOVED
-  sortOrder   Int             @default(0)
-  isVegetarian Boolean        @default(false)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id           String          @id @default(uuid())
+  sectionId    String
+  name         String
+  description  String?
+  cost         Decimal?        @db.Decimal(10, 2)
+  costType     String?
+  vendorId     String?
+  status       String          @default("PLANNED")
+  sortOrder    Int             @default(0)
+  isVegetarian Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  section      FoodMenuSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  vendor       Vendor?         @relation(fields: [vendorId], references: [id])
 
   @@index([sectionId])
   @@index([vendorId])
 }
 
 model FoodMenuAttachment {
-  id               String   @id @default(uuid())
-  menuId           String
-  menu             FoodMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  fileName         String
-  fileUrl          String
-  fileType         String?
-  uploadedBy       String
-  createdAt        DateTime @default(now())
+  id         String   @id @default(uuid())
+  menuId     String
+  fileName   String
+  fileUrl    String
+  fileType   String?
+  uploadedBy String
+  createdAt  DateTime @default(now())
+  menu       FoodMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
 
   @@index([menuId])
 }
@@ -582,10 +547,42 @@ model FoodMenuAttachment {
 model EventPlanItem {
   id          String        @id @default(uuid())
   eventId     String
-  event       CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   activity    String
   plannedTime String?
   sortOrder   Int           @default(0)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  event       CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+enum CeremonyType {
+  WEDDING
+  HOMECOMING
+  PORUWA
+  ENGAGEMENT
+  PRE_SHOOT
+  AFTER_PARTY
+  OTHER
+}
+
+enum CeremonyStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum VendorStatus {
+  POTENTIAL
+  SHORTLISTED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum ExpenseType {
+  ADVANCE
+  INSTALLMENT
+  FINAL_PAYMENT
+  OTHER
 }

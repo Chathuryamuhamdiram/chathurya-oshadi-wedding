@@ -22,11 +22,14 @@ export default async function AdminTasksPage(props: PageProps) {
 
   let orderBy: any = {};
   if (sort === 'assignee') {
-    orderBy = { assignedUser: { fullName: order } };
-  } else if (['title', 'category', 'priority', 'dueDate', 'status'].includes(sort)) {
+    orderBy = { assignees: { _count: order } };
+  } else if (['title', 'category', 'priority', 'targetDate', 'status'].includes(sort)) {
     orderBy = { [sort]: order };
+  } else if (sort === 'progress') {
+    // Cannot natively sort by calculated progress easily in Prisma, sort by items count instead or fetch and sort
+    orderBy = { targetDate: 'asc' }; // fallback for now
   } else {
-    orderBy = [{ dueDate: 'asc' }, { priority: 'desc' }];
+    orderBy = [{ targetDate: 'asc' }, { priority: 'desc' }];
   }
   
   const userRole = session.role as string;
@@ -34,13 +37,14 @@ export default async function AdminTasksPage(props: PageProps) {
 
   const baseWhere: any = isAllEvents ? {} : { eventId: activeEventId };
   if (userRole === "FAMILY_MEMBER") {
-    baseWhere.assignedUserId = userId;
+    baseWhere.assignees = { some: { id: userId } };
   }
 
   const tasks = await prisma.task.findMany({
     where: baseWhere,
     include: { 
-      assignedUser: true,
+      assignees: true,
+      items: true,
       event: { select: { id: true, name: true, eventType: true } }
     },
     orderBy
@@ -58,6 +62,15 @@ export default async function AdminTasksPage(props: PageProps) {
     });
   }
 
+  // Handle custom JS sorting for progress
+  if (sort === 'progress') {
+    tasks.sort((a, b) => {
+      const aProgress = a.items.length ? (a.items.filter(i => i.completed).length / a.items.length) : 0;
+      const bProgress = b.items.length ? (b.items.filter(i => i.completed).length / b.items.length) : 0;
+      return order === 'desc' ? bProgress - aProgress : aProgress - bProgress;
+    });
+  }
+
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === "COMPLETED").length;
   const pendingTasks = totalTasks - completedTasks;
@@ -67,9 +80,9 @@ export default async function AdminTasksPage(props: PageProps) {
   
   const dueThisWeek = tasks.filter(t => 
     t.status !== "COMPLETED" && 
-    t.dueDate && 
-    new Date(t.dueDate) >= now && 
-    new Date(t.dueDate) <= next7Days
+    t.targetDate && 
+    new Date(t.targetDate) >= now && 
+    new Date(t.targetDate) <= next7Days
   ).length;
 
   const getPriorityColor = (priority: string) => {
@@ -98,6 +111,11 @@ export default async function AdminTasksPage(props: PageProps) {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          {!isAllEvents && (
+            <Link href={`/api/admin/tasks/export-pdf?eventId=${activeEventId}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition-all border border-white/10">
+              <CheckSquare className="w-4 h-4" /> Download PDF
+            </Link>
+          )}
           <TaskForm users={users} activeEventId={isAllEvents ? null : activeEventId} />
         </div>
       </div>
@@ -159,16 +177,16 @@ export default async function AdminTasksPage(props: PageProps) {
                     <SortableHeader label="Category" sortKey="category" currentSort={sort} currentOrder={order} />
                   </th>
                   <th className="px-6 py-4 font-medium">
-                    <SortableHeader label="Priority" sortKey="priority" currentSort={sort} currentOrder={order} />
+                    <SortableHeader label="Target Date" sortKey="targetDate" currentSort={sort} currentOrder={order} />
+                  </th>
+                  <th className="px-6 py-4 font-medium">
+                    <SortableHeader label="Assignees" sortKey="assignee" currentSort={sort} currentOrder={order} />
+                  </th>
+                  <th className="px-6 py-4 font-medium">
+                    <SortableHeader label="Progress" sortKey="progress" currentSort={sort} currentOrder={order} />
                   </th>
                   <th className="px-6 py-4 font-medium">
                     <SortableHeader label="Status" sortKey="status" currentSort={sort} currentOrder={order} />
-                  </th>
-                  <th className="px-6 py-4 font-medium">
-                    <SortableHeader label="Due Date" sortKey="dueDate" currentSort={sort} currentOrder={order} />
-                  </th>
-                  <th className="px-6 py-4 font-medium">
-                    <SortableHeader label="Assignee" sortKey="assignee" currentSort={sort} currentOrder={order} />
                   </th>
                   <th className="px-6 py-4 font-medium text-right">Actions</th>
                 </tr>
@@ -176,11 +194,19 @@ export default async function AdminTasksPage(props: PageProps) {
               <tbody>
                 {tasks.map(task => {
                   const isCompleted = task.status === "COMPLETED";
+                  const totalItems = task.items.length;
+                  const completedItems = task.items.filter(i => i.completed).length;
+                  const progressPct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+                  
+                  // Check if overdue
+                  const isOverdue = !isCompleted && task.targetDate && new Date(task.targetDate) < now;
+
                   return (
                     <tr key={task.id} className={`border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group ${isCompleted ? 'opacity-50' : ''}`}>
                       <td className="px-6 py-4">
                         <div className={`font-medium ${isCompleted ? 'text-white/50 line-through' : 'text-white/90'}`}>
                           {task.title}
+                          {isOverdue && <span className="ml-2 text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">Overdue</span>}
                         </div>
                         {task.description && (
                           <div className="text-xs text-white/40 mt-1 max-w-[300px] truncate">
@@ -192,9 +218,52 @@ export default async function AdminTasksPage(props: PageProps) {
                         {task.category || "General"}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${getPriorityColor(task.priority)}`}>
-                          {task.priority}
-                        </span>
+                        {task.targetDate ? (
+                          <div className={`flex flex-col`}>
+                            <div className={`flex items-center gap-1.5 ${isOverdue ? 'text-red-400 font-medium' : 'text-white/70'}`}>
+                              <CalendarIcon className="w-3.5 h-3.5" />
+                              {new Date(task.targetDate).toLocaleDateString()}
+                            </div>
+                            {task.startDate && (
+                              <span className="text-[10px] text-white/30 ml-5">from {new Date(task.startDate).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-white/20">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        {task.assignees && task.assignees.length > 0 ? (
+                          <div className="flex items-center gap-1">
+                            {task.assignees.slice(0, 2).map((user) => (
+                              <div key={user.id} className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold" title={user.fullName}>
+                                {user.fullName.charAt(0)}
+                              </div>
+                            ))}
+                            {task.assignees.length > 2 && (
+                              <div className="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-[10px] text-white/70 font-medium">
+                                +{task.assignees.length - 2}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-white/30 italic text-xs">Unassigned</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 w-32">
+                        {totalItems > 0 ? (
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center text-xs">
+                              <span className="text-white/50">{completedItems} / {totalItems}</span>
+                              <span className="text-emerald-400 font-medium">{progressPct}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${progressPct}%` }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-white/20 text-xs">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         {isCompleted ? (
@@ -207,33 +276,9 @@ export default async function AdminTasksPage(props: PageProps) {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
-                        {task.dueDate ? (
-                          <div className={`flex items-center gap-1.5 ${
-                            !isCompleted && new Date(task.dueDate) < now ? 'text-red-400' : 'text-white/70'
-                          }`}>
-                            <CalendarIcon className="w-3.5 h-3.5" />
-                            {new Date(task.dueDate).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <span className="text-white/20">-</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {task.assignedUser ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold">
-                              {task.assignedUser.fullName.charAt(0)}
-                            </div>
-                            <span className="text-white/70">{task.assignedUser.fullName}</span>
-                          </div>
-                        ) : (
-                          <span className="text-white/30 italic text-xs">Unassigned</span>
-                        )}
-                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <Link href={`/admin/tasks/${task.id}`} className="text-xs text-white/50 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded border border-white/5 transition-colors">
+                          <Link href={`/admin/tasks/${task.id}`} className="text-xs text-emerald-400/70 hover:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded transition-colors font-medium">
                             Details
                           </Link>
                           <TaskForm users={users} existingTask={task} activeEventId={isAllEvents ? null : activeEventId} />

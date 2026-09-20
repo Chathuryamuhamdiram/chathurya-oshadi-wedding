@@ -13,15 +13,15 @@ export async function saveTask(formData: FormData) {
     if (!session) throw new Error("Unauthorized");
     
     const id = formData.get("id") as string | null;
-    const assignedUserId = formData.get("assignedUserId") as string;
+    const assigneeIds = formData.getAll("assigneeIds") as string[];
     
     // Authorization
     if (id) {
       // Editing
-      const task = await prisma.task.findUnique({ where: { id } });
+      const task = await prisma.task.findUnique({ where: { id }, include: { assignees: true } });
       if (!task) throw new Error("Task not found");
       
-      const isAssignedToMe = task.assignedUserId === session.userId;
+      const isAssignedToMe = task.assignees.some(u => u.id === session.userId);
       if (!isAssignedToMe) {
         await requirePermission(PERMISSIONS.TASK_EDIT);
       }
@@ -34,9 +34,8 @@ export async function saveTask(formData: FormData) {
     const category = formData.get("category") as string;
     const priority = formData.get("priority") as string;
     const startDateStr = formData.get("startDate") as string;
-    const dueDateStr = formData.get("dueDate") as string;
-    const reminderSetting = formData.get("reminderSettings") as string;
-
+    const targetDateStr = formData.get("targetDate") as string;
+    
     if (!title) return { success: false, error: "Title is required" };
 
     let reminderSettingsJson = null;
@@ -67,14 +66,24 @@ export async function saveTask(formData: FormData) {
       category,
       priority: priority || "MEDIUM",
       startDate: startDateStr ? new Date(startDateStr) : null,
-      dueDate: dueDateStr ? new Date(dueDateStr) : null,
-      assignedUserId: assignedUserId && assignedUserId !== "none" ? assignedUserId : null,
+      targetDate: targetDateStr ? new Date(targetDateStr) : null,
       reminderSettings: reminderSettingsJson,
-      status: formData.get("status") as string || "NOT_STARTED", // use provided status or default
+      status: formData.get("status") as string || "NOT_STARTED",
     };
 
     if (eventId) {
       data.eventId = eventId;
+    }
+
+    if (assigneeIds && assigneeIds.length > 0 && assigneeIds[0] !== "") {
+       // Filter out empty strings if any
+       const validIds = assigneeIds.filter(id => id.trim() !== "");
+       data.assignees = {
+          [id ? 'set' : 'connect']: validIds.map(userId => ({ id: userId }))
+       };
+    } else if (id) {
+       // Clear assignees if editing and none provided
+       data.assignees = { set: [] };
     }
 
     if (id) {
@@ -97,10 +106,10 @@ export async function updateTaskStatus(id: string, completed: boolean) {
     const session = await getAdminSession();
     if (!session) throw new Error("Unauthorized");
 
-    const task = await prisma.task.findUnique({ where: { id } });
+    const task = await prisma.task.findUnique({ where: { id }, include: { assignees: true } });
     if (!task) throw new Error("Task not found");
 
-    const isAssignedToMe = task.assignedUserId === session.userId;
+    const isAssignedToMe = task.assignees.some(u => u.id === session.userId);
     if (!isAssignedToMe) {
       await requirePermission(PERMISSIONS.TASK_COMPLETE);
     }
@@ -141,5 +150,85 @@ export async function deleteTask(id: string) {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to delete task" };
+  }
+}
+
+// -- Task Items Actions --
+
+export async function saveTaskItem(taskId: string, name: string) {
+  try {
+    await requirePermission(PERMISSIONS.TASK_EDIT);
+    await prisma.taskItem.create({
+      data: { taskId, name }
+    });
+    revalidatePath(`/admin/tasks/${taskId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleTaskItem(itemId: string, completed: boolean) {
+  try {
+    const session = await getAdminSession();
+    if (!session) throw new Error("Unauthorized");
+    
+    // allow edit permission or if assigned
+    const item = await prisma.taskItem.findUnique({ where: { id: itemId }, include: { task: { include: { assignees: true } } } });
+    if (!item) throw new Error("Item not found");
+    
+    const isAssignedToMe = item.task.assignees.some(u => u.id === session.userId);
+    if (!isAssignedToMe) {
+       await requirePermission(PERMISSIONS.TASK_COMPLETE);
+    }
+
+    await prisma.taskItem.update({
+      where: { id: itemId },
+      data: { completed }
+    });
+    revalidatePath(`/admin/tasks/${item.taskId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateTaskItemName(itemId: string, name: string) {
+  try {
+    await requirePermission(PERMISSIONS.TASK_EDIT);
+    const item = await prisma.taskItem.update({
+      where: { id: itemId },
+      data: { name }
+    });
+    revalidatePath(`/admin/tasks/${item.taskId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteTaskItem(itemId: string) {
+  try {
+    await requirePermission(PERMISSIONS.TASK_EDIT);
+    const item = await prisma.taskItem.delete({
+      where: { id: itemId }
+    });
+    revalidatePath(`/admin/tasks/${item.taskId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function bulkAddTaskItems(taskId: string, items: string[]) {
+  try {
+    await requirePermission(PERMISSIONS.TASK_EDIT);
+    await prisma.taskItem.createMany({
+      data: items.map(name => ({ taskId, name }))
+    });
+    revalidatePath(`/admin/tasks/${taskId}`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }

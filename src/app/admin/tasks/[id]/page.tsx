@@ -3,15 +3,22 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { addComment, addDependency, removeDependency } from "./actions";
 import { DeleteTaskButton } from "../DeleteTaskButton";
+import { TaskItemsClient } from "./TaskItemsClient";
+import { getAdminSession } from "@/lib/auth";
+import { CalendarIcon } from "lucide-react";
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   
+  const session = await getAdminSession();
+  if (!session) return redirect("/admin/login");
+
   const task = await prisma.task.findUnique({
     where: { id: resolvedParams.id },
     include: {
-      assignedUser: true,
+      assignees: true,
       createdBy: true,
+      items: { orderBy: { createdAt: "asc" } },
       comments: { include: { user: true }, orderBy: { createdAt: "desc" } },
       attachments: true,
       blockedBy: { include: { blockingTask: true } },
@@ -34,6 +41,9 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           ← Back to Tasks
         </Link>
         <div className="flex items-center gap-3">
+          <Link href={`/api/admin/tasks/${task.id}/export-pdf`} target="_blank" className="bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg text-sm text-white font-medium border border-white/10 transition-colors">
+            Download PDF
+          </Link>
           <span className="bg-white/10 px-3 py-1 rounded-full text-xs text-white/70 border border-white/20">
             Status: {task.status}
           </span>
@@ -52,12 +62,24 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 py-6 border-y border-white/10 mb-8">
           <div>
-            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Assignee</p>
-            <p className="text-white font-medium">{task.assignedUser?.fullName || "Unassigned"}</p>
+            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Assignees</p>
+            {task.assignees.length > 0 ? (
+               <div className="flex flex-wrap gap-2">
+                 {task.assignees.map(u => (
+                   <span key={u.id} className="text-white font-medium text-sm bg-white/10 px-2 py-0.5 rounded border border-white/10">{u.fullName}</span>
+                 ))}
+               </div>
+            ) : (
+               <p className="text-white/50 font-medium text-sm">Unassigned</p>
+            )}
           </div>
           <div>
-            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Due Date</p>
-            <p className="text-white font-medium">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "None"}</p>
+            <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Target Date</p>
+            <p className="text-white font-medium">
+              {task.targetDate ? (
+                <span className="flex items-center gap-1.5"><CalendarIcon className="w-3.5 h-3.5" />{new Date(task.targetDate).toLocaleDateString()}</span>
+              ) : "None"}
+            </p>
           </div>
           <div>
             <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Priority</p>
@@ -67,6 +89,10 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             <p className="text-xs text-white/40 uppercase tracking-widest mb-1">Category</p>
             <p className="text-white font-medium">{task.category || "General"}</p>
           </div>
+        </div>
+
+        <div className="mb-12">
+          <TaskItemsClient task={task} currentUserId={session.userId} />
         </div>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -130,10 +156,8 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             <form action={async (formData) => {
               "use server";
               const content = formData.get("content") as string;
-              // Hardcoding admin user for now since we don't have auth session here yet
-              // In production we get this from getServerSession()
-              const admin = users[0];
-              if (content && admin) await addComment(task.id, admin.id, content);
+              // using session userId now!
+              if (content && session.userId) await addComment(task.id, session.userId, content);
             }} className="flex flex-col gap-2">
               <textarea 
                 name="content" 

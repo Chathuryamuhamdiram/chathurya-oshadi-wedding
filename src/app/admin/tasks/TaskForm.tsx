@@ -107,8 +107,8 @@ export function TaskForm({ users, existingTask, activeEventId }: { users: any[],
               <Input name="startDate" type="date" defaultValue={existingTask?.startDate ? new Date(existingTask.startDate).toISOString().split('T')[0] : ""} className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Due Date</label>
-              <Input name="dueDate" type="date" defaultValue={existingTask?.dueDate ? new Date(existingTask.dueDate).toISOString().split('T')[0] : ""} className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Target Date</label>
+              <Input name="targetDate" type="date" defaultValue={existingTask?.targetDate ? new Date(existingTask.targetDate).toISOString().split('T')[0] : (existingTask?.dueDate ? new Date(existingTask.dueDate).toISOString().split('T')[0] : "")} className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl flex" style={{ colorScheme: 'dark' }} />
             </div>
           </div>
 
@@ -124,26 +124,27 @@ export function TaskForm({ users, existingTask, activeEventId }: { users: any[],
                   <SelectItem value="7_DAYS_BEFORE">1 Week Before</SelectItem>
                   <SelectItem value="3_DAYS_BEFORE">3 Days Before</SelectItem>
                   <SelectItem value="1_DAY_BEFORE">1 Day Before</SelectItem>
-                  <SelectItem value="DUE_TODAY">On Due Date</SelectItem>
+                  <SelectItem value="DUE_TODAY">On Target Date</SelectItem>
                   <SelectItem value="CUSTOM">Custom Date & Time</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Assign To (Optional)</label>
-              <Select name="assignedUserId" value={assignedUserId} onValueChange={(val) => setAssignedUserId(val || "")}>
-                <SelectTrigger className="bg-white/5 border-white/10 focus:border-emerald-500/50 rounded-xl h-10">
-                  <SelectValue placeholder="Select family member">
-                    {assignedUserId === "none" ? "Unassigned" : (users.find(u => u.id === assignedUserId)?.fullName || "Unknown User")}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent className="bg-[#1e2333] border-white/10 text-white">
-                  <SelectItem value="none">Unassigned</SelectItem>
-                  {users.map(u => (
-                    <SelectItem key={u.id} value={u.id}>{u.fullName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 max-h-[120px] overflow-y-auto space-y-2">
+                {users.map(u => (
+                  <label key={u.id} className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      name="assigneeIds" 
+                      value={u.id} 
+                      defaultChecked={existingTask?.assignees?.some((a: any) => a.id === u.id) || existingTask?.assignedUserId === u.id}
+                      className="rounded border-white/20 bg-black/40 text-emerald-500 focus:ring-emerald-500/50" 
+                    />
+                    <span className="text-sm text-white/80">{u.fullName}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 

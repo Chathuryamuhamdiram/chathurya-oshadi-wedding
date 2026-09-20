@@ -20,13 +20,13 @@ async function processReminders() {
     const now = new Date();
 
     for (const task of tasks) {
-      if (!task.assignedUserId || !task.dueDate || !task.reminderSettings) continue;
+      if (!task.assignedUserId || !task.targetDate || !task.reminderSettings) continue;
 
       try {
         const settings = JSON.parse(task.reminderSettings);
         const remindAt: string[] = settings.remindAt || [];
         
-        const due = new Date(task.dueDate);
+        const due = new Date(task.targetDate);
         const daysUntilDue = Math.floor((due.getTime() - now.getTime()) / (1000 * 3600 * 24));
         
         let shouldRemind = false;

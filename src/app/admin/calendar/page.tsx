@@ -33,7 +33,7 @@ export default async function AdminCalendarPage() {
   // 1. Fetch all dates
   const [events, tasks, vendors, budgetItems, venues] = await Promise.all([
     prisma.weddingEvent.findMany({ where: { eventDate: { not: null }, ...(isAllEvents ? {} : { eventId: activeEventId }) } }),
-    prisma.task.findMany({ where: { dueDate: { not: null }, status: { not: "COMPLETED" }, ...(isAllEvents ? {} : { eventId: activeEventId }) } }),
+    prisma.task.findMany({ where: { targetDate: { not: null }, status: { not: "COMPLETED" }, ...(isAllEvents ? {} : { eventId: activeEventId }) } }),
     prisma.vendor.findMany({
       where: { nextPaymentDue: { not: null } },
       include: { items: { where: isAllEvents ? {} : { eventId: activeEventId } } }
@@ -56,9 +56,9 @@ export default async function AdminCalendarPage() {
   });
 
   tasks.forEach(t => {
-    if (t.dueDate) timeline.push({
+    if (t.targetDate) timeline.push({
       id: `tsk_${t.id}`,
-      date: t.dueDate,
+      date: t.targetDate,
       type: 'TASK',
       title: t.title,
       subtitle: t.priority + " Priority",

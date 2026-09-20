@@ -13,8 +13,13 @@ export default async function PortalTasksPage() {
 
   // Fetch tasks assigned to this user
   const tasks = await prisma.task.findMany({
-    where: { assignedUserId: payload.userId },
-    orderBy: { dueDate: 'asc' },
+    where: { 
+      OR: [
+        { assignedUserId: payload.userId },
+        { assignees: { some: { id: payload.userId } } }
+      ]
+    },
+    orderBy: { targetDate: 'asc' },
     include: {
       comments: true,
       attachments: true,
@@ -51,10 +56,10 @@ export default async function PortalTasksPage() {
                   )}
                   
                   <div className="flex items-center gap-3 mt-3 text-xs text-gray-500 font-semibold">
-                    {task.dueDate && (
+                    {task.targetDate && (
                       <span className="flex items-center gap-1 text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
                         <Clock size={12} />
-                        {new Date(task.dueDate).toLocaleDateString()}
+                        {new Date(task.targetDate).toLocaleDateString()}
                       </span>
                     )}
                     <span className="flex items-center gap-1">

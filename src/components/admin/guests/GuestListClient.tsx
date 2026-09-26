@@ -71,26 +71,7 @@ export function GuestListClient({
     setTimeout(() => setShowRefreshSuccess(false), 2000);
   }, [router]);
 
-  // Refresh on window focus
-  useEffect(() => {
-    const onFocus = () => {
-      startRefreshTransition(() => {
-        router.refresh();
-      });
-    };
-    window.addEventListener("focus", onFocus);
-    return () => window.removeEventListener("focus", onFocus);
-  }, [router]);
-
-  // Periodic background refresh (every 45s)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      startRefreshTransition(() => {
-        router.refresh();
-      });
-    }, 45000);
-    return () => clearInterval(interval);
-  }, [router]);
+  // Manual refresh logic remains unchanged
 
   // Handle Checkbox Toggle
   const handleToggleSend = (guest: any, currentSend: boolean) => {

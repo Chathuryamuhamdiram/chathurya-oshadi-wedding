@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ReactNode, useState } from "react";
 import { logoutAction } from "@/app/login/actions";
 import { NotificationCenter } from "@/components/admin/NotificationCenter";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { EventSelector } from "@/components/admin/EventSelector";
 import { 
   LayoutDashboard, 
@@ -243,6 +244,9 @@ export default function AdminLayoutClient({
   activeEventId?: string;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Enable global auto-refresh (45s polling & window focus) for the entire admin portal
+  useAutoRefresh(45000);
 
   return (
     <div className="h-screen overflow-hidden bg-[#11141d] flex text-slate-300 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">

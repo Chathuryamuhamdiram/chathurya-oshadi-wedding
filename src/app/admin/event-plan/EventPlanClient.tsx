@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { EventPlanItem } from "@prisma/client";
 import { saveEventPlanItem, deleteEventPlanItem, reorderEventPlanItems } from "./actions";
 import { EventPlanBulkImport } from "./EventPlanBulkImport";
@@ -19,6 +20,7 @@ interface EventPlanClientProps {
 }
 
 export function EventPlanClient({ items: initialItems, eventId, eventName, isAllEvents }: EventPlanClientProps) {
+  const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [addingNew, setAddingNew] = useState(false);

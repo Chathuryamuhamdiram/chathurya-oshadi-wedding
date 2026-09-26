@@ -63,7 +63,11 @@ export async function POST(request: Request) {
     }
 
     if (rsvpFilter !== "ALL") {
-      result = result.filter((g) => g.rsvpStatus === rsvpFilter);
+      result = result.filter((g) => {
+        const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+        const status = (eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : g.rsvpStatus;
+        return status === rsvpFilter;
+      });
     }
 
     if (sendFilter !== "ALL") {
@@ -95,14 +99,24 @@ export async function POST(request: Request) {
           if (a.side === "BRIDE" && b.side !== "BRIDE") return -1;
           if (a.side !== "BRIDE" && b.side === "BRIDE") return 1;
           return 0;
-        case "RSVP_CONFIRMED_FIRST":
-          if (a.rsvpStatus === "ATTENDING" && b.rsvpStatus !== "ATTENDING") return -1;
-          if (a.rsvpStatus !== "ATTENDING" && b.rsvpStatus === "ATTENDING") return 1;
+        case "RSVP_CONFIRMED_FIRST": {
+          const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const egB = b.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const statusA = (egA?.rsvpStatus && egA.rsvpStatus !== "PENDING") ? egA.rsvpStatus : a.rsvpStatus;
+          const statusB = (egB?.rsvpStatus && egB.rsvpStatus !== "PENDING") ? egB.rsvpStatus : b.rsvpStatus;
+          if (statusA === "ATTENDING" && statusB !== "ATTENDING") return -1;
+          if (statusA !== "ATTENDING" && statusB === "ATTENDING") return 1;
           return 0;
-        case "RSVP_PENDING_FIRST":
-          if (a.rsvpStatus === "PENDING" && b.rsvpStatus !== "PENDING") return -1;
-          if (a.rsvpStatus !== "PENDING" && b.rsvpStatus === "PENDING") return 1;
+        }
+        case "RSVP_PENDING_FIRST": {
+          const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const egB = b.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const statusA = (egA?.rsvpStatus && egA.rsvpStatus !== "PENDING") ? egA.rsvpStatus : a.rsvpStatus;
+          const statusB = (egB?.rsvpStatus && egB.rsvpStatus !== "PENDING") ? egB.rsvpStatus : b.rsvpStatus;
+          if (statusA === "PENDING" && statusB !== "PENDING") return -1;
+          if (statusA !== "PENDING" && statusB === "PENDING") return 1;
           return 0;
+        }
         case "SENT_FIRST":
         case "NOT_SENT_FIRST":
           const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
@@ -139,10 +153,26 @@ export async function POST(request: Request) {
     // Calculate Summaries
     const totalInvitations = result.length;
     const totalAllowed = result.reduce((acc, g) => acc + g.allowedGuestCount, 0);
-    const totalConfirmed = result.reduce((acc, g) => acc + g.confirmedGuestCount, 0);
-    const totalLiquorCount = result.reduce((acc, g) => acc + g.liquorCount, 0);
-    const pendingCount = result.filter(g => g.rsvpStatus === "PENDING").length;
-    const declinedCount = result.filter(g => g.rsvpStatus === "NOT_ATTENDING").length;
+    const totalConfirmed = result.reduce((acc, g) => {
+      const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+      const confirmed = (eg?.confirmedCount && eg.confirmedCount > 0) ? eg.confirmedCount : g.confirmedGuestCount;
+      return acc + confirmed;
+    }, 0);
+    const totalLiquorCount = result.reduce((acc, g) => {
+      const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+      const liquor = (eg?.liquorCount && eg.liquorCount > 0) ? eg.liquorCount : g.liquorCount;
+      return acc + liquor;
+    }, 0);
+    const pendingCount = result.filter(g => {
+      const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+      const status = (eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : g.rsvpStatus;
+      return status === "PENDING";
+    }).length;
+    const declinedCount = result.filter(g => {
+      const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+      const status = (eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : g.rsvpStatus;
+      return status === "NOT_ATTENDING";
+    }).length;
 
     let sendCount = 0;
     let notSentCount = 0;
@@ -245,16 +275,21 @@ export async function POST(request: Request) {
       if (columns.includeGuestGroup) row.push(currentEg?.guestGroup || "-");
       if (columns.includeType) row.push(g.invitationType === "FAMILY" ? "Family" : "Individual");
       if (columns.includeAllowed) row.push(g.allowedGuestCount.toString());
-      if (columns.includeConfirmed) row.push(g.confirmedGuestCount.toString());
+      if (columns.includeConfirmed) {
+        const confirmed = (currentEg?.confirmedCount && currentEg.confirmedCount > 0) ? currentEg.confirmedCount : g.confirmedGuestCount;
+        row.push(confirmed.toString());
+      }
       
       if (includeLiquor) {
-        row.push(g.liquorCount === null ? "-" : g.liquorCount.toString());
+        const liquor = (currentEg?.liquorCount && currentEg.liquorCount > 0) ? currentEg.liquorCount : g.liquorCount;
+        row.push(liquor === null ? "-" : liquor.toString());
       }
       
       if (columns.includeRsvp) {
-        const status = g.rsvpStatus === "ATTENDING" ? "Confirmed" : 
-                       g.rsvpStatus === "NOT_ATTENDING" ? "Declined" : 
-                       g.rsvpStatus === "PENDING" ? "Pending" : "Not Sure";
+        const rawStatus = (currentEg?.rsvpStatus && currentEg.rsvpStatus !== "PENDING") ? currentEg.rsvpStatus : g.rsvpStatus;
+        const status = rawStatus === "ATTENDING" ? "Confirmed" : 
+                       rawStatus === "NOT_ATTENDING" ? "Declined" : 
+                       rawStatus === "PENDING" ? "Pending" : "Not Sure";
         row.push(status);
       }
       

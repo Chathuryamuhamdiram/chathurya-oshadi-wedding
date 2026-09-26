@@ -116,7 +116,7 @@ export function GuestListClient({
     if (rsvpFilter !== "ALL") {
       result = result.filter((g) => {
         const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
-        const status = eg?.rsvpStatus || g.rsvpStatus;
+        const status = (eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : g.rsvpStatus;
         return status === rsvpFilter;
       });
     }
@@ -157,8 +157,8 @@ export function GuestListClient({
         case "RSVP_CONFIRMED_FIRST": {
           const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
           const egB = b.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
-          const statusA = egA?.rsvpStatus || a.rsvpStatus;
-          const statusB = egB?.rsvpStatus || b.rsvpStatus;
+          const statusA = (egA?.rsvpStatus && egA.rsvpStatus !== "PENDING") ? egA.rsvpStatus : a.rsvpStatus;
+          const statusB = (egB?.rsvpStatus && egB.rsvpStatus !== "PENDING") ? egB.rsvpStatus : b.rsvpStatus;
           if (statusA === "ATTENDING" && statusB !== "ATTENDING") return -1;
           if (statusA !== "ATTENDING" && statusB === "ATTENDING") return 1;
           return 0;
@@ -166,8 +166,8 @@ export function GuestListClient({
         case "RSVP_PENDING_FIRST": {
           const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
           const egB = b.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
-          const statusA = egA?.rsvpStatus || a.rsvpStatus;
-          const statusB = egB?.rsvpStatus || b.rsvpStatus;
+          const statusA = (egA?.rsvpStatus && egA.rsvpStatus !== "PENDING") ? egA.rsvpStatus : a.rsvpStatus;
+          const statusB = (egB?.rsvpStatus && egB.rsvpStatus !== "PENDING") ? egB.rsvpStatus : b.rsvpStatus;
           if (statusA === "PENDING" && statusB !== "PENDING") return -1;
           if (statusA !== "PENDING" && statusB === "PENDING") return 1;
           return 0;
@@ -195,8 +195,8 @@ export function GuestListClient({
 
   const expectedTotalGuests = filteredAndSortedGuests.reduce((sum, g) => {
     const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
-    const rsvpStatus = eg?.rsvpStatus || g.rsvpStatus;
-    const confirmed = eg?.confirmedCount ?? g.confirmedGuestCount;
+    const rsvpStatus = (eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : g.rsvpStatus;
+    const confirmed = (eg?.confirmedCount && eg.confirmedCount > 0) ? eg.confirmedCount : g.confirmedGuestCount;
     
     if (rsvpStatus === "NOT_ATTENDING") return sum;
     if (rsvpStatus === "ATTENDING") return sum + confirmed;
@@ -205,12 +205,14 @@ export function GuestListClient({
 
   const totalConfirmed = filteredAndSortedGuests.reduce((sum, g) => {
     const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
-    return sum + (eg?.confirmedCount ?? g.confirmedGuestCount);
+    const confirmed = (eg?.confirmedCount && eg.confirmedCount > 0) ? eg.confirmedCount : g.confirmedGuestCount;
+    return sum + confirmed;
   }, 0);
 
   const totalLiquor = filteredAndSortedGuests.reduce((sum, g) => {
     const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
-    return sum + (eg?.liquorCount ?? g.liquorCount);
+    const liquor = (eg?.liquorCount && eg.liquorCount > 0) ? eg.liquorCount : g.liquorCount;
+    return sum + liquor;
   }, 0);
 
   // Send KPI
@@ -488,18 +490,18 @@ export function GuestListClient({
                       <td className="px-2 py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-white/80 font-medium">
-                            {(eg?.rsvpStatus || guest.rsvpStatus) === "ATTENDING" 
-                              ? (eg?.confirmedCount ?? guest.confirmedGuestCount) 
-                              : (eg?.rsvpStatus || guest.rsvpStatus) === "NOT_ATTENDING" ? 0 : guest.allowedGuestCount}
+                            {((eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : guest.rsvpStatus) === "ATTENDING" 
+                              ? ((eg?.confirmedCount && eg.confirmedCount > 0) ? eg.confirmedCount : guest.confirmedGuestCount) 
+                              : ((eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : guest.rsvpStatus) === "NOT_ATTENDING" ? 0 : guest.allowedGuestCount}
                           </span>
                         </div>
                       </td>
                       <td className="px-2 py-3 text-center">
-                        <span className="text-white/50">{eg?.liquorCount ?? guest.liquorCount}</span>
+                        <span className="text-white/50">{((eg?.liquorCount && eg.liquorCount > 0) ? eg.liquorCount : guest.liquorCount)}</span>
                       </td>
                       <td className="px-2 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${getRsvpColor(eg?.rsvpStatus || guest.rsvpStatus)}`}>
-                          {eg?.rsvpStatus || guest.rsvpStatus}
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${getRsvpColor((eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : guest.rsvpStatus)}`}>
+                          {(eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : guest.rsvpStatus}
                         </span>
                       </td>
                       <td className="px-2 py-3">

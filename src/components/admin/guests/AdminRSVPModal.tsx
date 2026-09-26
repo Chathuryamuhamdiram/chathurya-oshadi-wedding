@@ -44,9 +44,9 @@ export function AdminRSVPModal({ isOpen, onClose, guest, activeEventId }: AdminR
       const eg = guest.eventGuests?.find((e: any) => e.eventId === selectedEventId);
       
       // If we have event-specific RSVP data, use it. Otherwise fallback to guest data.
-      setRsvpStatus(eg?.rsvpStatus || guest.rsvpStatus || "PENDING");
-      setConfirmedCount(eg?.confirmedCount ?? guest.confirmedGuestCount ?? 0);
-      setLiquorCount(eg?.liquorCount ?? guest.liquorCount ?? 0);
+      setRsvpStatus((eg?.rsvpStatus && eg.rsvpStatus !== "PENDING") ? eg.rsvpStatus : (guest.rsvpStatus || "PENDING"));
+      setConfirmedCount((eg?.confirmedCount && eg.confirmedCount > 0) ? eg.confirmedCount : (guest.confirmedGuestCount ?? 0));
+      setLiquorCount((eg?.liquorCount && eg.liquorCount > 0) ? eg.liquorCount : (guest.liquorCount ?? 0));
       setResponseSource(eg?.responseSource || "Admin Update");
       setInternalNote(eg?.notes || "");
     }

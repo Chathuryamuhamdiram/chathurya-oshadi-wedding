@@ -157,7 +157,7 @@ export function GuestExcelImporter({ activeEventId, events }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-widest text-white/40 font-semibold">Event</label>
-                <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                <Select value={selectedEventId} onValueChange={(val) => setSelectedEventId(val || "")}>
                   <SelectTrigger className="w-full bg-black/30 border border-white/10 rounded-lg p-3 h-[46px] text-white focus:ring-1 focus:ring-[#d7b56d] focus-visible:ring-1 focus-visible:ring-[#d7b56d]">
                     <SelectValue placeholder="Select Event..." />
                   </SelectTrigger>

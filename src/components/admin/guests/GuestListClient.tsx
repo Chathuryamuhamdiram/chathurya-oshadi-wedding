@@ -316,7 +316,7 @@ export function GuestListClient({
           {/* RSVP */}
           <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
             <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">RSVP:</span>
-            <Select value={rsvpFilter} onValueChange={setRsvpFilter}>
+            <Select value={rsvpFilter} onValueChange={(val) => setRsvpFilter(val || "ALL")}>
               <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -333,7 +333,7 @@ export function GuestListClient({
           {/* Send */}
           <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
             <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">SEND:</span>
-            <Select value={sendFilter} onValueChange={setSendFilter}>
+            <Select value={sendFilter} onValueChange={(val) => setSendFilter(val || "ALL")}>
               <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -348,7 +348,7 @@ export function GuestListClient({
           {/* Sort */}
           <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-full md:w-[200px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
             <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">SORT:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
+            <Select value={sortBy} onValueChange={(val) => setSortBy(val || "RECENTLY_ADDED")}>
               <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
                 <SelectValue />
               </SelectTrigger>

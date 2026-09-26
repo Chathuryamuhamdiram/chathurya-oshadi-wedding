@@ -4,12 +4,12 @@ import { useState, useTransition, useMemo, useEffect, useCallback } from "react"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GuestForm } from "@/app/admin/guests/GuestForm";
+import { WhatsAppShareModal } from "@/app/admin/guests/WhatsAppShareModal";
 import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
 import { Search, RefreshCw, CheckCircle2, Link2, UserCheck } from "lucide-react";
 import { GuestExportModal } from "./GuestExportModal";
 import { AdminRSVPModal } from "./AdminRSVPModal";
-import { GuestRowActions } from "./GuestRowActions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function getRsvpColor(status: string) {
@@ -406,14 +406,14 @@ export function GuestListClient({
             <table className="w-full text-left text-sm table-fixed min-w-[850px]">
               <thead>
                 <tr className="text-white/30 text-xs uppercase tracking-widest border-b border-white/[0.04]">
-                  <th className="px-3 py-3 font-medium min-w-[150px] w-auto">Guest Name</th>
-                  <th className="px-3 py-3 font-medium w-[110px]">Type</th>
-                  <th className="px-3 py-3 font-medium w-[80px]">Side</th>
-                  <th className="px-3 py-3 font-medium w-[65px] text-center">Seats</th>
-                  <th className="px-3 py-3 font-medium w-[65px] text-center">Liquor</th>
-                  <th className="px-3 py-3 font-medium w-[105px]">RSVP</th>
-                  <th className="px-3 py-3 font-medium w-[65px] text-center">Send</th>
-                  <th className="px-3 py-3 font-medium w-[200px] text-right">Actions</th>
+                  <th className="px-2.5 py-3 font-medium min-w-[150px] w-auto">Guest Name</th>
+                  <th className="px-2.5 py-3 font-medium w-[100px]">Type</th>
+                  <th className="px-2.5 py-3 font-medium w-[70px]">Side</th>
+                  <th className="px-2.5 py-3 font-medium w-[60px] text-center">Seats</th>
+                  <th className="px-2.5 py-3 font-medium w-[60px] text-center">Liquor</th>
+                  <th className="px-2.5 py-3 font-medium w-[95px]">RSVP</th>
+                  <th className="px-2.5 py-3 font-medium w-[55px] text-center">Send</th>
+                  <th className="px-2.5 py-3 font-medium w-[220px] text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -427,7 +427,7 @@ export function GuestListClient({
                       key={guest.id}
                       className="border-t border-white/[0.04] hover:bg-white/[0.03] transition-colors group"
                     >
-                      <td className="px-3 py-3">
+                      <td className="px-2.5 py-3">
                         <div>
                           <p className="font-medium text-white/90 text-sm truncate">{guest.displayName}</p>
                           {guest.whatsappNumber && (
@@ -435,17 +435,17 @@ export function GuestListClient({
                           )}
                         </div>
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-2.5 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${getTypeColor(guest.invitationType)}`}>
                           {guest.invitationType}
                         </span>
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-2.5 py-3">
                         <span className="text-white/70 text-xs tracking-wider">
                           {guest.side === "BRIDE" ? "Bride" : guest.side === "GROOM" ? "Groom" : "Both"}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-center">
+                      <td className="px-2.5 py-3 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <span className="text-white/80 font-medium">
                             {(eg?.rsvpStatus || guest.rsvpStatus) === "ATTENDING" 
@@ -454,15 +454,15 @@ export function GuestListClient({
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-center">
+                      <td className="px-2.5 py-3 text-center">
                         <span className="text-white/50">{eg?.liquorCount ?? guest.liquorCount}</span>
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-2.5 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${getRsvpColor(eg?.rsvpStatus || guest.rsvpStatus)}`}>
                           {eg?.rsvpStatus || guest.rsvpStatus}
                         </span>
                       </td>
-                      <td className="px-3 py-3">
+                      <td className="px-2.5 py-3">
                         <div 
                           className="flex items-center justify-center w-full h-full"
                           title={sendAt ? `Sent on: ${sendAt}` : "Not sent yet"}
@@ -476,22 +476,43 @@ export function GuestListClient({
                           />
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-right">
-                        <GuestRowActions
-                          guest={guest}
-                          canEditGuests={canEditGuests}
-                          onUpdateRSVP={() => setSelectedRSVPGuest(guest)}
-                          activeEventId={activeEventId}
-                          isAllEvents={isAllEvents}
-                          onOptimisticDelete={() => setOptimisticDeletes(prev => new Set(prev).add(guest.id))}
-                          onOptimisticRollback={() => {
-                            setOptimisticDeletes(prev => {
-                              const next = new Set(prev);
-                              next.delete(guest.id);
-                              return next;
-                            });
-                          }}
-                        />
+                      <td className="px-2.5 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/invite/${guest.invitationCode}`}
+                            target="_blank"
+                            className="w-[34px] h-[34px] flex items-center justify-center text-emerald-400/80 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all shrink-0"
+                            title="Copy / Open Invitation"
+                          >
+                            <Link2 className="w-4 h-4" />
+                          </Link>
+                          
+                          <button
+                            onClick={() => setSelectedRSVPGuest(guest)}
+                            disabled={!canEditGuests}
+                            className="w-[34px] h-[34px] flex items-center justify-center bg-[#d7b56d]/10 hover:bg-[#d7b56d]/20 text-[#d7b56d] border border-[#d7b56d]/20 rounded-lg transition-all disabled:opacity-50 shrink-0"
+                            title="Update RSVP"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                          </button>
+                          
+                          <WhatsAppShareModal guest={guest} compact />
+  
+                          <GuestForm existingGuest={guest} activeEventId={isAllEvents ? null : activeEventId} compact />
+                          
+                          <DeleteGuestButton 
+                            guest={{ id: guest.id, displayName: guest.displayName }} 
+                            onOptimisticDelete={() => setOptimisticDeletes(prev => new Set(prev).add(guest.id))}
+                            onOptimisticRollback={() => {
+                              setOptimisticDeletes(prev => {
+                                const next = new Set(prev);
+                                next.delete(guest.id);
+                                return next;
+                              });
+                            }}
+                            compact
+                          />
+                        </div>
                       </td>
                     </tr>
                   );

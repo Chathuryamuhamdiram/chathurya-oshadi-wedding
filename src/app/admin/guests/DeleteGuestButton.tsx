@@ -9,16 +9,12 @@ export function DeleteGuestButton({
   guest, 
   onOptimisticDelete,
   onOptimisticRollback,
-  compact,
-  asMenuItem,
-  onAction
+  compact
 }: { 
   guest: { id: string; displayName: string },
   onOptimisticDelete?: () => void,
   onOptimisticRollback?: () => void,
-  compact?: boolean,
-  asMenuItem?: boolean,
-  onAction?: () => void
+  compact?: boolean
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,19 +39,13 @@ export function DeleteGuestButton({
   return (
     <>
       <button
-        onClick={() => {
-          setOpen(true);
-          if (onAction) onAction();
-        }}
-        className={asMenuItem
-          ? "flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors w-full text-left"
-          : compact
-            ? "w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all shrink-0"
-            : "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all duration-200"}
-        title={asMenuItem ? undefined : "Delete Guest"}
+        onClick={() => setOpen(true)}
+        className={compact
+          ? "w-[34px] h-[34px] flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all shrink-0"
+          : "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all duration-200"}
+        title="Delete Guest"
       >
         <Trash2 className="w-4 h-4" />
-        {asMenuItem && <span>Delete Guest</span>}
       </button>
 
       <DeleteConfirmationDialog

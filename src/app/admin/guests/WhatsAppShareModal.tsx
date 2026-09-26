@@ -17,11 +17,9 @@ interface Guest {
 interface WhatsAppShareModalProps {
   guest: Guest;
   compact?: boolean;
-  asMenuItem?: boolean;
-  onAction?: () => void;
 }
 
-export function WhatsAppShareModal({ guest, compact, asMenuItem, onAction }: WhatsAppShareModalProps) {
+export function WhatsAppShareModal({ guest, compact }: WhatsAppShareModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -92,19 +90,14 @@ Chathurya & Oshadi`;
   return (
     <>
       <button
-        onClick={() => {
-          setIsOpen(true);
-          if (onAction) onAction();
-        }}
-        className={asMenuItem
-          ? "flex items-center gap-2.5 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors w-full text-left"
-          : compact 
-            ? "w-8 h-8 flex items-center justify-center rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 transition-all font-medium shrink-0"
-            : "text-xs bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-medium"}
-        title={asMenuItem ? undefined : "Share via WhatsApp"}
+        onClick={() => setIsOpen(true)}
+        className={compact 
+          ? "w-[34px] h-[34px] flex items-center justify-center rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 transition-all font-medium shrink-0"
+          : "text-xs bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-medium"}
+        title="Share via WhatsApp"
       >
-        <MessageCircle className={asMenuItem ? "w-4 h-4 text-emerald-400" : (compact ? "w-4 h-4" : "w-3.5 h-3.5")} />
-        {(asMenuItem || !compact) && <span>{asMenuItem ? "Share via WhatsApp" : "Share"}</span>}
+        <MessageCircle className={compact ? "w-4 h-4" : "w-3.5 h-3.5"} />
+        {!compact && <span>Share</span>}
       </button>
 
       {mounted && createPortal(

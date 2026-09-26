@@ -301,6 +301,7 @@ export function GuestListClient({
                   sideTab={sideTab}
                   rsvpFilter={rsvpFilter}
                   sendFilter={sendFilter}
+                  groupFilter={groupFilter}
                   sortBy={sortBy}
                   totalMatching={filteredAndSortedGuests.length}
                   totalCapacity={expectedTotalGuests}

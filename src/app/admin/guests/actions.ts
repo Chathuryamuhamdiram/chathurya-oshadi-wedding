@@ -44,8 +44,8 @@ export async function saveGuestAction(formData: FormData) {
       side: formData.get("side") || "BRIDE",
       allowedGuestCount: Number(formData.get("allowedGuestCount")),
       liquorCount: Number(formData.get("liquorCount") || 0),
-      notes: formData.get("notes") || undefined,
-      guestGroup: formData.get("guestGroup") || undefined,
+      notes: (formData.get("notes") as string) || undefined,
+      guestGroup: (formData.get("guestGroup") as string) || undefined,
       eventId: formData.get("eventId") as string | null,
     };
 

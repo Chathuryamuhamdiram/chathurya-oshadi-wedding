@@ -315,12 +315,12 @@ export function GuestListClient({
         <div className="flex flex-wrap items-center gap-4 md:gap-5 w-full">
           {/* RSVP */}
           <div className="flex items-center gap-2">
-            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none">RSVP:</span>
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none pt-px">RSVP:</span>
             <Select value={rsvpFilter} onValueChange={(val) => setRsvpFilter(val || "ALL")}>
-              <SelectTrigger className="w-[120px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
+              <SelectTrigger className="w-[120px] !h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent align="start" className="bg-[#1e2333] border-white/10 text-white min-w-[120px]">
+              <SelectContent align="start" sideOffset={4} className="bg-[#1e2333] border-white/10 text-white min-w-[120px]">
                 <SelectItem value="ALL">All</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="ATTENDING">Confirmed</SelectItem>
@@ -332,12 +332,12 @@ export function GuestListClient({
 
           {/* Send */}
           <div className="flex items-center gap-2">
-            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none">SEND:</span>
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none pt-px">SEND:</span>
             <Select value={sendFilter} onValueChange={(val) => setSendFilter(val || "ALL")}>
-              <SelectTrigger className="w-[130px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
+              <SelectTrigger className="w-[130px] !h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent align="start" className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
+              <SelectContent align="start" sideOffset={4} className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
                 <SelectItem value="ALL">All</SelectItem>
                 <SelectItem value="SENT">Sent</SelectItem>
                 <SelectItem value="NOT_SENT">Not Sent</SelectItem>
@@ -347,12 +347,12 @@ export function GuestListClient({
 
           {/* Sort */}
           <div className="flex items-center gap-2">
-            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none">SORT:</span>
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none pt-px">SORT:</span>
             <Select value={sortBy} onValueChange={(val) => setSortBy(val || "RECENTLY_ADDED")}>
-              <SelectTrigger className="w-[190px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
+              <SelectTrigger className="w-[190px] !h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent align="start" className="bg-[#1e2333] border-white/10 text-white min-w-[190px]">
+              <SelectContent align="start" sideOffset={4} className="bg-[#1e2333] border-white/10 text-white min-w-[190px]">
                 <SelectItem value="RECENTLY_ADDED">Recently Added</SelectItem>
                 <SelectItem value="NAME_AZ">Guest Name A–Z</SelectItem>
                 <SelectItem value="NAME_ZA">Guest Name Z–A</SelectItem>

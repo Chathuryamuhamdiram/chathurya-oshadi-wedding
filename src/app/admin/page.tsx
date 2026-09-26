@@ -118,13 +118,17 @@ export default async function AdminDashboardPage() {
     });
 
     scopedGuests.forEach(g => {
+      const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+      const rsvpStatus = eg?.rsvpStatus || g.rsvpStatus;
+      
       const allowed = g.allowedGuestCount || 0;
-      const confirmed = g.confirmedGuestCount || 0;
+      const confirmed = eg?.confirmedCount ?? g.confirmedGuestCount ?? 0;
+      
       allowedGuests += allowed;
       confirmedGuests += confirmed;
 
-      if (g.rsvpStatus === 'ATTENDING') attending += allowed;
-      else if (g.rsvpStatus === 'NOT_ATTENDING') declined += allowed;
+      if (rsvpStatus === 'ATTENDING') attending += allowed;
+      else if (rsvpStatus === 'NOT_ATTENDING') declined += allowed;
       else pending += allowed;
     });
 

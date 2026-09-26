@@ -9,6 +9,7 @@ import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
 import { Search, RefreshCw, CheckCircle2 } from "lucide-react";
 import { GuestExportModal } from "./GuestExportModal";
+import { AdminRSVPModal } from "./AdminRSVPModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function getRsvpColor(status: string) {
@@ -57,6 +58,7 @@ export function GuestListClient({
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, startRefreshTransition] = useTransition();
   const [showRefreshSuccess, setShowRefreshSuccess] = useState(false);
+  const [selectedRSVPGuest, setSelectedRSVPGuest] = useState<any>(null);
   const router = useRouter();
 
   const [optimisticDeletes, setOptimisticDeletes] = useState<Set<string>>(new Set());
@@ -111,7 +113,11 @@ export function GuestListClient({
 
     // 3. RSVP Filter
     if (rsvpFilter !== "ALL") {
-      result = result.filter((g) => g.rsvpStatus === rsvpFilter);
+      result = result.filter((g) => {
+        const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+        const status = eg?.rsvpStatus || g.rsvpStatus;
+        return status === rsvpFilter;
+      });
     }
 
     // 4. Send Filter
@@ -139,14 +145,24 @@ export function GuestListClient({
           if (a.side === "BRIDE" && b.side !== "BRIDE") return -1;
           if (a.side !== "BRIDE" && b.side === "BRIDE") return 1;
           return 0;
-        case "RSVP_CONFIRMED_FIRST":
-          if (a.rsvpStatus === "ATTENDING" && b.rsvpStatus !== "ATTENDING") return -1;
-          if (a.rsvpStatus !== "ATTENDING" && b.rsvpStatus === "ATTENDING") return 1;
+        case "RSVP_CONFIRMED_FIRST": {
+          const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const egB = b.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const statusA = egA?.rsvpStatus || a.rsvpStatus;
+          const statusB = egB?.rsvpStatus || b.rsvpStatus;
+          if (statusA === "ATTENDING" && statusB !== "ATTENDING") return -1;
+          if (statusA !== "ATTENDING" && statusB === "ATTENDING") return 1;
           return 0;
-        case "RSVP_PENDING_FIRST":
-          if (a.rsvpStatus === "PENDING" && b.rsvpStatus !== "PENDING") return -1;
-          if (a.rsvpStatus !== "PENDING" && b.rsvpStatus === "PENDING") return 1;
+        }
+        case "RSVP_PENDING_FIRST": {
+          const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const egB = b.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+          const statusA = egA?.rsvpStatus || a.rsvpStatus;
+          const statusB = egB?.rsvpStatus || b.rsvpStatus;
+          if (statusA === "PENDING" && statusB !== "PENDING") return -1;
+          if (statusA !== "PENDING" && statusB === "PENDING") return 1;
           return 0;
+        }
         case "SENT_FIRST":
         case "NOT_SENT_FIRST":
           const egA = a.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
@@ -169,13 +185,24 @@ export function GuestListClient({
   }, [initialGuests, optimisticDeletes, searchQuery, sideTab, rsvpFilter, sendFilter, sortBy, activeEventId, isAllEvents]);
 
   const expectedTotalGuests = filteredAndSortedGuests.reduce((sum, g) => {
-    if (g.rsvpStatus === "NOT_ATTENDING") return sum;
-    if (g.rsvpStatus === "ATTENDING") return sum + g.confirmedGuestCount;
+    const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+    const rsvpStatus = eg?.rsvpStatus || g.rsvpStatus;
+    const confirmed = eg?.confirmedCount ?? g.confirmedGuestCount;
+    
+    if (rsvpStatus === "NOT_ATTENDING") return sum;
+    if (rsvpStatus === "ATTENDING") return sum + confirmed;
     return sum + g.allowedGuestCount;
   }, 0);
 
-  const totalConfirmed = filteredAndSortedGuests.reduce((sum, g) => sum + g.confirmedGuestCount, 0);
-  const totalLiquor = filteredAndSortedGuests.reduce((sum, g) => sum + g.liquorCount, 0);
+  const totalConfirmed = filteredAndSortedGuests.reduce((sum, g) => {
+    const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+    return sum + (eg?.confirmedCount ?? g.confirmedGuestCount);
+  }, 0);
+
+  const totalLiquor = filteredAndSortedGuests.reduce((sum, g) => {
+    const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+    return sum + (eg?.liquorCount ?? g.liquorCount);
+  }, 0);
 
   // Send KPI
   let totalSent = 0;
@@ -421,16 +448,18 @@ export function GuestListClient({
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className="text-white/80 font-medium">
-                            {guest.rsvpStatus === "ATTENDING" ? guest.confirmedGuestCount : guest.rsvpStatus === "NOT_ATTENDING" ? 0 : guest.allowedGuestCount}
+                            {(eg?.rsvpStatus || guest.rsvpStatus) === "ATTENDING" 
+                              ? (eg?.confirmedCount ?? guest.confirmedGuestCount) 
+                              : (eg?.rsvpStatus || guest.rsvpStatus) === "NOT_ATTENDING" ? 0 : guest.allowedGuestCount}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-white/50">{guest.liquorCount}</span>
+                        <span className="text-white/50">{eg?.liquorCount ?? guest.liquorCount}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRsvpColor(guest.rsvpStatus)}`}>
-                          {guest.rsvpStatus}
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRsvpColor(eg?.rsvpStatus || guest.rsvpStatus)}`}>
+                          {eg?.rsvpStatus || guest.rsvpStatus}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -459,6 +488,14 @@ export function GuestListClient({
                             <span>🔗</span>
                           </Link>
                           
+                          <button
+                            onClick={() => setSelectedRSVPGuest(guest)}
+                            disabled={!canEditGuests}
+                            className="text-xs font-medium bg-[#1e2333] hover:bg-white/10 text-[#d7b56d] border border-[#d7b56d]/30 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            UPDATE RSVP
+                          </button>
+                          
                           <WhatsAppShareModal guest={guest} />
   
                           <div>
@@ -486,6 +523,13 @@ export function GuestListClient({
           </div>
         )}
       </div>
+
+      <AdminRSVPModal
+        isOpen={!!selectedRSVPGuest}
+        onClose={() => setSelectedRSVPGuest(null)}
+        guest={selectedRSVPGuest}
+        activeEventId={activeEventId}
+      />
     </div>
   );
 }

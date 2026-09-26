@@ -41,11 +41,12 @@ export function DeleteGuestButton({
       <button
         onClick={() => setOpen(true)}
         className={compact
-          ? "w-[34px] h-[34px] flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all shrink-0"
+          ? "h-[32px] px-2 flex items-center justify-center gap-1.5 text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 rounded-lg transition-all shrink-0 whitespace-nowrap"
           : "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all duration-200"}
         title="Delete Guest"
       >
-        <Trash2 className="w-4 h-4" />
+        <Trash2 className="w-3.5 h-3.5" />
+        {compact && <span>Delete</span>}
       </button>
 
       <DeleteConfirmationDialog

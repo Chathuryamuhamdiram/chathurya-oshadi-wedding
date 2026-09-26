@@ -92,12 +92,12 @@ Chathurya & Oshadi`;
       <button
         onClick={() => setIsOpen(true)}
         className={compact 
-          ? "w-[34px] h-[34px] flex items-center justify-center rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 transition-all font-medium shrink-0"
+          ? "h-[32px] px-2 flex items-center justify-center gap-1.5 text-xs bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 rounded-lg transition-all shrink-0 whitespace-nowrap"
           : "text-xs bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-medium"}
         title="Share via WhatsApp"
       >
-        <MessageCircle className={compact ? "w-4 h-4" : "w-3.5 h-3.5"} />
-        {!compact && <span>Share</span>}
+        <MessageCircle className="w-3.5 h-3.5" />
+        <span>Share</span>
       </button>
 
       {mounted && createPortal(

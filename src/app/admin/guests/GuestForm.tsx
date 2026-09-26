@@ -50,11 +50,14 @@ export function GuestForm({ existingGuest, activeEventId, compact }: { existingG
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className={
         compact 
-          ? "w-[34px] h-[34px] flex items-center justify-center rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all shrink-0"
+          ? "h-[32px] px-2 flex items-center justify-center gap-1.5 text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 rounded-lg transition-all shrink-0 whitespace-nowrap"
           : "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 text-sm font-sans transition-all duration-200 group"
       } title={existingGuest ? "Edit Guest" : "Add Guest"}>
         {compact ? (
-          <Edit2 className="w-4 h-4" />
+          <>
+            <Edit2 className="w-3.5 h-3.5" />
+            <span>Edit</span>
+          </>
         ) : (
           <>
             {!existingGuest && <span className="text-lg leading-none transition-transform duration-200 group-hover:rotate-90">+</span>}

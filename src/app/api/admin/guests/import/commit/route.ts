@@ -62,8 +62,8 @@ export async function POST(req: Request) {
             // Link to the Event
             await prisma.eventGuest.upsert({
               where: { guestId_eventId: { guestId, eventId } },
-              create: { guestId, eventId, rsvpStatus: "PENDING" },
-              update: {} // If it somehow already existed, do nothing
+              create: { guestId, eventId, rsvpStatus: "PENDING", guestGroup: row.guestGroup || null },
+              update: { guestGroup: row.guestGroup || null } // Update the group if attaching to an existing guest
             });
 
             created++;
@@ -88,6 +88,12 @@ export async function POST(req: Request) {
                 email: row.email,
                 liquorCount: row.liquorCount,
               }
+            });
+            
+            // Also update EventGuest for the guest group
+            await prisma.eventGuest.updateMany({
+              where: { guestId: existingId, eventId: eventId },
+              data: { guestGroup: row.guestGroup || null }
             });
 
             updated++;

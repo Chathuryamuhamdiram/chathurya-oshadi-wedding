@@ -39,6 +39,7 @@ export function GuestImportPreviewTable({ rows, selectedRows, onToggleRow, filte
             <th className="px-4 py-3">Guest Name</th>
             <th className="px-4 py-3">Type</th>
             <th className="px-4 py-3">Phone</th>
+            <th className="px-4 py-3">Group</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3 w-64">Changes</th>
           </tr>
@@ -80,6 +81,7 @@ export function GuestImportPreviewTable({ rows, selectedRows, onToggleRow, filte
                     </span>
                   </td>
                   <td className="px-4 py-3 text-white/60 font-mono text-xs">{row.whatsappNumber || "—"}</td>
+                  <td className="px-4 py-3 text-white/60 text-xs">{row.guestGroup || "—"}</td>
                   <td className="px-4 py-3">
                     {getStatusBadge(classification)}
                   </td>

@@ -11,6 +11,7 @@ export async function GET() {
       "Type",
       "Allowed Seats",
       "Liquor Count",
+      "Guest Group",
       "WhatsApp Number",
       "Email Address",
     ];
@@ -22,6 +23,7 @@ export async function GET() {
         "INDIVIDUAL",
         1,
         0,
+        "Mother's Friends",
         "0712345678",
         "john@example.com",
       ],
@@ -30,6 +32,7 @@ export async function GET() {
         "FAMILY",
         4,
         2,
+        "Relatives",
         "0771234567",
         "smith@example.com",
       ],
@@ -43,6 +46,7 @@ export async function GET() {
       { wch: 15 }, // Type
       { wch: 15 }, // Allowed Seats
       { wch: 15 }, // Liquor Count
+      { wch: 20 }, // Guest Group
       { wch: 20 }, // WhatsApp
       { wch: 30 }, // Email Address
     ];

@@ -31,6 +31,7 @@ export type ImportRow = {
   invitationType: "INDIVIDUAL" | "FAMILY"; // Maps to Type
   allowedGuestCount: number; // Maps to Allowed Seats
   liquorCount: number;
+  guestGroup?: string | null;
   whatsappNumber?: string | null;
   email?: string | null;
 };
@@ -48,6 +49,7 @@ export const excelRowSchema = z.object({
   "Type": z.enum(["INDIVIDUAL", "FAMILY"]).catch("INDIVIDUAL" as any),
   "Allowed Seats": z.coerce.number().min(1, "Must be at least 1"),
   "Liquor Count": z.coerce.number().catch(0),
+  "Guest Group": z.string().optional().nullable(),
   "WhatsApp Number": z.coerce.string().optional().nullable(),
   "Email Address": z.string().email("Invalid email").optional().nullable().or(z.literal("")),
 });
@@ -74,6 +76,7 @@ export async function processGuestImport(
         invitationType: parsed["Type"] as any,
         allowedGuestCount: parsed["Allowed Seats"],
         liquorCount: parsed["Liquor Count"],
+        guestGroup: parsed["Guest Group"],
         whatsappNumber: phone,
         email: parsed["Email Address"],
       };

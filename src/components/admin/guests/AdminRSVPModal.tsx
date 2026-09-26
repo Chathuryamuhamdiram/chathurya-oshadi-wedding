@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Loader2, AlertCircle } from "lucide-react";
 
 interface AdminRSVPModalProps {
@@ -212,11 +211,11 @@ export function AdminRSVPModal({ isOpen, onClose, guest, activeEventId }: AdminR
 
             <div>
               <label className="text-xs text-white/70 mb-1.5 block">Internal Note (Optional)</label>
-              <Textarea 
+              <textarea 
                 value={internalNote}
                 onChange={(e) => setInternalNote(e.target.value)}
                 placeholder="e.g. Confirmed by phone"
-                className="bg-black/20 border-white/10 resize-none h-20"
+                className="bg-black/20 border-white/10 resize-none h-20 w-full rounded-md border px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-white/20"
               />
             </div>
           </div>

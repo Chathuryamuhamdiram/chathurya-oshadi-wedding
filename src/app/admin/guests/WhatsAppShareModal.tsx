@@ -16,9 +16,10 @@ interface Guest {
 
 interface WhatsAppShareModalProps {
   guest: Guest;
+  compact?: boolean;
 }
 
-export function WhatsAppShareModal({ guest }: WhatsAppShareModalProps) {
+export function WhatsAppShareModal({ guest, compact }: WhatsAppShareModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copiedMessage, setCopiedMessage] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -90,11 +91,13 @@ Chathurya & Oshadi`;
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="text-xs bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-medium"
-        title="Send Invitation"
+        className={compact 
+          ? "w-8 h-8 flex items-center justify-center rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 transition-all font-medium shrink-0"
+          : "text-xs bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-medium"}
+        title="Share via WhatsApp"
       >
-        <MessageCircle className="w-3.5 h-3.5" />
-        <span>Share</span>
+        <MessageCircle className={compact ? "w-4 h-4" : "w-3.5 h-3.5"} />
+        {!compact && <span>Share</span>}
       </button>
 
       {mounted && createPortal(

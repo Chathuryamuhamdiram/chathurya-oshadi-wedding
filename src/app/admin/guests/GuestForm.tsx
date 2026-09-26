@@ -6,8 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveGuestAction } from "./actions";
+import { Edit2 } from "lucide-react";
 
-export function GuestForm({ existingGuest, activeEventId }: { existingGuest?: any, activeEventId?: string | null }) {
+export function GuestForm({ existingGuest, activeEventId, compact }: { existingGuest?: any, activeEventId?: string | null, compact?: boolean }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -47,9 +48,17 @@ export function GuestForm({ existingGuest, activeEventId }: { existingGuest?: an
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 text-sm font-sans transition-all duration-200 group">
-        {!existingGuest && <span className="text-lg leading-none transition-transform duration-200 group-hover:rotate-90">+</span>}
-        {existingGuest ? "Edit Guest" : "Add Guest"}
+      <DialogTrigger className={
+        compact 
+          ? "w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all shrink-0"
+          : "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 text-sm font-sans transition-all duration-200 group"
+      } title={existingGuest ? "Edit Guest" : "Add Guest"}>
+        {compact ? <Edit2 className="w-4 h-4" /> : (
+          <>
+            {!existingGuest && <span className="text-lg leading-none transition-transform duration-200 group-hover:rotate-90">+</span>}
+            {existingGuest ? "Edit Guest" : "Add Guest"}
+          </>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto bg-[#0d1117] border border-white/10 text-white shadow-2xl">

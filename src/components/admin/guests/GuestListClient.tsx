@@ -7,7 +7,7 @@ import { GuestForm } from "@/app/admin/guests/GuestForm";
 import { WhatsAppShareModal } from "@/app/admin/guests/WhatsAppShareModal";
 import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
-import { Search, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Search, RefreshCw, CheckCircle2, Link2, UserCheck } from "lucide-react";
 import { GuestExportModal } from "./GuestExportModal";
 import { AdminRSVPModal } from "./AdminRSVPModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -402,18 +402,18 @@ export function GuestListClient({
             <p className="text-white/30 font-sans text-sm">No guests found matching your criteria.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left text-sm table-fixed min-w-[850px]">
               <thead>
-                <tr className="text-white/30 text-xs uppercase tracking-widest">
-                  <th className="px-6 py-4 font-medium">Guest Name</th>
-                  <th className="px-6 py-4 font-medium">Type</th>
-                  <th className="px-6 py-4 font-medium">Side</th>
-                  <th className="px-6 py-4 font-medium">Seats</th>
-                  <th className="px-6 py-4 font-medium">Liquor</th>
-                  <th className="px-6 py-4 font-medium">RSVP</th>
-                  <th className="px-6 py-4 font-medium">Send</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <tr className="text-white/30 text-xs uppercase tracking-widest border-b border-white/[0.04]">
+                  <th className="px-3 py-3 font-medium min-w-[150px] w-auto">Guest Name</th>
+                  <th className="px-3 py-3 font-medium w-[110px]">Type</th>
+                  <th className="px-3 py-3 font-medium w-[80px]">Side</th>
+                  <th className="px-3 py-3 font-medium w-[65px] text-center">Seats</th>
+                  <th className="px-3 py-3 font-medium w-[65px] text-center">Liquor</th>
+                  <th className="px-3 py-3 font-medium w-[105px]">RSVP</th>
+                  <th className="px-3 py-3 font-medium w-[65px] text-center">Send</th>
+                  <th className="px-3 py-3 font-medium w-[200px] text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -427,26 +427,26 @@ export function GuestListClient({
                       key={guest.id}
                       className="border-t border-white/[0.04] hover:bg-white/[0.03] transition-colors group"
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3">
                         <div>
-                          <p className="font-medium text-white/90">{guest.displayName}</p>
+                          <p className="font-medium text-white/90 text-sm truncate">{guest.displayName}</p>
                           {guest.whatsappNumber && (
                             <p className="text-white/30 text-xs mt-0.5">{guest.whatsappNumber}</p>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getTypeColor(guest.invitationType)}`}>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${getTypeColor(guest.invitationType)}`}>
                           {guest.invitationType}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3">
                         <span className="text-white/70 text-xs tracking-wider">
                           {guest.side === "BRIDE" ? "Bride" : guest.side === "GROOM" ? "Groom" : "Both"}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
+                      <td className="px-3 py-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <span className="text-white/80 font-medium">
                             {(eg?.rsvpStatus || guest.rsvpStatus) === "ATTENDING" 
                               ? (eg?.confirmedCount ?? guest.confirmedGuestCount) 
@@ -454,17 +454,17 @@ export function GuestListClient({
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3 text-center">
                         <span className="text-white/50">{eg?.liquorCount ?? guest.liquorCount}</span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRsvpColor(eg?.rsvpStatus || guest.rsvpStatus)}`}>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border ${getRsvpColor(eg?.rsvpStatus || guest.rsvpStatus)}`}>
                           {eg?.rsvpStatus || guest.rsvpStatus}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-3">
                         <div 
-                          className="flex items-center justify-center w-6 h-6"
+                          className="flex items-center justify-center w-full h-full"
                           title={sendAt ? `Sent on: ${sendAt}` : "Not sent yet"}
                         >
                           <input
@@ -472,35 +472,33 @@ export function GuestListClient({
                             checked={isSent}
                             disabled={!canEditGuests || isPending || !eg}
                             onChange={() => handleToggleSend(guest, isSent)}
-                            className="w-4 h-4 rounded border-white/20 bg-black/20 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                            className="w-4 h-4 rounded border-white/20 bg-black/20 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed mx-auto"
                           />
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-3 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <Link
                             href={`/invite/${guest.invitationCode}`}
                             target="_blank"
-                            className="font-mono text-xs text-emerald-400/70 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-2.5 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-2"
-                            title="View Invitation"
+                            className="w-8 h-8 flex items-center justify-center text-emerald-400/80 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all shrink-0"
+                            title="Copy / Open Invitation"
                           >
-                            <span>{guest.invitationCode}</span>
-                            <span>🔗</span>
+                            <Link2 className="w-4 h-4" />
                           </Link>
                           
                           <button
                             onClick={() => setSelectedRSVPGuest(guest)}
                             disabled={!canEditGuests}
-                            className="text-xs font-medium bg-[#1e2333] hover:bg-white/10 text-[#d7b56d] border border-[#d7b56d]/30 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                            className="w-8 h-8 flex items-center justify-center bg-[#d7b56d]/10 hover:bg-[#d7b56d]/20 text-[#d7b56d] border border-[#d7b56d]/20 rounded-lg transition-all disabled:opacity-50 shrink-0"
+                            title="Update RSVP"
                           >
-                            UPDATE RSVP
+                            <UserCheck className="w-4 h-4" />
                           </button>
                           
-                          <WhatsAppShareModal guest={guest} />
+                          <WhatsAppShareModal guest={guest} compact />
   
-                          <div>
-                            <GuestForm existingGuest={guest} activeEventId={isAllEvents ? null : activeEventId} />
-                          </div>
+                          <GuestForm existingGuest={guest} activeEventId={isAllEvents ? null : activeEventId} compact />
                           
                           <DeleteGuestButton 
                             guest={{ id: guest.id, displayName: guest.displayName }} 
@@ -512,6 +510,7 @@ export function GuestListClient({
                                 return next;
                               });
                             }}
+                            compact
                           />
                         </div>
                       </td>

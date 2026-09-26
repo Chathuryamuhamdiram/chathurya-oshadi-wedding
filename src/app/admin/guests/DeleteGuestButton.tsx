@@ -8,11 +8,13 @@ import { deleteGuestAction } from "./actions";
 export function DeleteGuestButton({ 
   guest, 
   onOptimisticDelete,
-  onOptimisticRollback
+  onOptimisticRollback,
+  compact
 }: { 
   guest: { id: string; displayName: string },
   onOptimisticDelete?: () => void,
-  onOptimisticRollback?: () => void
+  onOptimisticRollback?: () => void,
+  compact?: boolean
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,7 +40,9 @@ export function DeleteGuestButton({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all duration-200"
+        className={compact
+          ? "w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all shrink-0"
+          : "p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 transition-all duration-200"}
         title="Delete Guest"
       >
         <Trash2 className="w-4 h-4" />

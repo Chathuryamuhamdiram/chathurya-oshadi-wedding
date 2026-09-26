@@ -54,7 +54,8 @@ export function AdminRSVPModal({ isOpen, onClose, guest, activeEventId }: AdminR
 
   if (!guest) return null;
 
-  const handleStatusChange = (val: string) => {
+  const handleStatusChange = (val: string | null) => {
+    if (!val) return;
     setRsvpStatus(val);
     if (val === "DECLINED" || val === "NOT_ATTENDING") {
       setConfirmedCount(0);
@@ -131,7 +132,7 @@ export function AdminRSVPModal({ isOpen, onClose, guest, activeEventId }: AdminR
             <div>
               <label className="text-[10px] text-white/40 uppercase tracking-wider block mb-1">Event</label>
               {activeEventId === "all" && guest.eventGuests && guest.eventGuests.length > 1 ? (
-                <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                <Select value={selectedEventId} onValueChange={(val) => val && setSelectedEventId(val)}>
                   <SelectTrigger className="h-7 text-xs bg-black/20 border-white/10 mt-1">
                     <SelectValue placeholder="Select event" />
                   </SelectTrigger>
@@ -194,7 +195,7 @@ export function AdminRSVPModal({ isOpen, onClose, guest, activeEventId }: AdminR
 
             <div>
               <label className="text-xs text-white/70 mb-1.5 block">Response Source</label>
-              <Select value={responseSource} onValueChange={setResponseSource}>
+              <Select value={responseSource} onValueChange={(val) => val && setResponseSource(val)}>
                 <SelectTrigger className="bg-black/20 border-white/10 text-white w-full h-10">
                   <SelectValue placeholder="Select Source" />
                 </SelectTrigger>

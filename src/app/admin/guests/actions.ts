@@ -235,7 +235,7 @@ export async function updateGuestRSVPAction(formData: FormData) {
     });
 
     // 3. Audit log
-    const session = await requirePermission("");
+    const session = await requirePermission(PERMISSIONS.GUEST_EDIT);
     await prisma.auditLog.create({
       data: {
         userId: session.userId,

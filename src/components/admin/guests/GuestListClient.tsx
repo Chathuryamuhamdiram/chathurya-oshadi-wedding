@@ -54,6 +54,7 @@ export function GuestListClient({
   const [sideTab, setSideTab] = useState<"ALL" | "GROOM" | "BRIDE">("ALL");
   const [rsvpFilter, setRsvpFilter] = useState("ALL");
   const [sendFilter, setSendFilter] = useState("ALL");
+  const [groupFilter, setGroupFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState("RECENTLY_ADDED");
   const [isPending, startTransition] = useTransition();
   const [isRefreshing, startRefreshTransition] = useTransition();
@@ -130,7 +131,15 @@ export function GuestListClient({
       });
     }
 
-    // 5. Sort By
+    // 5. Group Filter
+    if (groupFilter !== "ALL") {
+      result = result.filter((g) => {
+        const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+        return eg?.guestGroup === groupFilter;
+      });
+    }
+
+    // 6. Sort By
     result.sort((a, b) => {
       switch (sortBy) {
         case "NAME_AZ":
@@ -182,7 +191,7 @@ export function GuestListClient({
     });
 
     return result;
-  }, [initialGuests, optimisticDeletes, searchQuery, sideTab, rsvpFilter, sendFilter, sortBy, activeEventId, isAllEvents]);
+  }, [initialGuests, optimisticDeletes, searchQuery, sideTab, rsvpFilter, sendFilter, groupFilter, sortBy, activeEventId, isAllEvents]);
 
   const expectedTotalGuests = filteredAndSortedGuests.reduce((sum, g) => {
     const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
@@ -352,6 +361,29 @@ export function GuestListClient({
               </SelectContent>
             </Select>
           </div>
+          
+          {/* Group */}
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none pt-px">GROUP:</span>
+            <Select value={groupFilter} onValueChange={(val) => setGroupFilter(val || "ALL")}>
+              <SelectTrigger className="w-[140px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
+                <SelectValue placeholder="All Groups" />
+              </SelectTrigger>
+              <SelectContent align="start" sideOffset={4} className="bg-[#1e2333] border-white/10 text-white min-w-[140px] max-h-[300px]">
+                <SelectItem value="ALL">All Groups</SelectItem>
+                <SelectItem value="Mother's Friends">Mother's Friends</SelectItem>
+                <SelectItem value="Father's Friends">Father's Friends</SelectItem>
+                <SelectItem value="My Friends">My Friends</SelectItem>
+                <SelectItem value="Bride's Friends">Bride's Friends</SelectItem>
+                <SelectItem value="Groom's Friends">Groom's Friends</SelectItem>
+                <SelectItem value="Relatives">Relatives</SelectItem>
+                <SelectItem value="Family Friends">Family Friends</SelectItem>
+                <SelectItem value="Work Friends">Work Friends</SelectItem>
+                <SelectItem value="Neighbours">Neighbours</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Sort */}
           <div className="flex items-center gap-2">
@@ -384,6 +416,7 @@ export function GuestListClient({
                 setSideTab("ALL");
                 setRsvpFilter("ALL");
                 setSendFilter("ALL");
+                setGroupFilter("ALL");
                 setSortBy("RECENTLY_ADDED");
               }}
               className="text-[11px] font-medium text-white/40 hover:text-white/80 transition-colors h-10 flex items-center justify-center w-full md:w-auto md:ml-auto uppercase tracking-wider px-2"
@@ -406,12 +439,13 @@ export function GuestListClient({
             <table className="w-full text-left text-sm table-fixed min-w-[850px]">
               <thead>
                 <tr className="text-white/30 text-xs uppercase tracking-widest border-b border-white/[0.04]">
-                  <th className="px-2 py-3 font-medium min-w-[150px] w-[280px]">Guest Name</th>
-                  <th className="px-2 py-3 font-medium w-[110px]">Type</th>
+                  <th className="px-2 py-3 font-medium min-w-[150px] w-[260px]">Guest Name</th>
+                  <th className="px-2 py-3 font-medium w-[100px]">Type</th>
                   <th className="px-2 py-3 font-medium w-[70px]">Side</th>
+                  <th className="px-2 py-3 font-medium w-[130px]">Group</th>
                   <th className="px-2 py-3 font-medium w-[55px] text-center">Seats</th>
-                  <th className="px-2 py-3 font-medium w-[60px] text-center">Liquor</th>
-                  <th className="px-2 py-3 font-medium w-[100px]">RSVP</th>
+                  <th className="px-2 py-3 font-medium w-[55px] text-center">Liquor</th>
+                  <th className="px-2 py-3 font-medium w-[95px]">RSVP</th>
                   <th className="px-2 py-3 font-medium w-[55px] text-center">Send</th>
                   <th className="px-2 py-3 font-medium w-auto text-right">Actions</th>
                 </tr>
@@ -443,6 +477,11 @@ export function GuestListClient({
                       <td className="px-2 py-3">
                         <span className="text-white/70 text-xs tracking-wider">
                           {guest.side === "BRIDE" ? "Bride" : guest.side === "GROOM" ? "Groom" : "Both"}
+                        </span>
+                      </td>
+                      <td className="px-2 py-3">
+                        <span className="text-white/50 text-xs tracking-wider">
+                          {eg?.guestGroup || "—"}
                         </span>
                       </td>
                       <td className="px-2 py-3 text-center">

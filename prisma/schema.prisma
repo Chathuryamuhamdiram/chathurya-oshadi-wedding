@@ -61,6 +61,7 @@ model EventGuest {
   confirmedCount  Int?
   liquorCount     Int?
   tableNumber     String?
+  guestGroup      String?
   responseSource  String?
   notes           String?
   createdAt       DateTime      @default(now())

@@ -11,6 +11,7 @@ type ExportModalProps = {
   sideTab: string;
   rsvpFilter: string;
   sendFilter: string;
+  groupFilter: string;
   sortBy: string;
   totalMatching: number;
   totalCapacity: number;
@@ -27,6 +28,7 @@ export function GuestExportModal({
   sideTab,
   rsvpFilter,
   sendFilter,
+  groupFilter,
   sortBy,
   totalMatching,
   totalCapacity,
@@ -47,6 +49,7 @@ export function GuestExportModal({
     includeConfirmed: true,
     includeRsvp: true,
     includeSend: true,
+    includeGuestGroup: true,
     includeLiquorCount: false,
     includeInvitationCode: false,
   });
@@ -69,6 +72,7 @@ export function GuestExportModal({
           sideTab,
           rsvpFilter,
           sendFilter,
+          groupFilter,
           sortBy,
           columns
         }),
@@ -176,6 +180,10 @@ export function GuestExportModal({
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={columns.includeSend} onChange={() => handleToggle('includeSend')} className="rounded border-white/20 bg-black/20 text-emerald-500 focus:ring-emerald-500/30" />
                   Include Invitation Sent
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={columns.includeGuestGroup} onChange={() => handleToggle('includeGuestGroup')} className="rounded border-white/20 bg-black/20 text-emerald-500 focus:ring-emerald-500/30" />
+                  Include Guest Group
                 </label>
                 
                 {canViewLiquor && (

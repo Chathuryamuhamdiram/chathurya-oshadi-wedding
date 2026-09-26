@@ -45,6 +45,8 @@ export async function saveGuestAction(formData: FormData) {
       allowedGuestCount: Number(formData.get("allowedGuestCount")),
       liquorCount: Number(formData.get("liquorCount") || 0),
       notes: formData.get("notes") || undefined,
+      guestGroup: formData.get("guestGroup") || undefined,
+      eventId: formData.get("eventId") as string | null,
     };
 
     const validatedData = guestSchema.parse(data);
@@ -65,6 +67,21 @@ export async function saveGuestAction(formData: FormData) {
           notes: validatedData.notes,
         },
       });
+
+      if (data.eventId && data.eventId !== ALL_EVENTS_VALUE) {
+        await prisma.eventGuest.upsert({
+          where: { guestId_eventId: { guestId: validatedData.id, eventId: data.eventId } },
+          create: { 
+            guestId: validatedData.id, 
+            eventId: data.eventId, 
+            rsvpStatus: "PENDING",
+            guestGroup: data.guestGroup || null
+          },
+          update: {
+            guestGroup: data.guestGroup || null
+          },
+        });
+      }
     } else {
       // Create
       // Generate a unique 8-character invitation code
@@ -99,8 +116,15 @@ export async function saveGuestAction(formData: FormData) {
       if (eventId && eventId !== ALL_EVENTS_VALUE) {
         await prisma.eventGuest.upsert({
           where: { guestId_eventId: { guestId: newGuest.id, eventId } },
-          create: { guestId: newGuest.id, eventId, rsvpStatus: "PENDING" },
-          update: {},
+          create: { 
+            guestId: newGuest.id, 
+            eventId, 
+            rsvpStatus: "PENDING",
+            guestGroup: data.guestGroup || null
+          },
+          update: {
+            guestGroup: data.guestGroup || null
+          },
         });
       }
     }

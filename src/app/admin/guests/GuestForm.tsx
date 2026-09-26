@@ -19,6 +19,34 @@ export function GuestForm({ existingGuest, activeEventId, compact }: { existingG
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [side, setSide] = useState(existingGuest?.side || "BRIDE");
+  
+  // Use existingGuest.eventGuests[0]?.guestGroup if available (from GuestListClient)
+  const eg = existingGuest?.eventGuests?.find((eg: any) => !activeEventId || eg.eventId === activeEventId);
+  const existingGroup = eg?.guestGroup || "";
+  
+  const [guestGroup, setGuestGroup] = useState(existingGroup);
+  const [customGroup, setCustomGroup] = useState("");
+  
+  const DEFAULT_GROUPS = [
+    "Mother's Friends",
+    "Father's Friends",
+    "My Friends",
+    "Bride's Friends",
+    "Groom's Friends",
+    "Relatives",
+    "Family Friends",
+    "Work Friends",
+    "Neighbours",
+    "Other"
+  ];
+
+  // If existing group is not in DEFAULT_GROUPS, set it to "Other" and set customGroup
+  useEffect(() => {
+    if (existingGroup && !DEFAULT_GROUPS.includes(existingGroup) && existingGroup !== "Other") {
+      setGuestGroup("Other");
+      setCustomGroup(existingGroup);
+    }
+  }, [existingGroup]);
 
   useEffect(() => {
     if (isNewParam && !existingGuest) {
@@ -32,6 +60,7 @@ export function GuestForm({ existingGuest, activeEventId, compact }: { existingG
     setIsSubmitting(true);
     setError("");
     formData.set("side", side);
+    formData.set("guestGroup", guestGroup === "Other" ? customGroup : guestGroup);
     
     if (existingGuest?.id) {
       formData.set("id", existingGuest.id);
@@ -137,6 +166,32 @@ export function GuestForm({ existingGuest, activeEventId, compact }: { existingG
                 </SelectContent>
               </Select>
             </div>
+            
+            <div className="space-y-1.5">
+              <label className="text-xs font-sans uppercase tracking-widest text-white/40">Guest Group</label>
+              <Select value={guestGroup} onValueChange={setGuestGroup}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white focus:border-emerald-500/50 focus:ring-0 rounded-xl h-11">
+                  <SelectValue placeholder="Select Group" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#0d1117] border-white/10 text-white max-h-[250px]">
+                  <SelectItem value="">None</SelectItem>
+                  {DEFAULT_GROUPS.map(group => (
+                    <SelectItem key={group} value={group}>{group}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {guestGroup === "Other" && (
+                <Input
+                  value={customGroup}
+                  onChange={(e) => setCustomGroup(e.target.value)}
+                  placeholder="Enter custom group..."
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-emerald-500/50 focus:ring-0 rounded-xl h-9 mt-2"
+                />
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-sans uppercase tracking-widest text-white/40">Liquor Count</label>
               <Input

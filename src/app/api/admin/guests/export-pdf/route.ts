@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       sideTab,
       rsvpFilter,
       sendFilter,
+      groupFilter,
       sortBy,
       columns
     } = await request.json();
@@ -71,6 +72,13 @@ export async function POST(request: Request) {
         const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
         const isSent = eg ? eg.send : false;
         return isSent === targetSend;
+      });
+    }
+    
+    if (groupFilter && groupFilter !== "ALL") {
+      result = result.filter((g) => {
+        const eg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+        return eg?.guestGroup === groupFilter;
       });
     }
 
@@ -210,6 +218,7 @@ export async function POST(request: Request) {
     // Table setup
     const tableColumns = ["#", "Guest / Family Name", "Side"];
     if (isAllEvents) tableColumns.push("Event");
+    if (columns.includeGuestGroup) tableColumns.push("Group");
     if (columns.includeType) tableColumns.push("Type");
     if (columns.includeAllowed) tableColumns.push("Invited");
     if (columns.includeConfirmed) tableColumns.push("Confirmed");
@@ -231,6 +240,9 @@ export async function POST(request: Request) {
         row.push(events || "-");
       }
       
+      const currentEg = g.eventGuests.find((eg: any) => isAllEvents || eg.eventId === activeEventId);
+      
+      if (columns.includeGuestGroup) row.push(currentEg?.guestGroup || "-");
       if (columns.includeType) row.push(g.invitationType === "FAMILY" ? "Family" : "Individual");
       if (columns.includeAllowed) row.push(g.allowedGuestCount.toString());
       if (columns.includeConfirmed) row.push(g.confirmedGuestCount.toString());

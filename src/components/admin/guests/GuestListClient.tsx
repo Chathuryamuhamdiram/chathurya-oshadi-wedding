@@ -312,15 +312,15 @@ export function GuestListClient({
         </div>
 
         {/* ROW 2: Filters */}
-        <div className="flex flex-wrap items-center gap-3 w-full">
+        <div className="flex flex-wrap items-center gap-4 md:gap-5 w-full">
           {/* RSVP */}
-          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
-            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">RSVP:</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none">RSVP:</span>
             <Select value={rsvpFilter} onValueChange={(val) => setRsvpFilter(val || "ALL")}>
-              <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
+              <SelectTrigger className="w-[120px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
+              <SelectContent align="start" className="bg-[#1e2333] border-white/10 text-white min-w-[120px]">
                 <SelectItem value="ALL">All</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="ATTENDING">Confirmed</SelectItem>
@@ -331,13 +331,13 @@ export function GuestListClient({
           </div>
 
           {/* Send */}
-          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
-            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">SEND:</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none">SEND:</span>
             <Select value={sendFilter} onValueChange={(val) => setSendFilter(val || "ALL")}>
-              <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
+              <SelectTrigger className="w-[130px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
+              <SelectContent align="start" className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
                 <SelectItem value="ALL">All</SelectItem>
                 <SelectItem value="SENT">Sent</SelectItem>
                 <SelectItem value="NOT_SENT">Not Sent</SelectItem>
@@ -346,13 +346,13 @@ export function GuestListClient({
           </div>
 
           {/* Sort */}
-          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-full md:w-[200px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
-            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">SORT:</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] font-semibold text-white/40 uppercase tracking-wider leading-none">SORT:</span>
             <Select value={sortBy} onValueChange={(val) => setSortBy(val || "RECENTLY_ADDED")}>
-              <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
+              <SelectTrigger className="w-[190px] h-10 bg-black/20 border border-white/10 rounded-[8px] px-3 text-white text-sm focus:ring-1 focus:ring-white/20 shadow-none">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#1e2333] border-white/10 text-white min-w-[200px]">
+              <SelectContent align="start" className="bg-[#1e2333] border-white/10 text-white min-w-[190px]">
                 <SelectItem value="RECENTLY_ADDED">Recently Added</SelectItem>
                 <SelectItem value="NAME_AZ">Guest Name A–Z</SelectItem>
                 <SelectItem value="NAME_ZA">Guest Name Z–A</SelectItem>

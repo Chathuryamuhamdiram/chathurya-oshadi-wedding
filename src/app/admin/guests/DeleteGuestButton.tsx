@@ -5,17 +5,31 @@ import { Trash2 } from "lucide-react";
 import { DeleteConfirmationDialog } from "@/components/admin/DeleteConfirmationDialog";
 import { deleteGuestAction } from "./actions";
 
-export function DeleteGuestButton({ guest }: { guest: { id: string; displayName: string } }) {
+export function DeleteGuestButton({ 
+  guest, 
+  onOptimisticDelete,
+  onOptimisticRollback
+}: { 
+  guest: { id: string; displayName: string },
+  onOptimisticDelete?: () => void,
+  onOptimisticRollback?: () => void
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
     setLoading(true);
+    if (onOptimisticDelete) {
+      onOptimisticDelete();
+    }
     const res = await deleteGuestAction(guest.id);
     setLoading(false);
     if (res.success) {
       setOpen(false);
     } else {
+      if (onOptimisticRollback) {
+        onOptimisticRollback();
+      }
       alert(res.error || "Failed to delete guest.");
     }
   };

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { GuestForm } from "@/app/admin/guests/GuestForm";
 import { WhatsAppShareModal } from "@/app/admin/guests/WhatsAppShareModal";
 import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
-import { Search } from "lucide-react";
+import { Search, RefreshCw, CheckCircle2 } from "lucide-react";
 import { GuestExportModal } from "./GuestExportModal";
 
 function getRsvpColor(status: string) {
@@ -53,6 +54,42 @@ export function GuestListClient({
   const [sendFilter, setSendFilter] = useState("ALL");
   const [sortBy, setSortBy] = useState("RECENTLY_ADDED");
   const [isPending, startTransition] = useTransition();
+  const [isRefreshing, startRefreshTransition] = useTransition();
+  const [showRefreshSuccess, setShowRefreshSuccess] = useState(false);
+  const router = useRouter();
+
+  const [optimisticDeletes, setOptimisticDeletes] = useState<Set<string>>(new Set());
+
+  const handleRefresh = useCallback(() => {
+    startRefreshTransition(() => {
+      router.refresh();
+    });
+    
+    // Show success indicator briefly
+    setShowRefreshSuccess(true);
+    setTimeout(() => setShowRefreshSuccess(false), 2000);
+  }, [router]);
+
+  // Refresh on window focus
+  useEffect(() => {
+    const onFocus = () => {
+      startRefreshTransition(() => {
+        router.refresh();
+      });
+    };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [router]);
+
+  // Periodic background refresh (every 45s)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      startRefreshTransition(() => {
+        router.refresh();
+      });
+    }, 45000);
+    return () => clearInterval(interval);
+  }, [router]);
 
   // Handle Checkbox Toggle
   const handleToggleSend = (guest: any, currentSend: boolean) => {
@@ -72,7 +109,7 @@ export function GuestListClient({
 
   // Memoized filtering and sorting
   const filteredAndSortedGuests = useMemo(() => {
-    let result = [...initialGuests];
+    let result = initialGuests.filter(g => !optimisticDeletes.has(g.id));
 
     // 1. Search Filter
     if (searchQuery) {
@@ -147,7 +184,7 @@ export function GuestListClient({
     });
 
     return result;
-  }, [initialGuests, searchQuery, sideTab, rsvpFilter, sendFilter, sortBy, activeEventId, isAllEvents]);
+  }, [initialGuests, optimisticDeletes, searchQuery, sideTab, rsvpFilter, sendFilter, sortBy, activeEventId, isAllEvents]);
 
   const expectedTotalGuests = filteredAndSortedGuests.reduce((sum, g) => {
     if (g.rsvpStatus === "NOT_ATTENDING") return sum;
@@ -231,6 +268,25 @@ export function GuestListClient({
                 {tab === "ALL" ? "All Guests" : tab === "GROOM" ? "Groom Side" : "Bride Side"}
               </button>
             ))}
+          </div>
+
+          {/* Refresh Button */}
+          <div className="flex xl:justify-end h-10 w-full md:w-auto">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center justify-center gap-2 px-4 h-full bg-black/20 hover:bg-black/40 border border-white/10 rounded-lg text-white/70 hover:text-white text-sm transition-all duration-200 disabled:opacity-50 w-full md:w-auto whitespace-nowrap"
+              title="Refresh Guest List"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {showRefreshSuccess ? (
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Updated
+                </span>
+              ) : (
+                <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+              )}
+            </button>
           </div>
 
           {/* Download PDF - Desktop Only (Moves to row 2/bottom on mobile/tablet) */}
@@ -448,7 +504,17 @@ export function GuestListClient({
                             <GuestForm existingGuest={guest} activeEventId={isAllEvents ? null : activeEventId} />
                           </div>
                           
-                          <DeleteGuestButton guest={{ id: guest.id, displayName: guest.displayName }} />
+                          <DeleteGuestButton 
+                            guest={{ id: guest.id, displayName: guest.displayName }} 
+                            onOptimisticDelete={() => setOptimisticDeletes(prev => new Set(prev).add(guest.id))}
+                            onOptimisticRollback={() => {
+                              setOptimisticDeletes(prev => {
+                                const next = new Set(prev);
+                                next.delete(guest.id);
+                                return next;
+                              });
+                            }}
+                          />
                         </div>
                       </td>
                     </tr>

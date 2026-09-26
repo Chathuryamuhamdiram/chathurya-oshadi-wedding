@@ -73,15 +73,26 @@ export async function submitRSVP(
         ? "DECLINED"
         : "RSVP_PENDING";
 
-  await prisma.guest.update({
-    where: { invitationCode },
-    data: {
-      rsvpStatus: attendanceRaw,
-      confirmedGuestCount,
-      liquorCount,
-      invitationStatus,
-    },
-  });
+  await prisma.$transaction([
+    prisma.guest.update({
+      where: { invitationCode },
+      data: {
+        rsvpStatus: attendanceRaw,
+        confirmedGuestCount,
+        liquorCount,
+        invitationStatus,
+      },
+    }),
+    prisma.eventGuest.updateMany({
+      where: { guestId: guest.id },
+      data: {
+        rsvpStatus: attendanceRaw,
+        confirmedCount: confirmedGuestCount,
+        liquorCount,
+        responseSource: "Public RSVP",
+      },
+    })
+  ]);
 
   revalidatePath(`/invite/${invitationCode}`);
   return { success: true };

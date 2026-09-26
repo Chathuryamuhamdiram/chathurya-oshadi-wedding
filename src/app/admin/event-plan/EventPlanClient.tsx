@@ -65,10 +65,9 @@ export function EventPlanClient({ items: initialItems, eventId, eventName, isAll
         setItems(items.map(i => i.id === id ? { ...i, activity: formActivity.trim(), plannedTime: formTime || null } : i));
         setEditingId(null);
       } else {
-        // We rely on server action's revalidatePath, but we can reset form
+        // We rely on server action's revalidatePath
         setAddingNew(false);
-        // Page reload will fetch the new item correctly with its ID
-        window.location.reload(); 
+        router.refresh(); 
       }
     } else {
       alert(result.error);
@@ -316,7 +315,7 @@ export function EventPlanClient({ items: initialItems, eventId, eventName, isAll
           eventId={eventId} 
           eventName={eventName}
           existingItems={items}
-          onClose={() => { setIsBulkOpen(false); window.location.reload(); }}
+          onClose={() => { setIsBulkOpen(false); router.refresh(); }}
         />
       )}
     </div>

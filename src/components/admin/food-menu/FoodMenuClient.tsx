@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Plus, Edit2, Trash2, GripVertical, FileDown, UtensilsCrossed } from "lucide-react";
 import { createOrUpdateMenu, addSection, updateSection, deleteSection, duplicateSection, addItem, updateItem, deleteItem, reorderSections, reorderItems } from "@/app/admin/food-menu/actions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MenuExportModal from "./MenuExportModal";
 import { FoodMenuBulkSectionImport } from "./FoodMenuBulkSectionImport";
 import { FoodMenuBulkItemImport } from "./FoodMenuBulkItemImport";
@@ -435,20 +436,30 @@ export default function FoodMenuClient({
             </div>
             <div>
               <label className="block text-xs font-medium text-white/60 mb-1.5">Vendor/Caterer</label>
-              <select name="vendorId" defaultValue={editingMenu?.vendorId || ""} className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30 appearance-none">
-                <option value="">-- None --</option>
-                {vendors?.map((v: any) => (
-                  <option key={v.id} value={v.id}>{v.vendorName}</option>
-                ))}
-              </select>
+              <Select name="vendorId" defaultValue={editingMenu?.vendorId || "none"}>
+                <SelectTrigger className="w-full bg-black/20 border border-white/10 rounded-lg h-9 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/30">
+                  <SelectValue placeholder="-- None --" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                  <SelectItem value="none">-- None --</SelectItem>
+                  {vendors?.map((v: any) => (
+                    <SelectItem key={v.id} value={v.id}>{v.vendorName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium text-white/60 mb-1.5">Status</label>
-              <select name="status" defaultValue={editingMenu?.status || "DRAFT"} className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30 appearance-none">
-                <option value="DRAFT">Draft</option>
-                <option value="CONFIRMED">Confirmed</option>
-                <option value="CANCELLED">Cancelled</option>
-              </select>
+              <Select name="status" defaultValue={editingMenu?.status || "DRAFT"}>
+                <SelectTrigger className="w-full bg-black/20 border border-white/10 rounded-lg h-9 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/30">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                  <SelectItem value="DRAFT">Draft</SelectItem>
+                  <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="block text-xs font-medium text-white/60 mb-1.5">Internal Notes</label>

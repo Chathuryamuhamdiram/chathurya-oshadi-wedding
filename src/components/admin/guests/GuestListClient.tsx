@@ -9,6 +9,7 @@ import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
 import { Search, RefreshCw, CheckCircle2 } from "lucide-react";
 import { GuestExportModal } from "./GuestExportModal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function getRsvpColor(status: string) {
   switch (status) {
@@ -313,58 +314,58 @@ export function GuestListClient({
         {/* ROW 2: Filters */}
         <div className="flex flex-wrap items-center gap-3 w-full">
           {/* RSVP */}
-          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px]">
-            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0">RSVP:</span>
-            <select
-              value={rsvpFilter}
-              onChange={(e) => setRsvpFilter(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none appearance-none cursor-pointer w-full h-full pl-2 pr-8"
-            >
-              <option value="ALL">All</option>
-              <option value="PENDING">Pending</option>
-              <option value="ATTENDING">Confirmed</option>
-              <option value="NOT_ATTENDING">Declined</option>
-              <option value="NOT_SURE">Not Sure</option>
-            </select>
-            <div className="absolute right-3 pointer-events-none text-white/40 text-[10px]">▼</div>
+          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
+            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">RSVP:</span>
+            <Select value={rsvpFilter} onValueChange={setRsvpFilter}>
+              <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="ATTENDING">Confirmed</SelectItem>
+                <SelectItem value="NOT_ATTENDING">Declined</SelectItem>
+                <SelectItem value="NOT_SURE">Not Sure</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Send */}
-          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px]">
-            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0">SEND:</span>
-            <select
-              value={sendFilter}
-              onChange={(e) => setSendFilter(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none appearance-none cursor-pointer w-full h-full pl-2 pr-8"
-            >
-              <option value="ALL">All</option>
-              <option value="SENT">Sent</option>
-              <option value="NOT_SENT">Not Sent</option>
-            </select>
-            <div className="absolute right-3 pointer-events-none text-white/40 text-[10px]">▼</div>
+          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-[calc(50%-6px)] md:w-[130px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
+            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">SEND:</span>
+            <Select value={sendFilter} onValueChange={setSendFilter}>
+              <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1e2333] border-white/10 text-white min-w-[130px]">
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="SENT">Sent</SelectItem>
+                <SelectItem value="NOT_SENT">Not Sent</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Sort */}
-          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-full md:w-[190px]">
-            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0">SORT:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="bg-transparent text-white text-sm focus:outline-none appearance-none cursor-pointer w-full h-full pl-2 pr-8 truncate"
-            >
-              <option value="RECENTLY_ADDED">Recently Added</option>
-              <option value="NAME_AZ">Guest Name A–Z</option>
-              <option value="NAME_ZA">Guest Name Z–A</option>
-              <option value="GROOM_FIRST">Groom Side First</option>
-              <option value="BRIDE_FIRST">Bride Side First</option>
-              <option value="RSVP_CONFIRMED_FIRST">RSVP Confirmed First</option>
-              <option value="RSVP_PENDING_FIRST">RSVP Pending First</option>
-              <option value="SENT_FIRST">Sent First</option>
-              <option value="NOT_SENT_FIRST">Not Sent First</option>
-              <option value="SEATS_HIGH_LOW">Seat Count High to Low</option>
-              <option value="LIQUOR_HIGH_LOW">Liquor Count High to Low</option>
-            </select>
-            <div className="absolute right-3 pointer-events-none text-white/40 text-[10px]">▼</div>
+          <div className="relative flex items-center bg-black/20 border border-white/10 rounded-lg h-10 w-full md:w-[200px] focus-within:ring-1 focus-within:ring-white/20 transition-all">
+            <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider pl-3 shrink-0 pointer-events-none">SORT:</span>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="flex-1 bg-transparent border-0 ring-0 focus-visible:ring-0 shadow-none px-2 h-full text-white text-sm [&>span[data-slot=select-value]]:text-right w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1e2333] border-white/10 text-white min-w-[200px]">
+                <SelectItem value="RECENTLY_ADDED">Recently Added</SelectItem>
+                <SelectItem value="NAME_AZ">Guest Name A–Z</SelectItem>
+                <SelectItem value="NAME_ZA">Guest Name Z–A</SelectItem>
+                <SelectItem value="GROOM_FIRST">Groom Side First</SelectItem>
+                <SelectItem value="BRIDE_FIRST">Bride Side First</SelectItem>
+                <SelectItem value="RSVP_CONFIRMED_FIRST">RSVP Confirmed First</SelectItem>
+                <SelectItem value="RSVP_PENDING_FIRST">RSVP Pending First</SelectItem>
+                <SelectItem value="SENT_FIRST">Sent First</SelectItem>
+                <SelectItem value="NOT_SENT_FIRST">Not Sent First</SelectItem>
+                <SelectItem value="SEATS_HIGH_LOW">Seat Count High to Low</SelectItem>
+                <SelectItem value="LIQUOR_HIGH_LOW">Liquor Count High to Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Reset Filters */}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, X, Loader2, Edit2 } from "lucide-react";
 import { saveContribution } from "./actions";
 import { Contribution } from "@prisma/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ContributionFormProps {
   contribution?: any;
@@ -121,31 +122,33 @@ export function ContributionForm({ contribution, trigger, activeEventId }: Contr
                   <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">
                     Payment Method
                   </label>
-                  <select
-                    name="paymentMethod"
-                    defaultValue={contribution?.paymentMethod || "Bank Transfer"}
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#BA9B5D] transition-colors"
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cheque">Cheque</option>
-                    <option value="Card">Card</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <Select name="paymentMethod" defaultValue={contribution?.paymentMethod || "Bank Transfer"}>
+                    <SelectTrigger className="w-full bg-black/20 border border-white/10 rounded-lg h-11 px-4 py-2.5 text-white focus:ring-1 focus:ring-[#BA9B5D]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                      <SelectItem value="Cash">Cash</SelectItem>
+                      <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="Cheque">Cheque</SelectItem>
+                      <SelectItem value="Card">Card</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-white/50 mb-1.5 uppercase tracking-wider">
                     Status
                   </label>
-                  <select
-                    name="status"
-                    defaultValue={contribution?.status || "RECEIVED"}
-                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#BA9B5D] transition-colors"
-                  >
-                    <option value="RECEIVED">RECEIVED</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                  </select>
+                  <Select name="status" defaultValue={contribution?.status || "RECEIVED"}>
+                    <SelectTrigger className="w-full bg-black/20 border border-white/10 rounded-lg h-11 px-4 py-2.5 text-white focus:ring-1 focus:ring-[#BA9B5D]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                      <SelectItem value="RECEIVED">RECEIVED</SelectItem>
+                      <SelectItem value="PENDING">PENDING</SelectItem>
+                      <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

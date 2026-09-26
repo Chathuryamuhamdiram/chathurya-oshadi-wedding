@@ -5,6 +5,7 @@ import { parseEventPlanText, ParsedEventPlanItem } from "@/lib/admin/event-plan-
 import { bulkSaveEventPlanItems } from "./actions";
 import { X, Check, AlertTriangle, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EventPlanBulkImportProps {
   eventId: string;
@@ -106,24 +107,26 @@ export function EventPlanBulkImport({ eventId, eventName, existingItems, onClose
 
                 <div className="flex items-center gap-2">
                   {item.status === "DUPLICATE" ? (
-                    <select 
-                      className="bg-[#0d1117] text-white border border-white/10 rounded-lg text-sm px-3 py-1.5 focus:border-indigo-500 outline-none"
-                      value={item.status}
-                      onChange={(e) => handleActionChange(item.id, e.target.value as any)}
-                    >
-                      <option value="DUPLICATE">SKIP (Duplicate)</option>
-                      <option value="SAME TIME">UPDATE EXISTING (Use New Time)</option>
-                      <option value="NEW">ADD ANYWAY</option>
-                    </select>
+                    <Select value={item.status} onValueChange={(val: any) => handleActionChange(item.id, val)}>
+                      <SelectTrigger className="bg-[#0d1117] text-white border border-white/10 rounded-lg text-sm h-8 px-3 py-1.5 focus:ring-1 focus:ring-indigo-500 w-[240px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                        <SelectItem value="DUPLICATE">SKIP (Duplicate)</SelectItem>
+                        <SelectItem value="SAME TIME">UPDATE EXISTING (Use New Time)</SelectItem>
+                        <SelectItem value="NEW">ADD ANYWAY</SelectItem>
+                      </SelectContent>
+                    </Select>
                   ) : item.status === "SAME TIME" ? (
-                     <select 
-                      className="bg-[#0d1117] text-white border border-white/10 rounded-lg text-sm px-3 py-1.5 focus:border-indigo-500 outline-none"
-                      value={item.status}
-                      onChange={(e) => handleActionChange(item.id, e.target.value as any)}
-                    >
-                      <option value="SAME TIME">ADD ANYWAY</option>
-                      <option value="DUPLICATE">SKIP</option>
-                    </select>
+                    <Select value={item.status} onValueChange={(val: any) => handleActionChange(item.id, val)}>
+                      <SelectTrigger className="bg-[#0d1117] text-white border border-white/10 rounded-lg text-sm h-8 px-3 py-1.5 focus:ring-1 focus:ring-indigo-500 w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                        <SelectItem value="SAME TIME">ADD ANYWAY</SelectItem>
+                        <SelectItem value="DUPLICATE">SKIP</SelectItem>
+                      </SelectContent>
+                    </Select>
                   ) : (
                     <div className="text-emerald-400 text-sm flex items-center gap-1 font-medium bg-emerald-500/10 px-3 py-1.5 rounded-lg">
                       <Check className="w-4 h-4" /> Adding

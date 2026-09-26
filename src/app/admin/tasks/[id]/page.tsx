@@ -6,6 +6,7 @@ import { DeleteTaskButton } from "../DeleteTaskButton";
 import { TaskItemsClient } from "./TaskItemsClient";
 import { getAdminSession } from "@/lib/auth";
 import { CalendarIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -122,12 +123,16 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
               const blockedById = formData.get("blockedById") as string;
               if (blockedById) await addDependency(task.id, blockedById);
             }} className="flex gap-2">
-              <select name="blockedById" className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-white/30">
-                <option value="">Add a dependency...</option>
-                {allTasks.map(t => (
-                  <option key={t.id} value={t.id}>{t.title}</option>
-                ))}
-              </select>
+              <Select name="blockedById">
+                <SelectTrigger className="flex-1 bg-black/40 border border-white/10 rounded-lg h-9 px-3 py-2 text-sm text-white focus:ring-1 focus:ring-white/30">
+                  <SelectValue placeholder="Add a dependency..." />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                  {allTasks.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <button type="submit" className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm border border-white/10 transition-colors">
                 Add
               </button>

@@ -5,6 +5,7 @@ import { Upload, FileSpreadsheet, X, AlertCircle, CheckCircle2, Download, Refres
 import { GuestImportPreviewTable } from "./GuestImportPreviewTable";
 import { ProcessedRow } from "@/lib/guest-import";
 import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Props = {
   activeEventId: string | null;
@@ -156,27 +157,28 @@ export function GuestExcelImporter({ activeEventId, events }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-widest text-white/40 font-semibold">Event</label>
-                <select 
-                  className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#d7b56d]"
-                  value={selectedEventId}
-                  onChange={(e) => setSelectedEventId(e.target.value)}
-                >
-                  <option value="" disabled>Select Event...</option>
-                  {events.map(ev => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
-                </select>
+                <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                  <SelectTrigger className="w-full bg-black/30 border border-white/10 rounded-lg p-3 h-[46px] text-white focus:ring-1 focus:ring-[#d7b56d] focus-visible:ring-1 focus-visible:ring-[#d7b56d]">
+                    <SelectValue placeholder="Select Event..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                    {events.map(ev => <SelectItem key={ev.id} value={ev.id}>{ev.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
                 <label className="text-xs uppercase tracking-widest text-white/40 font-semibold">Guest Side</label>
-                <select 
-                  className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#d7b56d]"
-                  value={selectedSide}
-                  onChange={(e) => setSelectedSide(e.target.value as any)}
-                >
-                  <option value="BRIDE">Bride's Side</option>
-                  <option value="GROOM">Groom's Side</option>
-                  <option value="BOTH">Both / Common</option>
-                </select>
+                <Select value={selectedSide} onValueChange={(val: any) => setSelectedSide(val)}>
+                  <SelectTrigger className="w-full bg-black/30 border border-white/10 rounded-lg p-3 h-[46px] text-white focus:ring-1 focus:ring-[#d7b56d] focus-visible:ring-1 focus-visible:ring-[#d7b56d]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1e2333] border-white/10 text-white">
+                    <SelectItem value="BRIDE">Bride's Side</SelectItem>
+                    <SelectItem value="GROOM">Groom's Side</SelectItem>
+                    <SelectItem value="BOTH">Both / Common</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

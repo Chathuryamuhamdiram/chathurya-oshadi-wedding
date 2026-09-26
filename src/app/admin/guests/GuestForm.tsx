@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveGuestAction } from "./actions";
 import { Edit2 } from "lucide-react";
 
-export function GuestForm({ existingGuest, activeEventId, compact }: { existingGuest?: any, activeEventId?: string | null, compact?: boolean }) {
+export function GuestForm({ existingGuest, activeEventId, compact, asMenuItem, onAction }: { existingGuest?: any, activeEventId?: string | null, compact?: boolean, asMenuItem?: boolean, onAction?: () => void }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -47,13 +47,25 @@ export function GuestForm({ existingGuest, activeEventId, compact }: { existingG
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(val) => {
+      setOpen(val);
+      if (val && onAction) onAction();
+    }}>
       <DialogTrigger className={
-        compact 
-          ? "w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all shrink-0"
-          : "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 text-sm font-sans transition-all duration-200 group"
-      } title={existingGuest ? "Edit Guest" : "Add Guest"}>
-        {compact ? <Edit2 className="w-4 h-4" /> : (
+        asMenuItem
+          ? "flex items-center gap-2.5 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors w-full text-left"
+          : compact 
+            ? "w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 transition-all shrink-0"
+            : "inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 text-sm font-sans transition-all duration-200 group"
+      } title={asMenuItem ? undefined : (existingGuest ? "Edit Guest" : "Add Guest")}>
+        {asMenuItem ? (
+          <>
+            <Edit2 className="w-4 h-4 text-emerald-400" />
+            <span>Edit Guest</span>
+          </>
+        ) : compact ? (
+          <Edit2 className="w-4 h-4" />
+        ) : (
           <>
             {!existingGuest && <span className="text-lg leading-none transition-transform duration-200 group-hover:rotate-90">+</span>}
             {existingGuest ? "Edit Guest" : "Add Guest"}

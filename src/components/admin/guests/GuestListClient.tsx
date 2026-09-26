@@ -4,12 +4,12 @@ import { useState, useTransition, useMemo, useEffect, useCallback } from "react"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GuestForm } from "@/app/admin/guests/GuestForm";
-import { WhatsAppShareModal } from "@/app/admin/guests/WhatsAppShareModal";
 import { DeleteGuestButton } from "@/app/admin/guests/DeleteGuestButton";
 import { updateGuestSendStatus } from "@/app/admin/guests/actions";
 import { Search, RefreshCw, CheckCircle2, Link2, UserCheck } from "lucide-react";
 import { GuestExportModal } from "./GuestExportModal";
 import { AdminRSVPModal } from "./AdminRSVPModal";
+import { GuestRowActions } from "./GuestRowActions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 function getRsvpColor(status: string) {
@@ -477,42 +477,21 @@ export function GuestListClient({
                         </div>
                       </td>
                       <td className="px-3 py-3 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <Link
-                            href={`/invite/${guest.invitationCode}`}
-                            target="_blank"
-                            className="w-8 h-8 flex items-center justify-center text-emerald-400/80 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all shrink-0"
-                            title="Copy / Open Invitation"
-                          >
-                            <Link2 className="w-4 h-4" />
-                          </Link>
-                          
-                          <button
-                            onClick={() => setSelectedRSVPGuest(guest)}
-                            disabled={!canEditGuests}
-                            className="w-8 h-8 flex items-center justify-center bg-[#d7b56d]/10 hover:bg-[#d7b56d]/20 text-[#d7b56d] border border-[#d7b56d]/20 rounded-lg transition-all disabled:opacity-50 shrink-0"
-                            title="Update RSVP"
-                          >
-                            <UserCheck className="w-4 h-4" />
-                          </button>
-                          
-                          <WhatsAppShareModal guest={guest} compact />
-  
-                          <GuestForm existingGuest={guest} activeEventId={isAllEvents ? null : activeEventId} compact />
-                          
-                          <DeleteGuestButton 
-                            guest={{ id: guest.id, displayName: guest.displayName }} 
-                            onOptimisticDelete={() => setOptimisticDeletes(prev => new Set(prev).add(guest.id))}
-                            onOptimisticRollback={() => {
-                              setOptimisticDeletes(prev => {
-                                const next = new Set(prev);
-                                next.delete(guest.id);
-                                return next;
-                              });
-                            }}
-                            compact
-                          />
-                        </div>
+                        <GuestRowActions
+                          guest={guest}
+                          canEditGuests={canEditGuests}
+                          onUpdateRSVP={() => setSelectedRSVPGuest(guest)}
+                          activeEventId={activeEventId}
+                          isAllEvents={isAllEvents}
+                          onOptimisticDelete={() => setOptimisticDeletes(prev => new Set(prev).add(guest.id))}
+                          onOptimisticRollback={() => {
+                            setOptimisticDeletes(prev => {
+                              const next = new Set(prev);
+                              next.delete(guest.id);
+                              return next;
+                            });
+                          }}
+                        />
                       </td>
                     </tr>
                   );

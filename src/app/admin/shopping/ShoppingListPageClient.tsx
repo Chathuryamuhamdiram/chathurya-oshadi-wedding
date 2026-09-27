@@ -58,7 +58,7 @@ export default function ShoppingListPageClient({ lists, role, permissions, event
   const handleDuplicate = async (list: ShoppingListType) => {
     const newName = prompt("Enter new list name:", `${list.name} (Copy)`);
     if (!newName) return;
-    await duplicateShoppingList(list.id, newName, list.eventContext, list.eventId);
+    await duplicateShoppingList(list.id, newName, list.eventContext || undefined, list.eventId || undefined);
   };
 
   const handleDelete = async (id: string) => {

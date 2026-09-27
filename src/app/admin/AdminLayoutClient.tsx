@@ -28,7 +28,8 @@ import {
   MapPin,
   Globe,
   Image as ImageIcon,
-  MessageSquare
+  MessageSquare,
+  ShoppingCart
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { hasPermission } from "@/lib/permissions";
@@ -49,6 +50,7 @@ const allNavGroups = [
       { href: "/admin/food-menu", label: "Food Menu", icon: Utensils },
       { href: "/admin/seating", label: "Seating", icon: Utensils },
       { href: "/admin/logistics", label: "Logistics", icon: Truck },
+      { href: "/admin/shopping", label: "Shopping Lists", icon: ShoppingCart },
     ]
   },
   {
@@ -147,6 +149,7 @@ function AdminSidebar({
     "/admin/calendar": "calendar.view",
     "/admin/wedding-day": "wedding_day.view",
     "/admin/guestbook": "guestbook.view",
+    "/admin/shopping": "shopping.view",
   };
 
   // Filter nav groups based on permissions

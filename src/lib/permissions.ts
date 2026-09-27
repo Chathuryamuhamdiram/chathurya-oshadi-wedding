@@ -85,6 +85,14 @@ export const PERMISSIONS = {
   MENU_EDIT: 'menu.edit',
   MENU_DELETE: 'menu.delete',
   MENU_EXPORT: 'menu.export',
+
+  SHOPPING_VIEW: 'shopping.view',
+  SHOPPING_CREATE: 'shopping.create',
+  SHOPPING_EDIT: 'shopping.edit',
+  SHOPPING_DELETE: 'shopping.delete',
+  SHOPPING_ITEM_CREATE: 'shopping_item.create',
+  SHOPPING_ITEM_EDIT: 'shopping_item.edit',
+  SHOPPING_ITEM_DELETE: 'shopping_item.delete',
 } as const;
 
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -131,6 +139,11 @@ export const ADMIN_DEFAULT_PERMISSIONS: string[] = [
   PERMISSIONS.MENU_CREATE,
   PERMISSIONS.MENU_EDIT,
   PERMISSIONS.MENU_EXPORT,
+  PERMISSIONS.SHOPPING_VIEW,
+  PERMISSIONS.SHOPPING_CREATE,
+  PERMISSIONS.SHOPPING_EDIT,
+  PERMISSIONS.SHOPPING_ITEM_CREATE,
+  PERMISSIONS.SHOPPING_ITEM_EDIT,
 ];
 
 // For the UI to render the permission matrix logically grouped
@@ -232,6 +245,18 @@ export const PERMISSION_MODULES = [
       { code: PERMISSIONS.MENU_EDIT, label: "Edit" },
       { code: PERMISSIONS.MENU_DELETE, label: "Delete" },
       { code: PERMISSIONS.MENU_EXPORT, label: "Export" },
+    ]
+  },
+  {
+    name: "Shopping",
+    permissions: [
+      { code: PERMISSIONS.SHOPPING_VIEW, label: "View" },
+      { code: PERMISSIONS.SHOPPING_CREATE, label: "Create List" },
+      { code: PERMISSIONS.SHOPPING_EDIT, label: "Edit List" },
+      { code: PERMISSIONS.SHOPPING_DELETE, label: "Delete List" },
+      { code: PERMISSIONS.SHOPPING_ITEM_CREATE, label: "Create Item" },
+      { code: PERMISSIONS.SHOPPING_ITEM_EDIT, label: "Edit Item" },
+      { code: PERMISSIONS.SHOPPING_ITEM_DELETE, label: "Delete Item" },
     ]
   }
 ];

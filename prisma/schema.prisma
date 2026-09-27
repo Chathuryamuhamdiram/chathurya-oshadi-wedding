@@ -26,6 +26,7 @@ model User {
   userPermissions      UserPermission[]
   preferences          UserPreference?
   assignedTasksMulti   Task[]                @relation("TaskAssignees")
+  createdShoppingLists ShoppingList[]        @relation("CreatedShoppingLists")
 }
 
 model CeremonyEvent {
@@ -50,6 +51,7 @@ model CeremonyEvent {
   fundBalanceSnapshots FundBalanceSnapshot[]
   tasks                Task[]
   itineraryEvents      WeddingEvent[]
+  shoppingLists        ShoppingList[]
 }
 
 model EventGuest {
@@ -588,3 +590,73 @@ enum ExpenseType {
   FINAL_PAYMENT
   OTHER
 }
+
+model ShoppingList {
+  id           String             @id @default(uuid())
+  name         String
+  eventContext String?
+  eventId      String?
+  shoppingDate DateTime?
+  notes        String?
+  status       String             @default("ACTIVE")
+  createdById  String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  categories   ShoppingCategory[]
+  shops        ShoppingShop[]
+  items        ShoppingItem[]
+
+  event     CeremonyEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  createdBy User?          @relation("CreatedShoppingLists", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([status])
+}
+
+model ShoppingCategory {
+  id             String         @id @default(uuid())
+  shoppingListId String
+  name           String
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  list           ShoppingList   @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  items          ShoppingItem[]
+
+  @@index([shoppingListId])
+}
+
+model ShoppingShop {
+  id             String         @id @default(uuid())
+  shoppingListId String
+  name           String
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  list           ShoppingList   @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  items          ShoppingItem[]
+
+  @@index([shoppingListId])
+}
+
+model ShoppingItem {
+  id             String            @id @default(uuid())
+  shoppingListId String
+  categoryId     String?
+  shopId         String?
+  name           String
+  quantity       String?
+  note           String?
+  isBought       Boolean           @default(false)
+  sortOrder      Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  list           ShoppingList      @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  category       ShoppingCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  shop           ShoppingShop?     @relation(fields: [shopId], references: [id], onDelete: SetNull)
+
+  @@index([shoppingListId])
+  @@index([categoryId])
+  @@index([shopId])
+}
+

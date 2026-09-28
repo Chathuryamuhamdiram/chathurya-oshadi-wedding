@@ -13,7 +13,7 @@ type ShoppingListType = {
   name: string;
   eventContext: string | null;
   eventId: string | null;
-  shoppingDate: Date | null;
+  shoppingDate: string | null;
   notes: string | null;
   status: string;
   items: { id: string; isBought: boolean }[];

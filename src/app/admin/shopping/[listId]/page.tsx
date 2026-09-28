@@ -36,13 +36,11 @@ export default async function ShoppingListDetailPage(props: { params: Promise<{ 
     } : null,
     categories: listRaw.categories.map(c => ({
       id: c.id,
-      name: c.name,
-      color: c.color
+      name: c.name
     })),
     shops: listRaw.shops.map(s => ({
       id: s.id,
-      name: s.name,
-      location: s.location
+      name: s.name
     })),
     items: listRaw.items.map(i => ({
       id: i.id,

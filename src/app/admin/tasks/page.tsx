@@ -40,7 +40,7 @@ export default async function AdminTasksPage(props: PageProps) {
     baseWhere.assignees = { some: { id: userId } };
   }
 
-  const tasks = await prisma.task.findMany({
+  const tasksRaw = await prisma.task.findMany({
     where: baseWhere,
     include: { 
       assignees: true,
@@ -50,16 +50,34 @@ export default async function AdminTasksPage(props: PageProps) {
     orderBy
   });
 
-  const users = await prisma.user.findMany({
+  const tasks = tasksRaw.map(t => ({
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    category: t.category,
+    targetDate: t.targetDate ? t.targetDate.toISOString() : null,
+    startDate: t.startDate ? t.startDate.toISOString() : null,
+    status: t.status,
+    priority: t.priority,
+    assignees: t.assignees.map(a => ({ id: a.id, fullName: a.fullName })),
+    items: t.items.map(i => ({ id: i.id, completed: i.completed })),
+    event: t.event ? { id: t.event.id, name: t.event.name, eventType: t.event.eventType } : null
+  }));
+
+  const usersRaw = await prisma.user.findMany({
     orderBy: { fullName: 'asc' }
   });
+  const users = usersRaw.map(u => ({ id: u.id, fullName: u.fullName }));
 
   let activeEvent = null;
   if (!isAllEvents) {
-    activeEvent = await prisma.ceremonyEvent.findUnique({
+    const activeEventRaw = await prisma.ceremonyEvent.findUnique({
       where: { id: activeEventId },
       select: { id: true, name: true, eventType: true }
     });
+    if (activeEventRaw) {
+      activeEvent = { id: activeEventRaw.id, name: activeEventRaw.name, eventType: activeEventRaw.eventType };
+    }
   }
 
   // Handle custom JS sorting for progress

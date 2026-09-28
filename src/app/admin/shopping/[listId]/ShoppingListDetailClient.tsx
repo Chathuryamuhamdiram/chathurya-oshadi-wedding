@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { LayoutGrid, Store, List as ListIcon, CheckCircle2, Circle, ArrowLeft, Search, ClipboardPaste, Trash2 } from "lucide-react";
+import { LayoutGrid, Store, List as ListIcon, CheckCircle2, Circle, ArrowLeft, Search, ClipboardPaste, Trash2, Download } from "lucide-react";
 import Link from "next/link";
 import { addItem, toggleItemBought, addCategory, addShop, bulkAddItems, deleteItem } from "../actions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -144,6 +144,35 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
     return items;
   }, [list.items, filter, search, list.categories, list.shops]);
 
+  const handleDownload = () => {
+    let content = `Shopping List: ${list.name}\n`;
+    if (list.event) content += `Event: ${list.event.name}\n`;
+    content += `Progress: ${bought} / ${total} Bought (${progress}%)\n\n`;
+    content += `--- Items ---\n\n`;
+    
+    displayItems.forEach((item, idx) => {
+      const checkbox = item.isBought ? "[x]" : "[ ]";
+      const cat = list.categories.find(c => c.id === item.categoryId)?.name || "Uncategorized";
+      const shop = list.shops.find(s => s.id === item.shopId)?.name || "Anywhere";
+      
+      let line = `${idx + 1}. ${checkbox} ${item.name}`;
+      if (item.quantity) line += ` (Qty: ${item.quantity})`;
+      if (item.note) line += ` - Note: ${item.note}`;
+      line += `\n   Shop: ${shop} | Category: ${cat}\n\n`;
+      content += line;
+    });
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${list.name.replace(/\s+/g, '_')}_Shopping_List.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const ItemRow = ({ item }: { item: ShoppingItemType }) => (
     <div className={`flex items-center gap-3 p-3 rounded-xl border border-white/5 transition-colors group ${item.isBought ? 'bg-white/5 opacity-60' : 'bg-[#1e2333] hover:border-white/10'}`}>
       <button 
@@ -194,6 +223,13 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleDownload}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-lg font-medium transition-colors border border-emerald-500/20"
+          >
+            <Download className="w-4 h-4" />
+            Download
+          </button>
           <button
             onClick={() => setIsBulkPasteOpen(true)}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/5"

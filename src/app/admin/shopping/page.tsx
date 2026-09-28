@@ -9,7 +9,7 @@ export default async function ShoppingListsPage() {
   const permissions = session.permissions || [];
   const role = session.role as string;
 
-  const lists = await prisma.shoppingList.findMany({
+  const listsRaw = await prisma.shoppingList.findMany({
     include: {
       items: {
         select: { id: true, isBought: true }
@@ -18,6 +18,18 @@ export default async function ShoppingListsPage() {
     },
     orderBy: { createdAt: "desc" }
   });
+
+  const lists = listsRaw.map(l => ({
+    id: l.id,
+    name: l.name,
+    eventContext: l.eventContext,
+    eventId: l.eventId,
+    shoppingDate: l.shoppingDate ? l.shoppingDate.toISOString() : null,
+    notes: l.notes,
+    status: l.status,
+    items: l.items,
+    event: l.event
+  }));
   
   const ceremonyEvents = await prisma.ceremonyEvent.findMany({
     where: { isActive: true },

@@ -21,11 +21,20 @@ export default async function EventsDashboardPage() {
     });
   }
 
-  const venues = await prisma.venue.findMany({
+  const venuesRaw = await prisma.venue.findMany({
     orderBy: { name: 'asc' }
   });
 
-  const events = await prisma.weddingEvent.findMany({
+  const venues = venuesRaw.map(v => ({
+    id: v.id,
+    name: v.name,
+    address: v.address,
+    googleMapsUrl: v.googleMapsUrl,
+    phone: v.phone,
+    notes: v.notes,
+  }));
+
+  const eventsRaw = await prisma.weddingEvent.findMany({
     where: isAllEvents ? {} : { eventId: activeEventId },
     include: { venue: true, items: true, event: { select: { id: true, name: true } } },
     orderBy: [
@@ -34,6 +43,36 @@ export default async function EventsDashboardPage() {
       { startTime: 'asc' }
     ]
   });
+
+  const events = eventsRaw.map(e => ({
+    id: e.id,
+    title: e.title,
+    description: e.description,
+    eventDate: e.eventDate ? e.eventDate.toISOString() : null,
+    startTime: e.startTime,
+    endTime: e.endTime,
+    venueId: e.venueId,
+    visibility: e.visibility,
+    sortOrder: e.sortOrder,
+    venue: e.venue ? {
+      id: e.venue.id,
+      name: e.venue.name,
+      address: e.venue.address,
+      googleMapsUrl: e.venue.googleMapsUrl,
+      phone: e.venue.phone,
+      notes: e.venue.notes
+    } : null,
+    items: e.items.map(item => ({
+      id: item.id,
+      name: item.name,
+      quantity: item.quantity,
+      status: item.status
+    })),
+    event: e.event ? {
+      id: e.event.id,
+      name: e.event.name
+    } : null
+  }));
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-12">

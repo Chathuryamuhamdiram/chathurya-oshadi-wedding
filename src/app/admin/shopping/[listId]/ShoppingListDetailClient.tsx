@@ -222,9 +222,9 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
             onChange={(e) => setFilter(e.target.value as "ALL" | "PENDING" | "BOUGHT")}
             className="bg-[#1e2333] border border-white/5 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none min-w-[120px]"
           >
-            <option value="ALL">All Items</option>
-            <option value="PENDING">Pending</option>
-            <option value="BOUGHT">Bought</option>
+            <option value="ALL" className="bg-[#1e2333]">All Items</option>
+            <option value="PENDING" className="bg-[#1e2333]">Pending</option>
+            <option value="BOUGHT" className="bg-[#1e2333]">Bought</option>
           </select>
           <div className="flex bg-[#1e2333] border border-white/5 rounded-xl p-1">
             <button 
@@ -357,8 +357,8 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
                   onChange={e => setQuickItem({...quickItem, categoryId: e.target.value})}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
-                  <option value="">Category</option>
-                  {list.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="" className="bg-[#1e2333]">Category</option>
+                  {list.categories.map((c) => <option key={c.id} value={c.id} className="bg-[#1e2333]">{c.name}</option>)}
                 </select>
                 <button 
                   type="button" 
@@ -375,8 +375,8 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
                   onChange={e => setQuickItem({...quickItem, shopId: e.target.value})}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 >
-                  <option value="">Shop</option>
-                  {list.shops.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  <option value="" className="bg-[#1e2333]">Shop</option>
+                  {list.shops.map((s) => <option key={s.id} value={s.id} className="bg-[#1e2333]">{s.name}</option>)}
                 </select>
                 <button 
                   type="button" 
@@ -418,8 +418,8 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
                     onChange={e => setBulkCategoryId(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   >
-                    <option value="">None</option>
-                    {list.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    <option value="" className="bg-[#1e2333]">None</option>
+                    {list.categories.map((c) => <option key={c.id} value={c.id} className="bg-[#1e2333]">{c.name}</option>)}
                   </select>
                 </div>
                 <div className="flex-1">
@@ -429,8 +429,8 @@ export default function ShoppingListDetailClient({ list, role, permissions }: { 
                     onChange={e => setBulkShopId(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   >
-                    <option value="">None</option>
-                    {list.shops.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    <option value="" className="bg-[#1e2333]">None</option>
+                    {list.shops.map((s) => <option key={s.id} value={s.id} className="bg-[#1e2333]">{s.name}</option>)}
                   </select>
                 </div>
               </div>

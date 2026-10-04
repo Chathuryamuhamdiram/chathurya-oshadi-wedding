@@ -170,7 +170,7 @@ export function EventItemList({
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <div className="opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="opacity-100 transition-opacity">
                           <DeleteEventButton type="item" id={item.id} title={item.name} />
                         </div>
                       </div>

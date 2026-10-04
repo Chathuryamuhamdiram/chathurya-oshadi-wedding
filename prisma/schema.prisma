@@ -27,6 +27,7 @@ model User {
   preferences          UserPreference?
   assignedTasksMulti   Task[]                @relation("TaskAssignees")
   createdShoppingLists ShoppingList[]        @relation("CreatedShoppingLists")
+  createdQuestions     QuestionClarification[]
 }
 
 model CeremonyEvent {
@@ -52,6 +53,7 @@ model CeremonyEvent {
   tasks                Task[]
   itineraryEvents      WeddingEvent[]
   shoppingLists        ShoppingList[]
+  questions            QuestionClarification[]
 }
 
 model EventGuest {
@@ -146,6 +148,7 @@ model Vendor {
   foodMenus       FoodMenu[]
   foodMenuItems   FoodMenuItem[]
   eventItems      EventItem[]
+  questions       QuestionClarification[]
 }
 
 model BudgetItem {
@@ -672,3 +675,28 @@ model ShoppingItem {
   @@index([shopId])
 }
 
+model QuestionClarification {
+  id               String         @id @default(uuid())
+  eventId          String?
+  vendorId         String?
+  askFromName      String?
+  question         String
+  category         String         @default("Other")
+  status           String         @default("TO_ASK")
+  answer           String?
+  internalNote     String?
+  followUpRequired Boolean        @default(false)
+  followUpDate     DateTime?
+  sortOrder        Int            @default(0)
+  createdById      String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  event            CeremonyEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  vendor           Vendor?        @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  createdBy        User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([vendorId])
+  @@index([status])
+}

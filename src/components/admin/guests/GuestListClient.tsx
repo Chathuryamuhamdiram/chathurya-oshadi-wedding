@@ -438,8 +438,8 @@ export function GuestListClient({
             <p className="text-white/30 font-sans text-sm">No guests found matching your criteria.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-left text-sm table-fixed min-w-[850px]">
+          <div className="overflow-x-auto w-full pb-4">
+            <table className="w-full text-left text-sm table-fixed min-w-[1150px]">
               <thead>
                 <tr className="text-white/30 text-xs uppercase tracking-widest border-b border-white/[0.04]">
                   <th className="px-2 py-3 font-medium min-w-[150px] w-[260px]">Guest Name</th>
@@ -527,7 +527,7 @@ export function GuestListClient({
                             title="Open / Copy Invitation"
                           >
                             <Link2 className="w-3.5 h-3.5" />
-                            <span>Link</span>
+                            <span className="hidden xl:inline">Link</span>
                           </Link>
                           
                           <button
@@ -537,7 +537,7 @@ export function GuestListClient({
                             title="Update RSVP"
                           >
                             <UserCheck className="w-3.5 h-3.5" />
-                            <span>RSVP</span>
+                            <span className="hidden xl:inline">RSVP</span>
                           </button>
                           
                           <WhatsAppShareModal guest={guest} compact />

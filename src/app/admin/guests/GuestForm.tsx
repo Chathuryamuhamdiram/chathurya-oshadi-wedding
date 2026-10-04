@@ -85,7 +85,7 @@ export function GuestForm({ existingGuest, activeEventId, compact }: { existingG
         {compact ? (
           <>
             <Edit2 className="w-3.5 h-3.5" />
-            <span>Edit</span>
+            <span className="hidden xl:inline">Edit</span>
           </>
         ) : (
           <>

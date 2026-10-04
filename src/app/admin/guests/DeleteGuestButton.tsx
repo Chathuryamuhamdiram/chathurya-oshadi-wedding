@@ -46,7 +46,7 @@ export function DeleteGuestButton({
         title="Delete Guest"
       >
         <Trash2 className="w-3.5 h-3.5" />
-        {compact && <span>Delete</span>}
+        {compact && <span className="hidden xl:inline">Delete</span>}
       </button>
 
       <DeleteConfirmationDialog

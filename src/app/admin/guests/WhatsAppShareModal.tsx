@@ -97,7 +97,7 @@ Chathurya & Oshadi`;
         title="Share via WhatsApp"
       >
         <MessageCircle className="w-3.5 h-3.5" />
-        <span>Share</span>
+        <span className={compact ? "hidden xl:inline" : ""}>Share</span>
       </button>
 
       {mounted && createPortal(

@@ -27,14 +27,20 @@ export default async function ShoppingListsPage() {
     shoppingDate: l.shoppingDate ? l.shoppingDate.toISOString() : null,
     notes: l.notes,
     status: l.status,
-    items: l.items,
-    event: l.event
+    items: l.items.map(i => ({ id: i.id, isBought: i.isBought })),
+    event: l.event ? { id: l.event.id, name: l.event.name, eventType: l.event.eventType } : null
   }));
   
-  const ceremonyEvents = await prisma.ceremonyEvent.findMany({
+  const ceremonyEventsRaw = await prisma.ceremonyEvent.findMany({
     where: { isActive: true },
     select: { id: true, name: true, eventType: true }
   });
+
+  const ceremonyEvents = ceremonyEventsRaw.map(e => ({
+    id: e.id,
+    name: e.name,
+    eventType: e.eventType
+  }));
 
   return (
     <ShoppingListPageClient 

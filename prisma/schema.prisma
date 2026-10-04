@@ -145,6 +145,7 @@ model Vendor {
   items           BudgetItem[]
   foodMenus       FoodMenu[]
   foodMenuItems   FoodMenuItem[]
+  eventItems      EventItem[]
 }
 
 model BudgetItem {
@@ -364,14 +365,25 @@ model WeddingEvent {
 }
 
 model EventItem {
-  id        String       @id @default(uuid())
-  eventId   String
-  name      String
-  quantity  String       @default("1")
-  status    String       @default("PENDING")
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  event     WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id           String       @id @default(uuid())
+  eventId      String
+  name         String
+  quantity     String       @default("1")
+  status       String       @default("PENDING")
+  
+  vendorId     String?
+  orderedPrice Decimal?     @db.Decimal(10, 2)
+  orderStatus  String       @default("NOT_ORDERED")
+  orderedAt    DateTime?
+  orderNote    String?
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  event        WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vendor       Vendor?      @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  @@index([vendorId])
 }
 
 model GuestLogistics {

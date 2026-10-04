@@ -34,9 +34,15 @@ export default async function EventsDashboardPage() {
     notes: v.notes,
   }));
 
+  const vendorsRaw = await prisma.vendor.findMany({
+    where: { isArchived: false },
+    orderBy: { vendorName: 'asc' },
+    select: { id: true, vendorName: true, phone: true, whatsappNumber: true }
+  });
+
   const eventsRaw = await prisma.weddingEvent.findMany({
     where: isAllEvents ? {} : { eventId: activeEventId },
-    include: { venue: true, items: true, event: { select: { id: true, name: true } } },
+    include: { venue: true, items: { include: { vendor: { select: { vendorName: true, phone: true, whatsappNumber: true } } } }, event: { select: { id: true, name: true } } },
     orderBy: [
       { eventDate: 'asc' },
       { sortOrder: 'asc' },
@@ -66,7 +72,17 @@ export default async function EventsDashboardPage() {
       id: item.id,
       name: item.name,
       quantity: item.quantity,
-      status: item.status
+      status: item.status,
+      vendorId: item.vendorId,
+      orderedPrice: item.orderedPrice ? item.orderedPrice.toString() : null,
+      orderStatus: item.orderStatus,
+      orderedAt: item.orderedAt ? item.orderedAt.toISOString() : null,
+      orderNote: item.orderNote,
+      vendor: item.vendor ? {
+        vendorName: item.vendor.vendorName,
+        phone: item.vendor.phone,
+        whatsappNumber: item.vendor.whatsappNumber,
+      } : null,
     })),
     event: e.event ? {
       id: e.event.id,
@@ -148,7 +164,7 @@ export default async function EventsDashboardPage() {
                         <p className="text-sm font-sans text-white/50">{event.description}</p>
                       )}
                       
-                      <EventItemList eventId={event.id} eventTitle={event.title} initialItems={event.items} />
+                      <EventItemList eventId={event.id} eventTitle={event.title} initialItems={event.items} vendors={vendorsRaw} />
                     </div>
                     
                     <div className="shrink-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity mt-4 md:mt-0 flex items-center gap-2">

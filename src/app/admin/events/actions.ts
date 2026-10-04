@@ -7,6 +7,7 @@ import { requirePermission } from "@/lib/auth";
 import { PERMISSIONS } from "@/lib/permissions";
 import { checkDeletePermission, createDeleteAuditLog } from "@/lib/admin/delete-helpers";
 import { getActiveEventId, ALL_EVENTS_VALUE } from "@/lib/event-context";
+import { Prisma } from "@prisma/client";
 
 const venueSchema = z.object({
   id: z.string().optional(),
@@ -277,3 +278,76 @@ export async function deleteEventAction(id: string) {
     return { success: false, error: "Failed to delete event. Please check for dependencies." };
   }
 }
+
+export async function editEventItemAction(formData: FormData) {
+  try {
+    const session = await requirePermission(PERMISSIONS.CALENDAR_MANAGE);
+    const id = formData.get("id") as string;
+    const name = formData.get("name") as string;
+    const quantity = formData.get("quantity") as string;
+    const vendorId = formData.get("vendorId") as string | null;
+    const orderedPriceStr = formData.get("orderedPrice") as string | null;
+    const orderStatus = formData.get("orderStatus") as string || "NOT_ORDERED";
+    const orderNote = formData.get("orderNote") as string | null;
+
+    if (!id || !name || name.trim() === "") throw new Error("Item ID and Name are required");
+
+    const existing = await prisma.eventItem.findUnique({ where: { id } });
+    if (!existing) throw new Error("Item not found");
+
+    let orderedPrice: Prisma.Decimal | null = null;
+    if (orderedPriceStr && orderedPriceStr.trim() !== "") {
+      const val = parseFloat(orderedPriceStr.replace(/,/g, ''));
+      if (isNaN(val) || val < 0) throw new Error("Invalid ordered price");
+      orderedPrice = new Prisma.Decimal(val);
+    }
+
+    await prisma.eventItem.update({
+      where: { id },
+      data: {
+        name: name.trim(),
+        quantity: quantity?.trim() || "1",
+        vendorId: vendorId || null,
+        orderedPrice,
+        orderStatus,
+        orderNote: orderNote?.trim() || null,
+        status: orderStatus === "PURCHASED" ? "BOUGHT" : existing.status,
+      }
+    });
+
+    // Audit logs for Price and Vendor changes
+    const previousPriceStr = existing.orderedPrice ? existing.orderedPrice.toString() : "";
+    const newPriceStr = orderedPrice ? orderedPrice.toString() : "";
+    if (previousPriceStr !== newPriceStr) {
+      await prisma.auditLog.create({
+        data: {
+          userId: session.userId,
+          action: "PRICE_CHANGE",
+          entity: "EventItem",
+          entityId: id,
+          oldValue: previousPriceStr,
+          newValue: newPriceStr,
+        }
+      });
+    }
+
+    if (existing.vendorId !== (vendorId || null)) {
+      await prisma.auditLog.create({
+        data: {
+          userId: session.userId,
+          action: "VENDOR_CHANGE",
+          entity: "EventItem",
+          entityId: id,
+          oldValue: existing.vendorId || "None",
+          newValue: vendorId || "None",
+        }
+      });
+    }
+
+    revalidatePath("/admin/events");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to edit item" };
+  }
+}
+

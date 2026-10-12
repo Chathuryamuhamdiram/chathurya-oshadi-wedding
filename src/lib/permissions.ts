@@ -93,6 +93,12 @@ export const PERMISSIONS = {
   SHOPPING_ITEM_CREATE: 'shopping_item.create',
   SHOPPING_ITEM_EDIT: 'shopping_item.edit',
   SHOPPING_ITEM_DELETE: 'shopping_item.delete',
+
+  GIFT_MONEY_VIEW: 'gift_money.view',
+  GIFT_MONEY_CREATE: 'gift_money.create',
+  GIFT_MONEY_EDIT: 'gift_money.edit',
+  GIFT_MONEY_DELETE: 'gift_money.delete',
+  GIFT_MONEY_EXPORT: 'gift_money.export',
 } as const;
 
 export type PermissionCode = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -144,6 +150,10 @@ export const ADMIN_DEFAULT_PERMISSIONS: string[] = [
   PERMISSIONS.SHOPPING_EDIT,
   PERMISSIONS.SHOPPING_ITEM_CREATE,
   PERMISSIONS.SHOPPING_ITEM_EDIT,
+  PERMISSIONS.GIFT_MONEY_VIEW,
+  PERMISSIONS.GIFT_MONEY_CREATE,
+  PERMISSIONS.GIFT_MONEY_EDIT,
+  PERMISSIONS.GIFT_MONEY_EXPORT,
 ];
 
 // For the UI to render the permission matrix logically grouped
@@ -257,6 +267,16 @@ export const PERMISSION_MODULES = [
       { code: PERMISSIONS.SHOPPING_ITEM_CREATE, label: "Create Item" },
       { code: PERMISSIONS.SHOPPING_ITEM_EDIT, label: "Edit Item" },
       { code: PERMISSIONS.SHOPPING_ITEM_DELETE, label: "Delete Item" },
+    ]
+  },
+  {
+    name: "Gift Money",
+    permissions: [
+      { code: PERMISSIONS.GIFT_MONEY_VIEW, label: "View" },
+      { code: PERMISSIONS.GIFT_MONEY_CREATE, label: "Create" },
+      { code: PERMISSIONS.GIFT_MONEY_EDIT, label: "Edit" },
+      { code: PERMISSIONS.GIFT_MONEY_DELETE, label: "Delete" },
+      { code: PERMISSIONS.GIFT_MONEY_EXPORT, label: "Export" },
     ]
   }
 ];

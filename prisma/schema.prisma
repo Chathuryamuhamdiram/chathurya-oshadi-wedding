@@ -28,6 +28,7 @@ model User {
   assignedTasksMulti   Task[]                @relation("TaskAssignees")
   createdShoppingLists ShoppingList[]        @relation("CreatedShoppingLists")
   createdQuestions     QuestionClarification[]
+  createdGiftMoneyEntries GiftMoneyEntry[]
 }
 
 model CeremonyEvent {
@@ -54,6 +55,7 @@ model CeremonyEvent {
   itineraryEvents      WeddingEvent[]
   shoppingLists        ShoppingList[]
   questions            QuestionClarification[]
+  giftMoneyEntries     GiftMoneyEntry[]
 }
 
 model EventGuest {
@@ -699,4 +701,22 @@ model QuestionClarification {
   @@index([eventId])
   @@index([vendorId])
   @@index([status])
+}
+
+model GiftMoneyEntry {
+  id          String        @id @default(uuid())
+  eventId     String
+  name        String
+  amount      Decimal       @db.Decimal(10, 2)
+  note        String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  createdById String?
+
+  event       CeremonyEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy   User?         @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([createdAt])
+  @@index([name])
 }
